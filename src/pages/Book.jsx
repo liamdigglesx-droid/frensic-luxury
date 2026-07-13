@@ -242,9 +242,19 @@ export default function Book() {
                           type="date"
                           min={today}
                           value={startDate}
-                          onChange={e => setStartDate(e.target.value)}
-                          className="w-full h-12 px-4 text-sm bg-transparent outline-none"
-                          style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F9F9F9', colorScheme: 'dark' }}
+                          onChange={e => {
+                            setStartDate(e.target.value);
+                            if (endDate && e.target.value >= endDate) setEndDate('');
+                          }}
+                          className="w-full h-12 px-4 text-sm outline-none"
+                          style={{
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            color: '#F9F9F9',
+                            backgroundColor: '#0d0d0d',
+                            colorScheme: 'dark',
+                          }}
+                          onFocus={e => { e.currentTarget.style.borderColor = '#C9A84C'; }}
+                          onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
                         />
                       </div>
                       <div>
@@ -253,11 +263,18 @@ export default function Book() {
                         </label>
                         <input
                           type="date"
-                          min={startDate || today}
+                          min={startDate ? (() => { const d = new Date(startDate); d.setDate(d.getDate() + 1); return d.toISOString().split('T')[0]; })() : today}
                           value={endDate}
                           onChange={e => setEndDate(e.target.value)}
-                          className="w-full h-12 px-4 text-sm bg-transparent outline-none"
-                          style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F9F9F9', colorScheme: 'dark' }}
+                          className="w-full h-12 px-4 text-sm outline-none"
+                          style={{
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            color: '#F9F9F9',
+                            backgroundColor: '#0d0d0d',
+                            colorScheme: 'dark',
+                          }}
+                          onFocus={e => { e.currentTarget.style.borderColor = '#C9A84C'; }}
+                          onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
                         />
                       </div>
                     </div>
@@ -453,7 +470,7 @@ export default function Book() {
                       disabled={loading}
                       className="flex-1 flex items-center justify-center gap-2 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
                       style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
-                      onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1a45e8'; }}
+                      onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
                       onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
                     >
                       {loading ? (
@@ -540,7 +557,7 @@ export default function Book() {
                 href="tel:+2347046007419"
                 className="inline-flex items-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
                 style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
-                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1a45e8'; }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
                 onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
               >
                 <Phone size={14} />

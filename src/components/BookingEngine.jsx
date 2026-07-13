@@ -24,7 +24,7 @@ export default function BookingEngine() {
   const inputStyle = {
     color: '#F9F9F9',
     colorScheme: 'dark',
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(5,5,5,0.01)',
     border: 'none',
     outline: 'none',
     width: '100%',
@@ -81,7 +81,10 @@ export default function BookingEngine() {
             type="date"
             min={today}
             value={checkIn}
-            onChange={e => setCheckIn(e.target.value)}
+            onChange={e => {
+              setCheckIn(e.target.value);
+              if (checkOut && e.target.value >= checkOut) setCheckOut('');
+            }}
             style={inputStyle}
           />
         </div>
@@ -99,7 +102,7 @@ export default function BookingEngine() {
           </div>
           <input
             type="date"
-            min={checkIn || today}
+            min={checkIn ? (() => { const d = new Date(checkIn); d.setDate(d.getDate() + 1); return d.toISOString().split('T')[0]; })() : today}
             value={checkOut}
             onChange={e => setCheckOut(e.target.value)}
             style={inputStyle}
@@ -141,7 +144,7 @@ export default function BookingEngine() {
           onClick={handleSearch}
           className="flex items-center justify-center gap-2 p-5 text-xs tracking-[0.15em] uppercase font-semibold transition-all duration-200 group"
           style={{ backgroundColor: '#C9A84C', color: '#050505' }}
-          onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#b8943e'; }}
+          onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
           onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
         >
           Check Availability

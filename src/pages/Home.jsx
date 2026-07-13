@@ -163,7 +163,7 @@ export default function Home() {
               to="/about"
               className="self-start px-8 h-12 flex items-center text-xs tracking-[0.2em] uppercase font-medium transition-all"
               style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1a45e8'; }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
             >
               Learn More

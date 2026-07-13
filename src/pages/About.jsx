@@ -135,7 +135,7 @@ export default function About() {
               to="/book"
               className="px-10 h-13 flex items-center justify-center text-xs tracking-[0.2em] uppercase font-medium transition-all"
               style={{ backgroundColor: '#C9A84C', color: '#F9F9F9', height: '52px' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1a45e8'; }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
             >
               Book Now

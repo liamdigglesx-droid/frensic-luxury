@@ -88,7 +88,7 @@ export default function Reviews() {
               to="/contact"
               className="inline-flex px-8 h-12 items-center text-xs tracking-[0.2em] uppercase font-medium transition-all"
               style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1a45e8'; }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
             >
               Tell Us Your Feedback
