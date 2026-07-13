@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Wifi, Tv, Users, Maximize2, BedDouble, Star, Search, SlidersHorizontal, X } from 'lucide-react';
 import { ROOMS } from '@/lib/constants';
+import AvailabilityBadge from '@/components/AvailabilityBadge';
 
 const BEDROOM_OPTIONS = ['Any', '3', '4', '5+'];
 const GUEST_OPTIONS = ['Any', '1-4', '5-8', '9+'];
@@ -186,6 +187,9 @@ export default function Rooms() {
                     />
                     <div className="absolute top-6 left-6 px-3 py-1.5 text-[10px] tracking-[0.2em] uppercase" style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}>
                       {room.tagline}
+                    </div>
+                    <div className="absolute bottom-6 left-6">
+                      <AvailabilityBadge itemId={room.id} bookingType="stay" />
                     </div>
                   </div>
                   <div

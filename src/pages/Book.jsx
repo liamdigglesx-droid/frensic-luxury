@@ -8,6 +8,7 @@ import {
 import { ROOMS, CARS } from '@/lib/constants';
 import { base44 } from '@/api/base44Client';
 import { initPaystack } from '@/lib/paystack';
+import AvailabilityBadge from '@/components/AvailabilityBadge';
 
 export default function Book() {
   const navigate = useNavigate();
@@ -190,8 +191,11 @@ export default function Book() {
                         backgroundColor: (type === 'stay' ? selectedRoom : selectedCar) === item.id ? 'rgba(201,168,76,0.07)' : '#080808',
                       }}
                     >
-                      <div className="aspect-video overflow-hidden">
+                      <div className="aspect-video overflow-hidden relative">
                         <img src={item.image_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute bottom-2 left-2">
+                          <AvailabilityBadge itemId={item.id} bookingType={type} />
+                        </div>
                       </div>
                       <div className="p-4">
                         <div className="font-serif text-base mb-1" style={{ color: '#F9F9F9' }}>{item.name}</div>

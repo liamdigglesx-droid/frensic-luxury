@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Gauge, Zap, Users, Settings2, CheckCircle, Search, SlidersHorizontal, X } from 'lucide-react';
 import { CARS } from '@/lib/constants';
+import AvailabilityBadge from '@/components/AvailabilityBadge';
 
 const SEAT_OPTIONS = ['Any', '4', '5', '7+'];
 const STYLE_OPTIONS = ['Any', ...new Set(CARS.map(c => c.style))];
@@ -177,6 +178,9 @@ export default function Cars() {
                     />
                     <div className="absolute top-6 left-6 px-3 py-1.5 text-[10px] tracking-[0.2em] uppercase" style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}>
                       {car.style}
+                    </div>
+                    <div className="absolute bottom-6 left-6">
+                      <AvailabilityBadge itemId={car.id} bookingType="drive" />
                     </div>
                   </div>
                   <div
