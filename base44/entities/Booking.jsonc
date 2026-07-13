@@ -1,0 +1,74 @@
+{
+  "name": "Booking",
+  "type": "object",
+  "properties": {
+    "booking_type": {
+      "type": "string",
+      "enum": [
+        "stay",
+        "drive"
+      ]
+    },
+    "item_id": {
+      "type": "string"
+    },
+    "item_name": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "guest_name": {
+      "type": "string"
+    },
+    "guest_email": {
+      "type": "string"
+    },
+    "guest_phone": {
+      "type": "string"
+    },
+    "guests_count": {
+      "type": "number"
+    },
+    "chauffeur": {
+      "type": "boolean",
+      "default": false
+    },
+    "special_requests": {
+      "type": "string"
+    },
+    "nights_or_days": {
+      "type": "number"
+    },
+    "unit_price": {
+      "type": "number"
+    },
+    "total_amount": {
+      "type": "number"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "payment_reference": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "booking_type",
+    "start_date",
+    "end_date",
+    "guest_email",
+    "total_amount"
+  ]
+}
