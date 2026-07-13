@@ -74,10 +74,18 @@ export default function Book() {
         amount: total,
         ref: `FRENSIC_${booking.id.slice(-8).toUpperCase()}_${Date.now()}`,
         onSuccess: async (response) => {
-          await base44.entities.Booking.update(booking.id, {
+          const updatedBooking = await base44.entities.Booking.update(booking.id, {
             payment_status: 'paid',
             payment_reference: response.reference,
           });
+          // Send confirmation email via Gmail
+          base44.functions.invoke('sendBookingConfirmation', {
+            booking: {
+              ...booking,
+              payment_reference: response.reference,
+              payment_status: 'paid',
+            },
+          }).catch(() => {}); // fire-and-forget — don't block the UI
           setBooked(true);
           setStep(5);
         },
