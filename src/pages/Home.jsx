@@ -37,7 +37,7 @@ export default function Home() {
 
         <div className="relative z-10 w-full px-6 lg:px-16 flex flex-col items-center text-center gap-10">
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
-            <div className="text-xs tracking-[0.4em] uppercase mb-4" style={{ color: '#2D5BFF' }}>
+            <div className="text-xs tracking-[0.4em] uppercase mb-4" style={{ color: '#C9A84C' }}>
               Luxury Apartment & Automobile Rental
             </div>
             <h1
@@ -49,7 +49,7 @@ export default function Home() {
               }}
             >
               Let us be your gateway to a{' '}
-              <span style={{ color: '#2D5BFF', fontStyle: 'italic' }}>Luxurious</span>{' '}
+              <span style={{ color: '#C9A84C', fontStyle: 'italic' }}>Luxurious</span>{' '}
               Living
             </h1>
             <p className="mt-6 max-w-2xl mx-auto text-base leading-relaxed" style={{ color: '#888888' }}>
@@ -72,7 +72,7 @@ export default function Home() {
       <section className="py-24 px-6 lg:px-16" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#2D5BFF' }}>Our Suites</div>
+            <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#C9A84C' }}>Our Suites</div>
             <h2 className="font-serif font-light" style={{ color: '#F9F9F9', fontSize: 'clamp(1.8rem, 4vw, 3.5rem)' }}>
               Unique stay to comfort your needs
             </h2>
@@ -93,7 +93,7 @@ export default function Home() {
                     alt={room.name}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.2em] uppercase" style={{ backgroundColor: '#2D5BFF', color: '#F9F9F9' }}>
+                  <div className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.2em] uppercase" style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}>
                     {room.tagline}
                   </div>
                 </div>
@@ -109,9 +109,9 @@ export default function Home() {
                   <Link
                     to={`/book?type=stay&room=${room.id}`}
                     className="px-5 h-10 flex items-center text-xs tracking-[0.15em] uppercase transition-all"
-                    style={{ border: '1px solid rgba(45,91,255,0.4)', color: '#2D5BFF' }}
-                    onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#2D5BFF'; e.currentTarget.style.color = '#F9F9F9'; }}
-                    onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#2D5BFF'; }}
+                    style={{ border: '1px solid rgba(201,168,76,0.4)', color: '#C9A84C' }}
+                    onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; e.currentTarget.style.color = '#F9F9F9'; }}
+                    onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#C9A84C'; }}
                   >
                     Book Suite
                   </Link>
@@ -124,7 +124,7 @@ export default function Home() {
               to="/rooms"
               className="inline-flex items-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
               style={{ border: '1px solid rgba(255,255,255,0.15)', color: '#F9F9F9' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#2D5BFF'; e.currentTarget.style.color = '#2D5BFF'; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#C9A84C'; e.currentTarget.style.color = '#C9A84C'; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = '#F9F9F9'; }}
             >
               View All Rooms
@@ -144,7 +144,7 @@ export default function Home() {
             }}
           />
           <div className="flex flex-col justify-center px-12 py-16" style={{ backgroundColor: '#0d0d0d' }}>
-            <div className="text-[10px] tracking-[0.35em] uppercase mb-4" style={{ color: '#2D5BFF' }}>Who We Are</div>
+            <div className="text-[10px] tracking-[0.35em] uppercase mb-4" style={{ color: '#C9A84C' }}>Who We Are</div>
             <h2 className="font-serif font-light text-3xl mb-6" style={{ color: '#F9F9F9' }}>
               Redefines luxury with world-class accommodations and Automobile Rental Services
             </h2>
@@ -154,7 +154,7 @@ export default function Home() {
             <div className="space-y-3 mb-8">
               {['Luxury Automobile Rentals', 'Executive Chauffeur Services', 'Premium Furnished Apartments'].map(item => (
                 <div key={item} className="flex items-center gap-3 text-sm" style={{ color: '#888888' }}>
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#2D5BFF' }} />
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#C9A84C' }} />
                   {item}
                 </div>
               ))}
@@ -162,9 +162,9 @@ export default function Home() {
             <Link
               to="/about"
               className="self-start px-8 h-12 flex items-center text-xs tracking-[0.2em] uppercase font-medium transition-all"
-              style={{ backgroundColor: '#2D5BFF', color: '#F9F9F9' }}
+              style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1a45e8'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#2D5BFF'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
             >
               Learn More
             </Link>
@@ -176,7 +176,7 @@ export default function Home() {
       <section className="py-24 px-6 lg:px-16">
         <div className="max-w-7xl mx-auto">
           <div className="mb-16">
-            <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#2D5BFF' }}>Guest Testimonials</div>
+            <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#C9A84C' }}>Guest Testimonials</div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
               <h2 className="font-serif font-light" style={{ color: '#F9F9F9', fontSize: 'clamp(1.8rem, 3vw, 2.8rem)' }}>
                 Read our real testimonial services
@@ -200,7 +200,7 @@ export default function Home() {
                 <div className="flex items-start gap-4 mb-5">
                   <img src={t.avatar_url} alt={t.guest_name} className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
                   <div>
-                    <div className="font-serif text-lg mb-1" style={{ color: '#2D5BFF' }}>{t.headline}</div>
+                    <div className="font-serif text-lg mb-1" style={{ color: '#C9A84C' }}>{t.headline}</div>
                   </div>
                 </div>
                 <p className="text-sm leading-relaxed mb-5" style={{ color: '#888888' }}>{t.body}</p>
@@ -211,7 +211,7 @@ export default function Home() {
                   </div>
                   <div className="flex gap-1">
                     {[...Array(t.rating)].map((_, j) => (
-                      <Star key={j} size={12} fill="#2D5BFF" color="#2D5BFF" />
+                      <Star key={j} size={12} fill="#C9A84C" color="#C9A84C" />
                     ))}
                   </div>
                 </div>
@@ -223,7 +223,7 @@ export default function Home() {
               to="/reviews"
               className="inline-flex items-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
               style={{ border: '1px solid rgba(255,255,255,0.15)', color: '#F9F9F9' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#2D5BFF'; e.currentTarget.style.color = '#2D5BFF'; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#C9A84C'; e.currentTarget.style.color = '#C9A84C'; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = '#F9F9F9'; }}
             >
               Read All Reviews
@@ -236,7 +236,7 @@ export default function Home() {
       <section className="py-24 px-6 lg:px-16" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-14">
-            <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#2D5BFF' }}>FAQ</div>
+            <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#C9A84C' }}>FAQ</div>
             <h2 className="font-serif font-light" style={{ color: '#F9F9F9', fontSize: 'clamp(1.8rem, 3.5vw, 3rem)' }}>
               Frequently Asked Questions
             </h2>
@@ -253,7 +253,7 @@ export default function Home() {
                 >
                   <span className="text-sm font-medium" style={{ color: '#F9F9F9' }}>{faq.q}</span>
                   {activeFaq === i ? (
-                    <Minus size={16} className="flex-shrink-0" style={{ color: '#2D5BFF' }} />
+                    <Minus size={16} className="flex-shrink-0" style={{ color: '#C9A84C' }} />
                   ) : (
                     <Plus size={16} className="flex-shrink-0" style={{ color: '#888888' }} />
                   )}

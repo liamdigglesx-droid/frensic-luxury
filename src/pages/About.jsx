@@ -67,7 +67,7 @@ export default function About() {
               className="text-center py-8 px-4"
               style={{ borderRight: i < 3 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}
             >
-              <div className="font-serif text-4xl md:text-5xl mb-2" style={{ color: '#2D5BFF' }}>{s.value}</div>
+              <div className="font-serif text-4xl md:text-5xl mb-2" style={{ color: '#C9A84C' }}>{s.value}</div>
               <div className="text-xs tracking-[0.2em] uppercase" style={{ color: '#888888' }}>{s.label}</div>
             </motion.div>
           ))}
@@ -78,7 +78,7 @@ export default function About() {
       <section className="py-24 px-6 lg:px-16">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <div>
-            <div className="text-xs tracking-[0.35em] uppercase mb-4" style={{ color: '#2D5BFF' }}>Our Mission</div>
+            <div className="text-xs tracking-[0.35em] uppercase mb-4" style={{ color: '#C9A84C' }}>Our Mission</div>
             <h2 className="font-serif font-light text-4xl mb-6" style={{ color: '#F9F9F9' }}>Built on Trust, Driven by Excellence</h2>
             <p className="text-sm leading-relaxed mb-4" style={{ color: '#888888' }}>
               Our mission is to exceed expectations by delivering world-class luxury services built on trust, safety, integrity, and exceptional hospitality. As we continue to grow, we remain focused on becoming one of Africa's most respected luxury mobility and hospitality brands, known for quality, innovation, and outstanding customer care.
@@ -101,7 +101,7 @@ export default function About() {
       <section className="py-20 px-6 lg:px-16" style={{ backgroundColor: '#080808' }}>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#2D5BFF' }}>Our Values</div>
+            <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#C9A84C' }}>Our Values</div>
             <h2 className="font-serif font-light text-4xl" style={{ color: '#F9F9F9' }}>What We Stand For</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0">
@@ -115,7 +115,7 @@ export default function About() {
                 className="p-8"
                 style={{ borderRight: i < 3 ? '1px solid rgba(255,255,255,0.06)' : 'none', borderTop: '1px solid rgba(255,255,255,0.06)' }}
               >
-                <div className="w-10 h-10 flex items-center justify-center mb-5" style={{ border: '1px solid rgba(45,91,255,0.3)', color: '#2D5BFF' }}>
+                <div className="w-10 h-10 flex items-center justify-center mb-5" style={{ border: '1px solid rgba(201,168,76,0.3)', color: '#C9A84C' }}>
                   <Icon size={18} />
                 </div>
                 <h3 className="font-serif text-lg mb-3" style={{ color: '#F9F9F9' }}>{title}</h3>
@@ -134,9 +134,9 @@ export default function About() {
             <Link
               to="/book"
               className="px-10 h-13 flex items-center justify-center text-xs tracking-[0.2em] uppercase font-medium transition-all"
-              style={{ backgroundColor: '#2D5BFF', color: '#F9F9F9', height: '52px' }}
+              style={{ backgroundColor: '#C9A84C', color: '#F9F9F9', height: '52px' }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1a45e8'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#2D5BFF'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
             >
               Book Now
             </Link>
@@ -144,7 +144,7 @@ export default function About() {
               to="/contact"
               className="px-10 flex items-center justify-center text-xs tracking-[0.2em] uppercase font-medium transition-all"
               style={{ border: '1px solid rgba(255,255,255,0.2)', color: '#F9F9F9', height: '52px' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#2D5BFF'; e.currentTarget.style.color = '#2D5BFF'; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#C9A84C'; e.currentTarget.style.color = '#C9A84C'; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = '#F9F9F9'; }}
             >
               Contact Us

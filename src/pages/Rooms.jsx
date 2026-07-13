@@ -16,7 +16,7 @@ export default function Rooms() {
       >
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(5,5,5,0.3), rgba(5,5,5,0.85))' }} />
         <div className="relative z-10 px-6 lg:px-16 w-full">
-          <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#2D5BFF' }}>Home / Rooms</div>
+          <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#C9A84C' }}>Home / Rooms</div>
           <h1 className="font-serif font-light text-5xl" style={{ color: '#F9F9F9' }}>Rooms</h1>
         </div>
       </section>
@@ -25,7 +25,7 @@ export default function Rooms() {
       <section className="py-20 px-6 lg:px-16">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#2D5BFF' }}>Our Suites</div>
+            <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#C9A84C' }}>Our Suites</div>
             <h2 className="font-serif font-light" style={{ color: '#F9F9F9', fontSize: 'clamp(1.8rem, 4vw, 3.5rem)' }}>
               A unique stay to meet your needs
             </h2>
@@ -48,7 +48,7 @@ export default function Rooms() {
                     alt={room.name}
                     className="w-full h-full object-cover absolute inset-0 hover:scale-105 transition-transform duration-1000"
                   />
-                  <div className="absolute top-6 left-6 px-3 py-1.5 text-[10px] tracking-[0.2em] uppercase" style={{ backgroundColor: '#2D5BFF', color: '#F9F9F9' }}>
+                  <div className="absolute top-6 left-6 px-3 py-1.5 text-[10px] tracking-[0.2em] uppercase" style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}>
                     {room.tagline}
                   </div>
                 </div>
@@ -68,7 +68,7 @@ export default function Rooms() {
                       { icon: Star, label: 'Rating', value: '5.0 / 5.0' },
                     ].map(({ icon: Icon, label, value }) => (
                       <div key={label} className="flex items-center gap-3 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                        <Icon size={14} style={{ color: '#2D5BFF' }} />
+                        <Icon size={14} style={{ color: '#C9A84C' }} />
                         <div>
                           <div className="text-[10px] tracking-widest uppercase" style={{ color: '#888888' }}>{label}</div>
                           <div className="text-sm font-medium" style={{ color: '#F9F9F9' }}>{value}</div>
@@ -97,9 +97,9 @@ export default function Rooms() {
                     <Link
                       to={`/book?type=stay&room=${room.id}`}
                       className="px-8 h-12 flex items-center text-xs tracking-[0.15em] uppercase font-medium transition-all"
-                      style={{ backgroundColor: '#2D5BFF', color: '#F9F9F9' }}
+                      style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
                       onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1a45e8'; }}
-                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#2D5BFF'; }}
+                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
                     >
                       Book This Suite
                     </Link>
@@ -122,7 +122,7 @@ export default function Rooms() {
         >
           <div className="absolute inset-0" style={{ background: 'rgba(5,5,5,0.8)' }} />
           <div className="relative z-10 max-w-lg">
-            <div className="text-xs tracking-[0.35em] uppercase mb-4" style={{ color: '#2D5BFF' }}>We Will Plan Your Perfect Trip</div>
+            <div className="text-xs tracking-[0.35em] uppercase mb-4" style={{ color: '#C9A84C' }}>We Will Plan Your Perfect Trip</div>
             <h2 className="font-serif text-3xl md:text-4xl font-light mb-4" style={{ color: '#F9F9F9' }}>Extend Your Luxury Stay</h2>
             <p className="text-sm leading-relaxed mb-8" style={{ color: '#888888' }}>
               Every moment deserves more than just a night. When you're traveling for business, a family getaway, or a well-deserved retreat, let us continue to provide what you need — setting nothing short of the very best.
@@ -133,9 +133,9 @@ export default function Rooms() {
             <Link
               to="/book"
               className="inline-flex px-8 h-12 items-center text-xs tracking-[0.2em] uppercase font-medium transition-all"
-              style={{ backgroundColor: '#2D5BFF', color: '#F9F9F9' }}
+              style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1a45e8'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#2D5BFF'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
             >
               Extend My Stay
             </Link>

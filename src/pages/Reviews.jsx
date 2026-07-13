@@ -16,7 +16,7 @@ export default function Reviews() {
       >
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(5,5,5,0.3), rgba(5,5,5,0.85))' }} />
         <div className="relative z-10 px-6 lg:px-16 w-full">
-          <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#2D5BFF' }}>Home / Reviews</div>
+          <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#C9A84C' }}>Home / Reviews</div>
           <h1 className="font-serif font-light text-5xl" style={{ color: '#F9F9F9' }}>Reviews</h1>
         </div>
       </section>
@@ -25,7 +25,7 @@ export default function Reviews() {
       <section className="py-24 px-6 lg:px-16">
         <div className="max-w-7xl mx-auto">
           <div className="mb-16">
-            <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#2D5BFF' }}>Guest Testimonials</div>
+            <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#C9A84C' }}>Guest Testimonials</div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
               <h2 className="font-serif font-light" style={{ color: '#F9F9F9', fontSize: 'clamp(2rem, 4vw, 3.5rem)' }}>
                 Read our real testimonial services
@@ -53,15 +53,15 @@ export default function Reviews() {
                   <div className="text-xs tracking-wider uppercase mt-1" style={{ color: '#888888' }}>{t.guest_title}</div>
                   <div className="flex gap-1 mt-3">
                     {[...Array(t.rating)].map((_, j) => (
-                      <Star key={j} size={11} fill="#2D5BFF" color="#2D5BFF" />
+                      <Star key={j} size={11} fill="#C9A84C" color="#C9A84C" />
                     ))}
                   </div>
-                  <div className="mt-3 px-2 py-1 text-[9px] tracking-[0.15em] uppercase" style={{ border: '1px solid rgba(45,91,255,0.3)', color: '#2D5BFF' }}>
+                  <div className="mt-3 px-2 py-1 text-[9px] tracking-[0.15em] uppercase" style={{ border: '1px solid rgba(201,168,76,0.3)', color: '#C9A84C' }}>
                     {t.service_type === 'stay' ? 'Apartment Stay' : 'Car Rental'}
                   </div>
                 </div>
                 <div className="md:col-span-4 p-8 md:p-12 flex flex-col justify-center">
-                  <div className="font-serif text-2xl md:text-3xl mb-5 italic" style={{ color: '#2D5BFF' }}>{t.headline}</div>
+                  <div className="font-serif text-2xl md:text-3xl mb-5 italic" style={{ color: '#C9A84C' }}>{t.headline}</div>
                   <p className="text-sm leading-relaxed" style={{ color: '#888888' }}>{t.body}</p>
                 </div>
               </motion.div>
@@ -74,7 +74,7 @@ export default function Reviews() {
       <section className="py-20 px-6 lg:px-16" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <div>
-            <div className="text-xs tracking-[0.35em] uppercase mb-4" style={{ color: '#2D5BFF' }}>Do You Have Any Problem With Our Services?</div>
+            <div className="text-xs tracking-[0.35em] uppercase mb-4" style={{ color: '#C9A84C' }}>Do You Have Any Problem With Our Services?</div>
             <h2 className="font-serif font-light text-4xl mb-6" style={{ color: '#F9F9F9' }}>
               We hear you, let us know what you feel and get your compensation
             </h2>
@@ -87,9 +87,9 @@ export default function Reviews() {
             <Link
               to="/contact"
               className="inline-flex px-8 h-12 items-center text-xs tracking-[0.2em] uppercase font-medium transition-all"
-              style={{ backgroundColor: '#2D5BFF', color: '#F9F9F9' }}
+              style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1a45e8'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#2D5BFF'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
             >
               Tell Us Your Feedback
             </Link>

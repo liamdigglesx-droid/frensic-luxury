@@ -105,7 +105,7 @@ export default function Book() {
       >
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(5,5,5,0.3), rgba(5,5,5,0.85))' }} />
         <div className="relative z-10 px-6 lg:px-16 w-full">
-          <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#2D5BFF' }}>Home / Book Now</div>
+          <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#C9A84C' }}>Home / Book Now</div>
           <h1 className="font-serif font-light text-5xl" style={{ color: '#F9F9F9' }}>Book Now</h1>
         </div>
       </section>
@@ -122,8 +122,8 @@ export default function Book() {
                     <div
                       className="w-10 h-10 flex items-center justify-center text-xs font-medium transition-all"
                       style={{
-                        backgroundColor: step > i + 1 ? '#2D5BFF' : step === i + 1 ? '#2D5BFF' : 'transparent',
-                        border: `1px solid ${step >= i + 1 ? '#2D5BFF' : 'rgba(255,255,255,0.15)'}`,
+                        backgroundColor: step > i + 1 ? '#C9A84C' : step === i + 1 ? '#C9A84C' : 'transparent',
+                        border: `1px solid ${step >= i + 1 ? '#C9A84C' : 'rgba(255,255,255,0.15)'}`,
                         color: step >= i + 1 ? '#F9F9F9' : '#888888',
                       }}
                     >
@@ -134,7 +134,7 @@ export default function Book() {
                     </div>
                   </div>
                   {i < 3 && (
-                    <div className="w-16 md:w-24 h-px mx-2 mb-5" style={{ backgroundColor: step > i + 1 ? '#2D5BFF' : 'rgba(255,255,255,0.1)' }} />
+                    <div className="w-16 md:w-24 h-px mx-2 mb-5" style={{ backgroundColor: step > i + 1 ? '#C9A84C' : 'rgba(255,255,255,0.1)' }} />
                   )}
                 </div>
               ))}
@@ -156,11 +156,11 @@ export default function Book() {
                       onClick={() => setType(key)}
                       className="flex-1 max-w-xs flex flex-col items-center gap-3 py-6 px-8 transition-all"
                       style={{
-                        border: `1px solid ${type === key ? '#2D5BFF' : 'rgba(255,255,255,0.1)'}`,
-                        backgroundColor: type === key ? 'rgba(45,91,255,0.1)' : 'transparent',
+                        border: `1px solid ${type === key ? '#C9A84C' : 'rgba(255,255,255,0.1)'}`,
+                        backgroundColor: type === key ? 'rgba(201,168,76,0.1)' : 'transparent',
                       }}
                     >
-                      <Icon size={24} style={{ color: type === key ? '#2D5BFF' : '#888888' }} />
+                      <Icon size={24} style={{ color: type === key ? '#C9A84C' : '#888888' }} />
                       <span className="text-sm tracking-widest uppercase" style={{ color: type === key ? '#F9F9F9' : '#888888' }}>{label}</span>
                     </button>
                   ))}
@@ -174,8 +174,8 @@ export default function Book() {
                       onClick={() => type === 'stay' ? setSelectedRoom(item.id) : setSelectedCar(item.id)}
                       className="text-left overflow-hidden transition-all group"
                       style={{
-                        border: `1px solid ${(type === 'stay' ? selectedRoom : selectedCar) === item.id ? '#2D5BFF' : 'rgba(255,255,255,0.08)'}`,
-                        backgroundColor: (type === 'stay' ? selectedRoom : selectedCar) === item.id ? 'rgba(45,91,255,0.07)' : '#080808',
+                        border: `1px solid ${(type === 'stay' ? selectedRoom : selectedCar) === item.id ? '#C9A84C' : 'rgba(255,255,255,0.08)'}`,
+                        backgroundColor: (type === 'stay' ? selectedRoom : selectedCar) === item.id ? 'rgba(201,168,76,0.07)' : '#080808',
                       }}
                     >
                       <div className="aspect-video overflow-hidden">
@@ -188,7 +188,7 @@ export default function Book() {
                         </div>
                       </div>
                       {(type === 'stay' ? selectedRoom : selectedCar) === item.id && (
-                        <div className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center" style={{ backgroundColor: '#2D5BFF' }}>
+                        <div className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center" style={{ backgroundColor: '#C9A84C' }}>
                           <Check size={12} color="#fff" />
                         </div>
                       )}
@@ -201,7 +201,7 @@ export default function Book() {
                     onClick={() => canProceedStep1 && setStep(2)}
                     disabled={!canProceedStep1}
                     className="flex items-center gap-2 px-10 h-13 text-xs tracking-[0.2em] uppercase font-medium transition-all"
-                    style={{ height: '52px', backgroundColor: canProceedStep1 ? '#2D5BFF' : '#333', color: canProceedStep1 ? '#F9F9F9' : '#666' }}
+                    style={{ height: '52px', backgroundColor: canProceedStep1 ? '#C9A84C' : '#333', color: canProceedStep1 ? '#F9F9F9' : '#666' }}
                   >
                     Continue <ChevronRight size={16} />
                   </button>
@@ -259,9 +259,9 @@ export default function Book() {
                         {type === 'stay' ? 'Number of Guests' : 'Number of Passengers'}
                       </label>
                       <div className="flex items-center gap-4">
-                        <button onClick={() => setGuests(Math.max(1, guests - 1))} className="w-10 h-10 flex items-center justify-center text-xl" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#2D5BFF' }}>−</button>
+                        <button onClick={() => setGuests(Math.max(1, guests - 1))} className="w-10 h-10 flex items-center justify-center text-xl" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#C9A84C' }}>−</button>
                         <span className="text-lg font-medium w-8 text-center" style={{ color: '#F9F9F9' }}>{guests}</span>
-                        <button onClick={() => setGuests(Math.min(10, guests + 1))} className="w-10 h-10 flex items-center justify-center text-xl" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#2D5BFF' }}>+</button>
+                        <button onClick={() => setGuests(Math.min(10, guests + 1))} className="w-10 h-10 flex items-center justify-center text-xl" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#C9A84C' }}>+</button>
                       </div>
                     </div>
 
@@ -271,7 +271,7 @@ export default function Book() {
                           type="checkbox"
                           checked={chauffeur}
                           onChange={e => setChauffeur(e.target.checked)}
-                          className="w-4 h-4 accent-blue-500"
+                          className="w-4 h-4 accent-yellow-500"
                         />
                         <span className="text-sm" style={{ color: '#888888' }}>Add Chauffeur Service (+₦30,000/day)</span>
                       </label>
@@ -279,8 +279,8 @@ export default function Book() {
                   </div>
 
                   {startDate && endDate && canProceedStep2 && (
-                    <div className="p-5 mb-8" style={{ backgroundColor: 'rgba(45,91,255,0.07)', border: '1px solid rgba(45,91,255,0.2)' }}>
-                      <div className="text-xs tracking-widest uppercase mb-3" style={{ color: '#2D5BFF' }}>Booking Summary</div>
+                    <div className="p-5 mb-8" style={{ backgroundColor: 'rgba(201,168,76,0.07)', border: '1px solid rgba(201,168,76,0.2)' }}>
+                      <div className="text-xs tracking-widest uppercase mb-3" style={{ color: '#C9A84C' }}>Booking Summary</div>
                       <div className="flex justify-between text-sm mb-2" style={{ color: '#888888' }}>
                         <span>{selectedItem?.name}</span>
                         <span>₦{unitPrice?.toLocaleString()} × {nights} {type === 'stay' ? 'nights' : 'days'}</span>
@@ -291,7 +291,7 @@ export default function Book() {
                           <span>₦{(chauffeurFee).toLocaleString()}</span>
                         </div>
                       )}
-                      <div className="flex justify-between font-serif text-lg mt-3 pt-3" style={{ borderTop: '1px solid rgba(45,91,255,0.2)', color: '#F9F9F9' }}>
+                      <div className="flex justify-between font-serif text-lg mt-3 pt-3" style={{ borderTop: '1px solid rgba(201,168,76,0.2)', color: '#F9F9F9' }}>
                         <span>Total</span>
                         <span>₦{total.toLocaleString()}</span>
                       </div>
@@ -310,7 +310,7 @@ export default function Book() {
                       onClick={() => canProceedStep2 && setStep(3)}
                       disabled={!canProceedStep2}
                       className="flex items-center gap-2 px-10 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
-                      style={{ height: '52px', backgroundColor: canProceedStep2 ? '#2D5BFF' : '#333', color: canProceedStep2 ? '#F9F9F9' : '#666' }}
+                      style={{ height: '52px', backgroundColor: canProceedStep2 ? '#C9A84C' : '#333', color: canProceedStep2 ? '#F9F9F9' : '#666' }}
                     >
                       Continue <ChevronRight size={16} />
                     </button>
@@ -341,7 +341,7 @@ export default function Book() {
                             onChange={e => setGuestInfo({ ...guestInfo, [field]: e.target.value })}
                             className="w-full h-12 pl-10 pr-4 text-sm bg-transparent outline-none"
                             style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F9F9F9' }}
-                            onFocus={e => { e.currentTarget.style.borderColor = '#2D5BFF'; }}
+                            onFocus={e => { e.currentTarget.style.borderColor = '#C9A84C'; }}
                             onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
                           />
                         </div>
@@ -357,7 +357,7 @@ export default function Book() {
                           onChange={e => setGuestInfo({ ...guestInfo, requests: e.target.value })}
                           className="w-full pl-10 pr-4 py-3 text-sm bg-transparent outline-none resize-none"
                           style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F9F9F9' }}
-                          onFocus={e => { e.target.style.borderColor = '#2D5BFF'; }}
+                          onFocus={e => { e.target.style.borderColor = '#C9A84C'; }}
                           onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; }}
                         />
                       </div>
@@ -372,7 +372,7 @@ export default function Book() {
                       onClick={() => canProceedStep3 && setStep(4)}
                       disabled={!canProceedStep3}
                       className="flex items-center gap-2 px-10 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
-                      style={{ height: '52px', backgroundColor: canProceedStep3 ? '#2D5BFF' : '#333', color: canProceedStep3 ? '#F9F9F9' : '#666' }}
+                      style={{ height: '52px', backgroundColor: canProceedStep3 ? '#C9A84C' : '#333', color: canProceedStep3 ? '#F9F9F9' : '#666' }}
                     >
                       Review Booking <ChevronRight size={16} />
                     </button>
@@ -392,7 +392,7 @@ export default function Book() {
                       <img src={selectedItem?.image_url} alt={selectedItem?.name} className="w-20 h-20 object-cover" />
                       <div>
                         <div className="font-serif text-xl mb-1" style={{ color: '#F9F9F9' }}>{selectedItem?.name}</div>
-                        <div className="text-xs tracking-widest uppercase" style={{ color: '#2D5BFF' }}>
+                        <div className="text-xs tracking-widest uppercase" style={{ color: '#C9A84C' }}>
                           {type === 'stay' ? 'Apartment Stay' : 'Car Rental'}
                         </div>
                       </div>
@@ -432,7 +432,7 @@ export default function Book() {
                   </div>
 
                   <div className="flex items-center gap-2 text-xs mb-6" style={{ color: '#888888' }}>
-                    <Lock size={12} style={{ color: '#2D5BFF' }} />
+                    <Lock size={12} style={{ color: '#C9A84C' }} />
                     Secured by Paystack — Your payment is 256-bit SSL encrypted
                   </div>
 
@@ -444,9 +444,9 @@ export default function Book() {
                       onClick={handlePayment}
                       disabled={loading}
                       className="flex-1 flex items-center justify-center gap-2 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
-                      style={{ backgroundColor: '#2D5BFF', color: '#F9F9F9' }}
+                      style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
                       onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1a45e8'; }}
-                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#2D5BFF'; }}
+                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
                     >
                       {loading ? (
                         <><Loader2 size={18} className="animate-spin" /> Processing...</>
@@ -470,9 +470,9 @@ export default function Book() {
               >
                 <div
                   className="w-20 h-20 flex items-center justify-center mx-auto mb-8"
-                  style={{ backgroundColor: 'rgba(45,91,255,0.1)', border: '1px solid rgba(45,91,255,0.4)' }}
+                  style={{ backgroundColor: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.4)' }}
                 >
-                  <Check size={36} style={{ color: '#2D5BFF' }} />
+                  <Check size={36} style={{ color: '#C9A84C' }} />
                 </div>
                 <h2 className="font-serif text-4xl mb-4" style={{ color: '#F9F9F9' }}>Booking Confirmed!</h2>
                 <p className="text-sm leading-relaxed max-w-md mx-auto mb-3" style={{ color: '#888888' }}>
@@ -486,7 +486,7 @@ export default function Book() {
                     onClick={() => navigate('/')}
                     className="px-10 h-12 text-xs tracking-[0.2em] uppercase transition-all"
                     style={{ border: '1px solid rgba(255,255,255,0.15)', color: '#F9F9F9' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#2D5BFF'; e.currentTarget.style.color = '#2D5BFF'; }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#C9A84C'; e.currentTarget.style.color = '#C9A84C'; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = '#F9F9F9'; }}
                   >
                     Back to Home
@@ -494,7 +494,7 @@ export default function Book() {
                   <button
                     onClick={() => navigate('/contact')}
                     className="px-10 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
-                    style={{ backgroundColor: '#2D5BFF', color: '#F9F9F9' }}
+                    style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
                   >
                     Contact Support
                   </button>
@@ -511,7 +511,7 @@ export default function Book() {
         <section className="py-16 px-6 lg:px-16" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
           <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#2D5BFF' }}>Get Any Problem With The Booking?</div>
+              <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#C9A84C' }}>Get Any Problem With The Booking?</div>
               <h2 className="font-serif font-light text-3xl mb-4" style={{ color: '#F9F9F9' }}>Let our team help you</h2>
               <p className="text-sm leading-relaxed mb-6" style={{ color: '#888888' }}>
                 From selecting the perfect luxury vehicle to arranging your ideal stay, our experienced team is here to make every step effortless.
@@ -523,7 +523,7 @@ export default function Book() {
                   ['Weekend', '6am – 11pm'],
                 ].map(([day, time]) => (
                   <div key={day} className="flex justify-between py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    <span className="text-sm" style={{ color: '#2D5BFF' }}>{day}</span>
+                    <span className="text-sm" style={{ color: '#C9A84C' }}>{day}</span>
                     <span className="text-sm" style={{ color: '#F9F9F9' }}>{time}</span>
                   </div>
                 ))}
@@ -531,9 +531,9 @@ export default function Book() {
               <a
                 href="tel:+2347046007419"
                 className="inline-flex items-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
-                style={{ backgroundColor: '#2D5BFF', color: '#F9F9F9' }}
+                style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
                 onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1a45e8'; }}
-                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#2D5BFF'; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
               >
                 <Phone size={14} />
                 Call: +234 704 600 7419

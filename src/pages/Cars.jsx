@@ -16,7 +16,7 @@ export default function Cars() {
       >
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(5,5,5,0.2), rgba(5,5,5,0.85))' }} />
         <div className="relative z-10 px-6 lg:px-16 w-full">
-          <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#2D5BFF' }}>Home / Cars</div>
+          <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#C9A84C' }}>Home / Cars</div>
           <h1 className="font-serif font-light text-5xl" style={{ color: '#F9F9F9' }}>Cars</h1>
         </div>
       </section>
@@ -25,7 +25,7 @@ export default function Cars() {
       <section className="py-20 px-6 lg:px-16">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#2D5BFF' }}>Our Fleet</div>
+            <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#C9A84C' }}>Our Fleet</div>
             <h2 className="font-serif font-light" style={{ color: '#F9F9F9', fontSize: 'clamp(1.8rem, 4vw, 3.5rem)' }}>
               A luxurious ride to meet your needs
             </h2>
@@ -48,7 +48,7 @@ export default function Cars() {
                     alt={car.name}
                     className="w-full h-full object-cover absolute inset-0 hover:scale-105 transition-transform duration-1000"
                   />
-                  <div className="absolute top-6 left-6 px-3 py-1.5 text-[10px] tracking-[0.2em] uppercase" style={{ backgroundColor: '#2D5BFF', color: '#F9F9F9' }}>
+                  <div className="absolute top-6 left-6 px-3 py-1.5 text-[10px] tracking-[0.2em] uppercase" style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}>
                     {car.style}
                   </div>
                 </div>
@@ -68,7 +68,7 @@ export default function Cars() {
                       { icon: Settings2, label: 'Transmission', value: car.transmission },
                     ].map(({ icon: Icon, label, value }) => (
                       <div key={label} className="flex items-center gap-3 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                        <Icon size={14} style={{ color: '#2D5BFF' }} />
+                        <Icon size={14} style={{ color: '#C9A84C' }} />
                         <div>
                           <div className="text-[10px] tracking-widest uppercase" style={{ color: '#888888' }}>{label}</div>
                           <div className="text-sm font-medium" style={{ color: '#F9F9F9' }}>{value}</div>
@@ -83,7 +83,7 @@ export default function Cars() {
                     <div className="space-y-2">
                       {car.features.map(f => (
                         <div key={f} className="flex items-center gap-2 text-sm" style={{ color: '#888888' }}>
-                          <CheckCircle size={13} style={{ color: '#2D5BFF' }} />
+                          <CheckCircle size={13} style={{ color: '#C9A84C' }} />
                           {f}
                         </div>
                       ))}
@@ -100,9 +100,9 @@ export default function Cars() {
                     <Link
                       to={`/book?type=drive&car=${car.id}`}
                       className="px-8 h-12 flex items-center text-xs tracking-[0.15em] uppercase font-medium transition-all"
-                      style={{ backgroundColor: '#2D5BFF', color: '#F9F9F9' }}
+                      style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
                       onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1a45e8'; }}
-                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#2D5BFF'; }}
+                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
                     >
                       Book This Car
                     </Link>
@@ -125,7 +125,7 @@ export default function Cars() {
         >
           <div className="absolute inset-0" style={{ background: 'rgba(5,5,5,0.82)' }} />
           <div className="relative z-10 max-w-lg">
-            <div className="text-xs tracking-[0.35em] uppercase mb-4" style={{ color: '#2D5BFF' }}>Extend The Journey</div>
+            <div className="text-xs tracking-[0.35em] uppercase mb-4" style={{ color: '#C9A84C' }}>Extend The Journey</div>
             <h2 className="font-serif text-3xl md:text-4xl font-light mb-4" style={{ color: '#F9F9F9' }}>Extend The Journey and Keep the Experience</h2>
             <p className="text-sm leading-relaxed mb-8" style={{ color: '#888888' }}>
               Why settle when the road still has more to offer? When you've promised yourself a drive that matters — giving the journey days and moments your premium life, whether it's one more day or an entire week, your perfect driver doesn't have to arrive.
@@ -133,9 +133,9 @@ export default function Cars() {
             <Link
               to="/book?type=drive"
               className="inline-flex px-8 h-12 items-center text-xs tracking-[0.2em] uppercase font-medium transition-all"
-              style={{ backgroundColor: '#2D5BFF', color: '#F9F9F9' }}
+              style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1a45e8'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#2D5BFF'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
             >
               Extend My Rental Today
             </Link>

@@ -21,11 +21,23 @@ export default function BookingEngine() {
     navigate(`/book?${params.toString()}`);
   };
 
+  const inputStyle = {
+    color: '#F9F9F9',
+    colorScheme: 'dark',
+    backgroundColor: 'transparent',
+    border: 'none',
+    outline: 'none',
+    width: '100%',
+    cursor: 'pointer',
+    fontSize: '0.875rem',
+    fontWeight: '500',
+  };
+
   return (
     <div
-      className="w-full max-w-4xl rounded-sm"
+      className="w-full max-w-4xl"
       style={{
-        backgroundColor: 'rgba(5,5,5,0.8)',
+        backgroundColor: 'rgba(5,5,5,0.85)',
         backdropFilter: 'blur(24px)',
         border: '1px solid rgba(255,255,255,0.1)',
       }}
@@ -42,7 +54,7 @@ export default function BookingEngine() {
             className="flex-1 flex items-center justify-center gap-2 py-4 text-xs tracking-[0.2em] uppercase font-medium transition-all duration-300"
             style={{
               color: mode === key ? '#F9F9F9' : '#888888',
-              borderBottom: mode === key ? '2px solid #2D5BFF' : '2px solid transparent',
+              borderBottom: mode === key ? '2px solid #C9A84C' : '2px solid transparent',
             }}
           >
             <Icon size={14} />
@@ -53,13 +65,14 @@ export default function BookingEngine() {
 
       {/* Inputs */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-0">
+
         {/* Check-In */}
         <div
           className="p-5 flex flex-col gap-1"
           style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}
         >
           <div className="flex items-center gap-2 mb-1">
-            <CalendarDays size={12} style={{ color: '#2D5BFF' }} />
+            <CalendarDays size={12} style={{ color: '#C9A84C' }} />
             <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#888888' }}>
               {mode === 'stay' ? 'Check In' : 'Pick Up'}
             </span>
@@ -69,8 +82,7 @@ export default function BookingEngine() {
             min={today}
             value={checkIn}
             onChange={e => setCheckIn(e.target.value)}
-            className="bg-transparent text-sm font-medium outline-none cursor-pointer"
-            style={{ color: '#F9F9F9', colorScheme: 'dark' }}
+            style={inputStyle}
           />
         </div>
 
@@ -80,7 +92,7 @@ export default function BookingEngine() {
           style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}
         >
           <div className="flex items-center gap-2 mb-1">
-            <CalendarDays size={12} style={{ color: '#2D5BFF' }} />
+            <CalendarDays size={12} style={{ color: '#C9A84C' }} />
             <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#888888' }}>
               {mode === 'stay' ? 'Check Out' : 'Return'}
             </span>
@@ -90,8 +102,7 @@ export default function BookingEngine() {
             min={checkIn || today}
             value={checkOut}
             onChange={e => setCheckOut(e.target.value)}
-            className="bg-transparent text-sm font-medium outline-none cursor-pointer"
-            style={{ color: '#F9F9F9', colorScheme: 'dark' }}
+            style={inputStyle}
           />
         </div>
 
@@ -101,7 +112,7 @@ export default function BookingEngine() {
           style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}
         >
           <div className="flex items-center gap-2 mb-1">
-            <Users size={12} style={{ color: '#2D5BFF' }} />
+            <Users size={12} style={{ color: '#C9A84C' }} />
             <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#888888' }}>
               {mode === 'stay' ? 'Guests' : 'Passengers'}
             </span>
@@ -109,16 +120,16 @@ export default function BookingEngine() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setGuests(Math.max(1, guests - 1))}
-              className="w-6 h-6 flex items-center justify-center text-lg leading-none"
-              style={{ color: '#2D5BFF', border: '1px solid rgba(45,91,255,0.3)' }}
+              className="w-6 h-6 flex items-center justify-center text-base leading-none"
+              style={{ color: '#C9A84C', border: '1px solid rgba(201,168,76,0.3)' }}
             >
               −
             </button>
             <span className="text-sm font-medium" style={{ color: '#F9F9F9' }}>{guests}</span>
             <button
               onClick={() => setGuests(Math.min(10, guests + 1))}
-              className="w-6 h-6 flex items-center justify-center text-lg leading-none"
-              style={{ color: '#2D5BFF', border: '1px solid rgba(45,91,255,0.3)' }}
+              className="w-6 h-6 flex items-center justify-center text-base leading-none"
+              style={{ color: '#C9A84C', border: '1px solid rgba(201,168,76,0.3)' }}
             >
               +
             </button>
@@ -128,10 +139,10 @@ export default function BookingEngine() {
         {/* CTA */}
         <button
           onClick={handleSearch}
-          className="flex items-center justify-center gap-2 p-5 text-xs tracking-[0.15em] uppercase font-medium transition-all duration-200 group"
-          style={{ backgroundColor: '#2D5BFF', color: '#F9F9F9' }}
-          onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1a45e8'; }}
-          onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#2D5BFF'; }}
+          className="flex items-center justify-center gap-2 p-5 text-xs tracking-[0.15em] uppercase font-semibold transition-all duration-200 group"
+          style={{ backgroundColor: '#C9A84C', color: '#050505' }}
+          onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#b8943e'; }}
+          onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
         >
           Check Availability
           <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />

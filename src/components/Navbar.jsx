@@ -38,23 +38,13 @@ export default function Navbar() {
       >
         <div className="flex items-center justify-between px-6 lg:px-12 h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div
-              className="w-10 h-10 flex items-center justify-center"
-              style={{ border: '1px solid rgba(45,91,255,0.5)' }}
-            >
-              <span className="font-serif text-sm font-semibold tracking-wider" style={{ color: '#2D5BFF' }}>
-                FL
-              </span>
-            </div>
-            <div>
-              <div className="font-serif text-base font-semibold tracking-[0.25em]" style={{ color: '#F9F9F9', lineHeight: 1 }}>
-                FRENSIC
-              </div>
-              <div className="text-[9px] tracking-[0.3em] mt-0.5" style={{ color: '#888888' }}>
-                LUXURY APARTMENT
-              </div>
-            </div>
+          <Link to="/" className="flex items-center group">
+            <img
+              src="https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/feaba7ac8_FrensicLuxuryApartmentLogo.png"
+              alt="Frensic Luxury Apartment"
+              className="h-14 w-auto object-contain"
+              style={{ filter: 'drop-shadow(0 0 8px rgba(201,168,76,0.25))' }}
+            />
           </Link>
 
           {/* Desktop Links */}
@@ -64,7 +54,7 @@ export default function Navbar() {
                 key={path}
                 to={path}
                 className="text-xs tracking-[0.15em] uppercase transition-colors duration-200"
-                style={{ color: location.pathname === path ? '#2D5BFF' : '#888888' }}
+                style={{ color: location.pathname === path ? '#C9A84C' : '#888888' }}
                 onMouseEnter={e => { if (location.pathname !== path) e.target.style.color = '#F9F9F9'; }}
                 onMouseLeave={e => { if (location.pathname !== path) e.target.style.color = '#888888'; }}
               >
@@ -78,9 +68,9 @@ export default function Navbar() {
             <Link
               to="/book"
               className="hidden lg:flex items-center px-6 h-11 text-xs tracking-[0.15em] uppercase font-medium transition-all duration-200"
-              style={{ backgroundColor: '#2D5BFF', color: '#F9F9F9' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#1a45e8'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#2D5BFF'; }}
+              style={{ backgroundColor: '#C9A84C', color: '#050505' }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#b8943e'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
             >
               Book Now
             </Link>
@@ -112,7 +102,7 @@ export default function Navbar() {
                   key={path}
                   to={path}
                   className="text-2xl font-serif font-light tracking-widest transition-colors"
-                  style={{ color: location.pathname === path ? '#2D5BFF' : '#F9F9F9' }}
+                  style={{ color: location.pathname === path ? '#C9A84C' : '#F9F9F9' }}
                 >
                   {label}
                 </Link>
@@ -120,10 +110,10 @@ export default function Navbar() {
               <Link
                 to="/book"
                 className="mt-4 px-10 h-14 flex items-center text-sm tracking-[0.2em] uppercase font-medium"
-                style={{ backgroundColor: '#2D5BFF', color: '#F9F9F9' }}
-              >
-                Book Now
-              </Link>
+                style={{ backgroundColor: '#C9A84C', color: '#050505' }}
+                            >
+                              Book Now
+                            </Link>
             </div>
           </motion.div>
         )}

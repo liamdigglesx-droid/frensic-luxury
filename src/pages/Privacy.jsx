@@ -113,7 +113,7 @@ Phone: +234 704 600 7419`
       >
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(5,5,5,0.3), rgba(5,5,5,0.85))' }} />
         <div className="relative z-10 px-6 lg:px-16 w-full">
-          <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#2D5BFF' }}>Home / Privacy Policy</div>
+          <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#C9A84C' }}>Home / Privacy Policy</div>
           <h1 className="font-serif font-light text-5xl" style={{ color: '#F9F9F9' }}>Privacy Policy</h1>
         </div>
       </section>
@@ -122,7 +122,7 @@ Phone: +234 704 600 7419`
       <section className="py-20 px-6 lg:px-16">
         <div className="max-w-7xl mx-auto">
           <div className="mb-12">
-            <div className="text-xs tracking-[0.35em] uppercase mb-4" style={{ color: '#2D5BFF' }}>Who We Are</div>
+            <div className="text-xs tracking-[0.35em] uppercase mb-4" style={{ color: '#C9A84C' }}>Who We Are</div>
             <p className="text-sm leading-relaxed mb-4" style={{ color: '#888888' }}>
               <strong style={{ color: '#F9F9F9' }}>Frensic Luxury Apartment</strong> is committed to protecting your privacy. This policy outlines how we collect, use, and safeguard your personal information when you use our website and services.
             </p>
