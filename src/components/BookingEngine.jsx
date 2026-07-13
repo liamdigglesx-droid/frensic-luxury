@@ -22,9 +22,9 @@ export default function BookingEngine() {
   };
 
   const inputStyle = {
-    color: '#F9F9F9',
-    colorScheme: 'dark',
-    backgroundColor: 'rgba(5,5,5,0.01)',
+    color: '#111111',
+    colorScheme: 'light',
+    backgroundColor: 'transparent',
     border: 'none',
     outline: 'none',
     width: '100%',
@@ -69,11 +69,11 @@ export default function BookingEngine() {
         {/* Check-In */}
         <div
           className="p-5 flex flex-col gap-1"
-          style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}
+          style={{ borderRight: '1px solid rgba(255,255,255,0.06)', backgroundColor: '#ffffff' }}
         >
           <div className="flex items-center gap-2 mb-1">
             <CalendarDays size={12} style={{ color: '#C9A84C' }} />
-            <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#888888' }}>
+            <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#555555' }}>
               {mode === 'stay' ? 'Check In' : 'Pick Up'}
             </span>
           </div>
@@ -92,11 +92,11 @@ export default function BookingEngine() {
         {/* Check-Out */}
         <div
           className="p-5 flex flex-col gap-1"
-          style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}
+          style={{ borderRight: '1px solid rgba(255,255,255,0.06)', backgroundColor: '#ffffff' }}
         >
           <div className="flex items-center gap-2 mb-1">
             <CalendarDays size={12} style={{ color: '#C9A84C' }} />
-            <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#888888' }}>
+            <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#555555' }}>
               {mode === 'stay' ? 'Check Out' : 'Return'}
             </span>
           </div>
