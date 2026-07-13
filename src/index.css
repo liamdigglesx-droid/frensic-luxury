@@ -70,7 +70,7 @@
   }
 
   input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(1) sepia(1) saturate(3) hue-rotate(5deg) brightness(1.4);
+    filter: invert(1) brightness(2);
     opacity: 1;
     cursor: pointer;
     width: 18px;
