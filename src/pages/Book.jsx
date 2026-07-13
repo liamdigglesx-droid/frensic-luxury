@@ -48,8 +48,9 @@ export default function Book() {
     if (!canProceedStep3) return;
     setLoading(true);
 
+    let booking;
     try {
-      const booking = await base44.entities.Booking.create({
+      booking = await base44.entities.Booking.create({
         booking_type: type,
         item_id: selectedItem.id,
         item_name: selectedItem.name,
@@ -66,37 +67,40 @@ export default function Book() {
         total_amount: total,
         payment_status: 'pending',
       });
-
+    } catch (err) {
       setLoading(false);
+      alert('Could not create booking. Please try again.');
+      return;
+    }
 
-      initPaystack({
-        email: guestInfo.email,
-        amount: total,
-        ref: `FRENSIC_${booking.id.slice(-8).toUpperCase()}_${Date.now()}`,
-        onSuccess: async (response) => {
-          const updatedBooking = await base44.entities.Booking.update(booking.id, {
+    setLoading(false);
+
+    initPaystack({
+      email: guestInfo.email,
+      amount: total,
+      ref: `FRENSIC_${booking.id.slice(-8).toUpperCase()}_${Date.now()}`,
+      onSuccess: async (response) => {
+        try {
+          await base44.entities.Booking.update(booking.id, {
             payment_status: 'paid',
             payment_reference: response.reference,
           });
-          const confirmedBooking = {
-            ...booking,
-            payment_reference: response.reference,
-            payment_status: 'paid',
-          };
-          // Send confirmation email + add to Google Calendar (fire-and-forget)
-          base44.functions.invoke('sendBookingConfirmation', { booking: confirmedBooking }).catch(() => {});
-          base44.functions.invoke('addBookingToCalendar', { booking: confirmedBooking }).catch(() => {});
-          setBooked(true);
-          setStep(5);
-        },
-        onClose: async () => {
-          await base44.entities.Booking.update(booking.id, { payment_status: 'failed' });
-        },
-      });
-    } catch (err) {
-      setLoading(false);
-      alert('Booking error. Please try again.');
-    }
+        } catch (e) {}
+        const confirmedBooking = {
+          ...booking,
+          payment_reference: response.reference,
+          payment_status: 'paid',
+        };
+        // Send confirmation email + add to Google Calendar (fire-and-forget)
+        base44.functions.invoke('sendBookingConfirmation', { booking: confirmedBooking }).catch(() => {});
+        base44.functions.invoke('addBookingToCalendar', { booking: confirmedBooking }).catch(() => {});
+        setBooked(true);
+        setStep(5);
+      },
+      onClose: () => {
+        base44.entities.Booking.update(booking.id, { payment_status: 'failed' }).catch(() => {});
+      },
+    });
   };
 
   const stepLabels = ['Select', 'Dates', 'Details', 'Confirm'];
