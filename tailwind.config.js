@@ -62,9 +62,10 @@ module.exports = {
   			}
   		},
   		fontFamily: {
-  			heading: ['var(--font-heading)'],
-  			body: ['var(--font-body)'],
-  			display: ['var(--font-display)'],
+  			heading: ['var(--font-heading)', 'Cormorant Garamond', 'Georgia', 'serif'],
+  			body: ['var(--font-body)', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+  			display: ['var(--font-display)', 'Cormorant Garamond', 'Georgia', 'serif'],
+  			serif: ['Cormorant Garamond', 'Georgia', 'serif'],
   			mono: ['var(--font-mono)']
   		},
   		keyframes: {
