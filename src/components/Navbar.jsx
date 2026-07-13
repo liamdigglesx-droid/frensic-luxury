@@ -9,8 +9,8 @@ const links = [
   { label: 'Rooms', path: '/rooms' },
   { label: 'Cars', path: '/cars' },
   { label: 'Reviews', path: '/reviews' },
+  { label: 'My Bookings', path: '/my-bookings' },
   { label: 'Contact', path: '/contact' },
-  { label: 'Privacy Policy', path: '/privacy' },
 ];
 
 export default function Navbar() {

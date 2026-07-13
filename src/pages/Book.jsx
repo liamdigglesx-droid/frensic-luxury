@@ -78,14 +78,14 @@ export default function Book() {
             payment_status: 'paid',
             payment_reference: response.reference,
           });
-          // Send confirmation email via Gmail
-          base44.functions.invoke('sendBookingConfirmation', {
-            booking: {
-              ...booking,
-              payment_reference: response.reference,
-              payment_status: 'paid',
-            },
-          }).catch(() => {}); // fire-and-forget — don't block the UI
+          const confirmedBooking = {
+            ...booking,
+            payment_reference: response.reference,
+            payment_status: 'paid',
+          };
+          // Send confirmation email + add to Google Calendar (fire-and-forget)
+          base44.functions.invoke('sendBookingConfirmation', { booking: confirmedBooking }).catch(() => {});
+          base44.functions.invoke('addBookingToCalendar', { booking: confirmedBooking }).catch(() => {});
           setBooked(true);
           setStep(5);
         },

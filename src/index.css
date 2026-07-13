@@ -70,9 +70,11 @@
   }
 
   input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(1) sepia(1) saturate(2) hue-rotate(5deg);
-    opacity: 0.7;
+    filter: invert(1) sepia(1) saturate(3) hue-rotate(5deg) brightness(1.4);
+    opacity: 1;
     cursor: pointer;
+    width: 18px;
+    height: 18px;
   }
 
   input[type="date"] {

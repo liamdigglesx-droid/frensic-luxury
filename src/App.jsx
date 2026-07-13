@@ -17,6 +17,7 @@ import Book from './pages/Book';
 import Reviews from './pages/Reviews';
 import Contact from './pages/Contact';
 import Privacy from './pages/Privacy';
+import MyBookings from './pages/MyBookings';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -45,6 +46,7 @@ const AuthenticatedApp = () => {
         <Route path="/reviews" element={<Reviews />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/my-bookings" element={<MyBookings />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

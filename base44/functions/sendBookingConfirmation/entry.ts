@@ -139,26 +139,39 @@ Deno.serve(async (req) => {
 
     const subject = `Booking Confirmed — ${booking.item_name || 'Frensic Luxury'}`;
     const html = buildEmailHtml(booking);
-    const raw = buildMimeEmail({
+    // Also send a copy to the business email
+    const rawGuest = buildMimeEmail({
       to: booking.guest_email,
       subject,
       html,
       fromName: 'Frensic Luxury Apartment',
     });
-
-    const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ raw }),
+    const rawBusiness = buildMimeEmail({
+      to: 'info@frensicluxuryapartments.com.ng',
+      subject: `[NEW BOOKING] ${booking.item_name} — ${booking.guest_name || booking.guest_email}`,
+      html,
+      fromName: 'Frensic Luxury Apartment',
     });
 
-    if (!res.ok) {
-      const err = await res.text();
-      return Response.json({ error: `Gmail API error: ${err}` }, { status: 500 });
-    }
+    const sendMail = async (raw) => {
+      const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ raw }),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(`Gmail API error: ${err}`);
+      }
+      return res.json();
+    };
+
+    await sendMail(rawGuest);
+    // Send business copy — don't fail the whole request if this fails
+    sendMail(rawBusiness).catch(() => {});
 
     return Response.json({ success: true });
   } catch (error) {
