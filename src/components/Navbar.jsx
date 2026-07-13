@@ -40,7 +40,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center group">
             <img
-              src="https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/feaba7ac8_FrensicLuxuryApartmentLogo.png"
+              src="https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/622215c82_FrensicLuxuryApartmentLogo.png"
               alt="Frensic Luxury Apartment"
               className="h-14 w-auto object-contain"
               style={{ filter: 'drop-shadow(0 0 8px rgba(201,168,76,0.25))' }}
