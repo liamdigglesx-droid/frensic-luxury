@@ -149,6 +149,8 @@ export default function AdminBookings() {
                               ['Chauffeur', b.chauffeur ? 'Yes' : 'No'],
                               ['Unit Price', `₦${(b.unit_price || 0).toLocaleString()}`],
                               ['Full Ref', b.payment_reference || '—'],
+                              ['Payment Method', b.payment_method === 'bank_transfer' ? 'Bank Transfer' : b.payment_method === 'paystack' ? 'Paystack' : '—'],
+                              ['Transfer Status', b.transfer_status ? b.transfer_status.replaceAll('_', ' ') : '—'],
                               ['Special Requests', b.special_requests || 'None'],
                               ['Booked On', b.created_date ? new Date(b.created_date).toLocaleDateString() : '—'],
                             ].map(([label, val]) => (
@@ -158,6 +160,11 @@ export default function AdminBookings() {
                               </div>
                             ))}
                           </div>
+                          {b.payment_receipt_url && (
+                            <a href={b.payment_receipt_url} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 text-xs uppercase tracking-widest" style={{ color: GOLD }}>
+                              <Download size={13} /> View Payment Receipt
+                            </a>
+                          )}
                         </td>
                       </tr>
                     )}

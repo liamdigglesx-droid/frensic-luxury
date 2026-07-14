@@ -9,6 +9,7 @@ import { ROOMS, CARS } from '@/lib/constants';
 import { base44 } from '@/api/base44Client';
 import { initPaystack } from '@/lib/paystack';
 import AvailabilityBadge from '@/components/AvailabilityBadge';
+import BankTransferDialog from '@/components/BankTransferDialog';
 
 export default function Book() {
   const navigate = useNavigate();
@@ -26,6 +27,9 @@ export default function Book() {
   const [loading, setLoading] = useState(false);
   const [paymentError, setPaymentError] = useState('');
   const [booked, setBooked] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [transferBooking, setTransferBooking] = useState(null);
+  const [transferLoading, setTransferLoading] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -46,6 +50,26 @@ export default function Book() {
   const canProceedStep2 = startDate && endDate && new Date(endDate) > new Date(startDate);
   const canProceedStep3 = guestInfo.name && guestInfo.email && guestInfo.phone;
 
+  const createPendingBooking = (paymentMethod) => base44.entities.Booking.create({
+    booking_type: type,
+    item_id: selectedItem.id,
+    item_name: selectedItem.name,
+    start_date: startDate,
+    end_date: endDate,
+    guest_name: guestInfo.name,
+    guest_email: guestInfo.email,
+    guest_phone: guestInfo.phone,
+    guests_count: guests,
+    chauffeur,
+    special_requests: guestInfo.requests,
+    nights_or_days: nights,
+    unit_price: unitPrice,
+    total_amount: total,
+    payment_status: 'pending',
+    payment_method: paymentMethod,
+    ...(paymentMethod === 'bank_transfer' ? { transfer_status: 'awaiting_payment' } : {}),
+  });
+
   const handlePayment = async () => {
     if (!canProceedStep3 || loading) return;
     setLoading(true);
@@ -53,23 +77,7 @@ export default function Book() {
 
     let booking;
     try {
-      booking = await base44.entities.Booking.create({
-        booking_type: type,
-        item_id: selectedItem.id,
-        item_name: selectedItem.name,
-        start_date: startDate,
-        end_date: endDate,
-        guest_name: guestInfo.name,
-        guest_email: guestInfo.email,
-        guest_phone: guestInfo.phone,
-        guests_count: guests,
-        chauffeur,
-        special_requests: guestInfo.requests,
-        nights_or_days: nights,
-        unit_price: unitPrice,
-        total_amount: total,
-        payment_status: 'pending',
-      });
+      booking = await createPendingBooking('paystack');
     } catch (err) {
       setLoading(false);
       alert('Could not create booking. Please try again.');
@@ -107,6 +115,21 @@ export default function Book() {
       setLoading(false);
       setPaymentError('Payment gateway could not open. Check your connection and try again.');
       base44.entities.Booking.update(booking.id, { payment_status: 'failed' }).catch(() => {});
+    }
+  };
+
+  const handleBankTransfer = async () => {
+    if (transferLoading) return;
+    setTransferLoading(true);
+    setPaymentError('');
+    try {
+      const booking = transferBooking || await createPendingBooking('bank_transfer');
+      setTransferBooking(booking);
+      setTransferOpen(true);
+    } catch {
+      setPaymentError('Could not start bank transfer. Please try again.');
+    } finally {
+      setTransferLoading(false);
     }
   };
 
@@ -484,6 +507,14 @@ export default function Book() {
                       <ChevronLeft size={16} /> Back
                     </button>
                     <button
+                      onClick={handleBankTransfer}
+                      disabled={transferLoading}
+                      className="flex-1 flex items-center justify-center gap-2 h-14 px-5 text-xs tracking-[0.15em] uppercase font-medium transition-all"
+                      style={{ border: '1px solid #C9A84C', color: '#C9A84C' }}
+                    >
+                      {transferLoading ? <Loader2 size={18} className="animate-spin" /> : 'Pay by Bank Transfer'}
+                    </button>
+                    <button
                       onClick={handlePayment}
                       disabled={loading}
                       className="flex-1 flex items-center justify-center gap-2 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
@@ -548,6 +579,13 @@ export default function Book() {
           </AnimatePresence>
         </div>
       </section>
+
+      <BankTransferDialog
+        open={transferOpen}
+        onOpenChange={setTransferOpen}
+        booking={transferBooking}
+        total={total}
+      />
 
       {/* Support Section */}
       {step <= 4 && (

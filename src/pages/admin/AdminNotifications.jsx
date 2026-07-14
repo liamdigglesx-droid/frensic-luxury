@@ -9,7 +9,17 @@ function buildNotifications(bookings, messages) {
   const notifs = [];
 
   bookings.forEach(b => {
-    if (b.payment_status === 'paid') {
+    if (b.transfer_status === 'receipt_submitted') {
+      notifs.push({
+        id: `booking-receipt-${b.id}`,
+        type: 'booking_receipt',
+        icon: b.booking_type === 'stay' ? Building2 : Car,
+        title: 'Payment Receipt Submitted',
+        body: `${b.guest_name || b.guest_email} uploaded a bank transfer receipt for ${b.item_name} — ₦${(b.total_amount || 0).toLocaleString()}`,
+        time: b.receipt_submitted_at || b.updated_date,
+        color: GOLD,
+      });
+    } else if (b.payment_status === 'paid') {
       notifs.push({
         id: `booking-paid-${b.id}`,
         type: 'booking_paid',

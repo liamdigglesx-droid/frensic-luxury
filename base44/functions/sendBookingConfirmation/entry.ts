@@ -125,11 +125,20 @@ function buildEmailHtml(booking) {
 </html>`;
 }
 
+function buildReceiptEmailHtml(booking) {
+  return `<div style="background:#050505;color:#F9F9F9;padding:32px;font-family:Arial,sans-serif;">
+    <h1 style="color:#C9A84C;font-weight:400;">Payment receipt submitted</h1>
+    <p><strong>${booking.guest_name || booking.guest_email}</strong> uploaded a bank-transfer receipt.</p>
+    <p>Booking: ${booking.item_name || 'N/A'}<br>Total: ₦${Number(booking.total_amount || 0).toLocaleString()}<br>Email: ${booking.guest_email}<br>Phone: ${booking.guest_phone || 'N/A'}</p>
+    <p><a href="${booking.payment_receipt_url}" style="color:#C9A84C;">View payment receipt</a></p>
+  </div>`;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
-    const { booking } = body;
+    const { booking, notificationType } = body;
 
     if (!booking || !booking.guest_email) {
       return Response.json({ error: 'Missing booking or guest_email' }, { status: 400 });
@@ -137,10 +146,12 @@ Deno.serve(async (req) => {
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
 
-    const subject = `Booking Confirmed — ${booking.item_name || 'Frensic Luxury'}`;
-    const html = buildEmailHtml(booking);
-    // Also send a copy to the business email
-    const rawGuest = buildMimeEmail({
+    const isReceiptNotification = notificationType === 'receipt_submitted';
+    const subject = isReceiptNotification
+      ? `Payment Receipt Submitted — ${booking.item_name || 'Frensic Luxury'}`
+      : `Booking Confirmed — ${booking.item_name || 'Frensic Luxury'}`;
+    const html = isReceiptNotification ? buildReceiptEmailHtml(booking) : buildEmailHtml(booking);
+    const rawGuest = isReceiptNotification ? null : buildMimeEmail({
       to: booking.guest_email,
       subject,
       html,
@@ -148,7 +159,7 @@ Deno.serve(async (req) => {
     });
     const rawBusiness = buildMimeEmail({
       to: 'info@frensicluxuryapartments.com.ng',
-      subject: `[NEW BOOKING] ${booking.item_name} — ${booking.guest_name || booking.guest_email}`,
+      subject: isReceiptNotification ? `[PAYMENT RECEIPT] ${booking.item_name} — ${booking.guest_name || booking.guest_email}` : `[NEW BOOKING] ${booking.item_name} — ${booking.guest_name || booking.guest_email}`,
       html,
       fromName: 'Frensic Luxury Apartment',
     });
@@ -169,9 +180,13 @@ Deno.serve(async (req) => {
       return res.json();
     };
 
-    await sendMail(rawGuest);
-    // Send business copy — don't fail the whole request if this fails
-    sendMail(rawBusiness).catch(() => {});
+    if (rawGuest) await sendMail(rawGuest);
+    if (isReceiptNotification) {
+      await sendMail(rawBusiness);
+    } else {
+      // Send business copy — don't fail the guest confirmation if this fails
+      sendMail(rawBusiness).catch(() => {});
+    }
 
     return Response.json({ success: true });
   } catch (error) {
