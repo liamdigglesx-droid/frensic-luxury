@@ -2,42 +2,35 @@ export const PAYSTACK_PUBLIC_KEY = 'pk_live_b6e71ec92562ab614f93c9e7a7de85c5b13a
 
 function waitForPaystack() {
   return new Promise((resolve, reject) => {
-    // Already loaded
     if (window.PaystackPop) return resolve();
 
     const script = document.getElementById('paystack-inline-js');
     if (!script) return reject(new Error('Paystack script not found'));
+    if (script.dataset.loaded === 'true') return reject(new Error('Paystack did not initialize'));
 
-    // Already finished loading but PaystackPop not set — shouldn't happen, but guard
-    if (script.dataset.loaded === 'true') return resolve();
-
-    script.addEventListener('load', () => resolve());
-    script.addEventListener('error', () => reject(new Error('Paystack script failed to load')));
+    const timeout = window.setTimeout(() => reject(new Error('Paystack timed out')), 10000);
+    script.addEventListener('load', () => {
+      window.clearTimeout(timeout);
+      window.PaystackPop ? resolve() : reject(new Error('Paystack did not initialize'));
+    }, { once: true });
+    script.addEventListener('error', () => {
+      window.clearTimeout(timeout);
+      reject(new Error('Paystack script failed to load'));
+    }, { once: true });
   });
 }
 
 export async function initPaystack({ email, amount, ref, onSuccess, onClose }) {
-  try {
-    await waitForPaystack();
-  } catch (e) {
-    alert('Payment gateway failed to load. Please check your connection and try again.');
-    return;
-  }
+  await waitForPaystack();
 
-  if (!window.PaystackPop) {
-    alert('Payment gateway unavailable. Please refresh the page and try again.');
-    return;
-  }
-
-  const handler = window.PaystackPop.setup({
+  const popup = new window.PaystackPop();
+  popup.newTransaction({
     key: PAYSTACK_PUBLIC_KEY,
     email,
-    amount: Math.round(amount * 100), // kobo
+    amount: Math.round(amount * 100),
     currency: 'NGN',
-    ref: ref || `FRENSIC_${Date.now()}_${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
-    callback: onSuccess,
-    onClose: onClose || (() => {}),
+    reference: ref || `FRENSIC_${Date.now()}_${Math.random().toString(36).slice(2, 7).toUpperCase()}`,
+    onSuccess,
+    onCancel: onClose || (() => {}),
   });
-
-  handler.openIframe();
 }

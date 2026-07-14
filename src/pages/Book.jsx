@@ -24,6 +24,7 @@ export default function Book() {
   const [chauffeur, setChauffeur] = useState(false);
   const [guestInfo, setGuestInfo] = useState({ name: '', email: '', phone: '', requests: '' });
   const [loading, setLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
   const [booked, setBooked] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
@@ -46,8 +47,9 @@ export default function Book() {
   const canProceedStep3 = guestInfo.name && guestInfo.email && guestInfo.phone;
 
   const handlePayment = async () => {
-    if (!canProceedStep3) return;
+    if (!canProceedStep3 || loading) return;
     setLoading(true);
+    setPaymentError('');
 
     let booking;
     try {
@@ -74,34 +76,38 @@ export default function Book() {
       return;
     }
 
-    setLoading(false);
-
-    initPaystack({
-      email: guestInfo.email,
-      amount: total,
-      ref: `FRENSIC_${booking.id.slice(-8).toUpperCase()}_${Date.now()}`,
-      onSuccess: async (response) => {
-        try {
-          await base44.entities.Booking.update(booking.id, {
-            payment_status: 'paid',
-            payment_reference: response.reference,
-          });
-        } catch (e) {}
-        const confirmedBooking = {
-          ...booking,
-          payment_reference: response.reference,
-          payment_status: 'paid',
-        };
-        // Send confirmation email + add to Google Calendar (fire-and-forget)
-        base44.functions.invoke('sendBookingConfirmation', { booking: confirmedBooking }).catch(() => {});
-        base44.functions.invoke('addBookingToCalendar', { booking: confirmedBooking }).catch(() => {});
-        setBooked(true);
-        setStep(5);
-      },
-      onClose: () => {
-        base44.entities.Booking.update(booking.id, { payment_status: 'failed' }).catch(() => {});
-      },
-    });
+    try {
+      await initPaystack({
+        email: guestInfo.email,
+        amount: total,
+        ref: `FRENSIC_${booking.id.slice(-8).toUpperCase()}_${Date.now()}`,
+        onSuccess: async (response) => {
+          try {
+            await base44.entities.Booking.update(booking.id, {
+              payment_status: 'paid',
+              payment_reference: response.reference,
+            });
+            const confirmedBooking = { ...booking, payment_reference: response.reference, payment_status: 'paid' };
+            base44.functions.invoke('sendBookingConfirmation', { booking: confirmedBooking }).catch(() => {});
+            base44.functions.invoke('addBookingToCalendar', { booking: confirmedBooking }).catch(() => {});
+            setBooked(true);
+            setStep(5);
+          } catch {
+            setPaymentError('Payment succeeded, but confirmation could not be saved. Please contact support with your payment reference.');
+          } finally {
+            setLoading(false);
+          }
+        },
+        onClose: () => {
+          setLoading(false);
+          base44.entities.Booking.update(booking.id, { payment_status: 'failed' }).catch(() => {});
+        },
+      });
+    } catch {
+      setLoading(false);
+      setPaymentError('Payment gateway could not open. Check your connection and try again.');
+      base44.entities.Booking.update(booking.id, { payment_status: 'failed' }).catch(() => {});
+    }
   };
 
   const stepLabels = ['Select', 'Dates', 'Details', 'Confirm'];
@@ -468,6 +474,10 @@ export default function Book() {
                     <Lock size={12} style={{ color: '#C9A84C' }} />
                     Secured by Paystack — Your payment is 256-bit SSL encrypted
                   </div>
+
+                  {paymentError && (
+                    <p className="text-sm mb-5" role="alert" style={{ color: '#f87171' }}>{paymentError}</p>
+                  )}
 
                   <div className="flex flex-col sm:flex-row gap-4">
                     <button onClick={() => setStep(3)} className="flex items-center justify-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase transition-all" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#888888' }}>
