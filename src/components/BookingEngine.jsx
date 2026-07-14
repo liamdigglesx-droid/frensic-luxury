@@ -73,7 +73,7 @@ export default function BookingEngine() {
         >
           <div className="flex items-center gap-2 mb-1">
             <CalendarDays size={12} style={{ color: '#C9A84C' }} />
-            <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#888888' }}>
+            <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#aaaaaa' }}>
               {mode === 'stay' ? 'Check In' : 'Pick Up'}
             </span>
           </div>
@@ -96,7 +96,7 @@ export default function BookingEngine() {
         >
           <div className="flex items-center gap-2 mb-1">
             <CalendarDays size={12} style={{ color: '#C9A84C' }} />
-            <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#888888' }}>
+            <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#aaaaaa' }}>
               {mode === 'stay' ? 'Check Out' : 'Return'}
             </span>
           </div>
@@ -116,7 +116,7 @@ export default function BookingEngine() {
         >
           <div className="flex items-center gap-2 mb-1">
             <Users size={12} style={{ color: '#C9A84C' }} />
-            <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#888888' }}>
+            <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#aaaaaa' }}>
               {mode === 'stay' ? 'Guests' : 'Passengers'}
             </span>
           </div>

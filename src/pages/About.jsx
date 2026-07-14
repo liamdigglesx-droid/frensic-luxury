@@ -36,16 +36,16 @@ export default function About() {
       {/* Main Content */}
       <section className="py-24 px-6 lg:px-16">
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-base leading-relaxed mb-6" style={{ color: '#888888' }}>
+          <p className="text-base leading-relaxed mb-6" style={{ color: '#aaaaaa' }}>
             <strong style={{ color: '#F9F9F9' }}>Frensic Luxury</strong> is a premium lifestyle and hospitality brand dedicated to delivering exceptional luxury transportation and accommodation experiences. We specialize in luxury automobile rentals, executive chauffeur services, airport transfers, and a beautifully furnished 5-bedroom luxury apartment designed to provide comfort, elegance, and convenience for every guest.
           </p>
-          <p className="text-base leading-relaxed mb-6" style={{ color: '#888888' }}>
+          <p className="text-base leading-relaxed mb-6" style={{ color: '#aaaaaa' }}>
             Founded on the principles of excellence, professionalism, and customer satisfaction, Frensic Luxury was created to redefine the way people travel and stay. Whether you're a business executive, tourist, family, couple, or event guest, we provide personalized services that combine sophistication with reliability, ensuring every journey and every stay is truly memorable.
           </p>
-          <p className="text-base leading-relaxed mb-6" style={{ color: '#888888' }}>
+          <p className="text-base leading-relaxed mb-6" style={{ color: '#aaaaaa' }}>
             Our fleet of meticulously maintained luxury vehicles offers the perfect solution for corporate travel, weddings, special occasions, airport transfers, vacations, and everyday luxury. Complementing our transportation services is our spacious luxury apartment, thoughtfully designed with modern amenities, stylish interiors, and premium comforts to create a relaxing home away from home.
           </p>
-          <p className="text-base leading-relaxed mb-6" style={{ color: '#888888' }}>
+          <p className="text-base leading-relaxed mb-6" style={{ color: '#aaaaaa' }}>
             At Frensic Luxury, every detail matters. From seamless online bookings and transparent pricing to professional chauffeurs and dedicated customer support, we are committed to providing a first-class experience from beginning to end.
           </p>
           <p className="text-lg font-serif italic" style={{ color: '#F9F9F9' }}>
@@ -68,7 +68,7 @@ export default function About() {
               style={{ borderRight: i < 3 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}
             >
               <div className="font-serif text-4xl md:text-5xl mb-2" style={{ color: '#C9A84C' }}>{s.value}</div>
-              <div className="text-xs tracking-[0.2em] uppercase" style={{ color: '#888888' }}>{s.label}</div>
+              <div className="text-xs tracking-[0.2em] uppercase" style={{ color: '#aaaaaa' }}>{s.label}</div>
             </motion.div>
           ))}
         </div>
@@ -80,10 +80,10 @@ export default function About() {
           <div>
             <div className="text-xs tracking-[0.35em] uppercase mb-4" style={{ color: '#C9A84C' }}>Our Mission</div>
             <h2 className="font-serif font-light text-4xl mb-6" style={{ color: '#F9F9F9' }}>Built on Trust, Driven by Excellence</h2>
-            <p className="text-sm leading-relaxed mb-4" style={{ color: '#888888' }}>
+            <p className="text-sm leading-relaxed mb-4" style={{ color: '#aaaaaa' }}>
               Our mission is to exceed expectations by delivering world-class luxury services built on trust, safety, integrity, and exceptional hospitality. As we continue to grow, we remain focused on becoming one of Africa's most respected luxury mobility and hospitality brands, known for quality, innovation, and outstanding customer care.
             </p>
-            <p className="text-sm leading-relaxed" style={{ color: '#888888' }}>
+            <p className="text-sm leading-relaxed" style={{ color: '#aaaaaa' }}>
               Whether you're planning a business trip, celebrating a special occasion, enjoying a family vacation, or simply seeking the finest in luxury transportation and accommodation, Frensic Luxury is your trusted partner.
             </p>
           </div>
@@ -119,7 +119,7 @@ export default function About() {
                   <Icon size={18} />
                 </div>
                 <h3 className="font-serif text-lg mb-3" style={{ color: '#F9F9F9' }}>{title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: '#888888' }}>{desc}</p>
+                <p className="text-sm leading-relaxed" style={{ color: '#aaaaaa' }}>{desc}</p>
               </motion.div>
             ))}
           </div>

@@ -42,7 +42,7 @@ export default function Contact() {
             <h2 className="font-serif font-light mb-6" style={{ color: '#F9F9F9', fontSize: 'clamp(2rem, 4vw, 3.2rem)' }}>
               Don't hesitate to reach our team. We are ready to help
             </h2>
-            <p className="text-sm leading-relaxed mb-12" style={{ color: '#888888' }}>
+            <p className="text-sm leading-relaxed mb-12" style={{ color: '#aaaaaa' }}>
               Whether you have questions about our luxury vehicles, apartment reservations, pricing, availability, or special requests, our dedicated team is just a message or call away. We're committed to providing prompt, friendly, and personalized assistance to ensure your experience with Frensic Luxury is seamless from start to finish.
             </p>
 
@@ -62,7 +62,7 @@ export default function Contact() {
                     <Icon size={16} />
                   </div>
                   <div>
-                    <div className="text-xs tracking-[0.2em] uppercase mb-1" style={{ color: '#888888' }}>{label}</div>
+                    <div className="text-xs tracking-[0.2em] uppercase mb-1" style={{ color: '#aaaaaa' }}>{label}</div>
                     <div className="text-sm" style={{ color: '#F9F9F9' }}>{value}</div>
                   </div>
                 </div>
@@ -88,7 +88,7 @@ export default function Contact() {
               <div className="h-full flex flex-col items-center justify-center text-center gap-6 p-12" style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}>
                 <CheckCircle size={48} style={{ color: '#C9A84C' }} />
                 <h3 className="font-serif text-2xl" style={{ color: '#F9F9F9' }}>Message Received</h3>
-                <p className="text-sm leading-relaxed" style={{ color: '#888888' }}>
+                <p className="text-sm leading-relaxed" style={{ color: '#aaaaaa' }}>
                   Thank you for reaching out. Our team will get back to you within 24 hours.
                 </p>
                 <button
@@ -109,7 +109,7 @@ export default function Contact() {
                   { field: 'subject', label: 'Subject', type: 'text', required: false },
                 ].map(({ field, label, type, required }) => (
                   <div key={field}>
-                    <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#888888' }}>{label}</label>
+                    <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>{label}</label>
                     <input
                       type={type}
                       required={required}
@@ -127,7 +127,7 @@ export default function Contact() {
                   </div>
                 ))}
                 <div>
-                  <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#888888' }}>Message</label>
+                  <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>Message</label>
                   <textarea
                     required
                     rows={5}

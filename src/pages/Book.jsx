@@ -199,7 +199,7 @@ export default function Book() {
                       </div>
                       <div className="p-4">
                         <div className="font-serif text-base mb-1" style={{ color: '#F9F9F9' }}>{item.name}</div>
-                        <div className="text-xs" style={{ color: '#888888' }}>
+                        <div className="text-xs" style={{ color: '#aaaaaa' }}>
                           {type === 'stay' ? `₦${item.price_per_night.toLocaleString()} / night` : `₦${item.price_per_day.toLocaleString()} / day`}
                         </div>
                       </div>
@@ -235,7 +235,7 @@ export default function Book() {
                       <img src={selectedItem?.image_url} alt={selectedItem?.name} className="w-16 h-16 object-cover" />
                       <div>
                         <div className="font-serif text-xl" style={{ color: '#F9F9F9' }}>{selectedItem?.name}</div>
-                        <div className="text-xs mt-1" style={{ color: '#888888' }}>
+                        <div className="text-xs mt-1" style={{ color: '#aaaaaa' }}>
                           {type === 'stay' ? `₦${selectedItem?.price_per_night?.toLocaleString()} / night` : `₦${selectedItem?.price_per_day?.toLocaleString()} / day`}
                         </div>
                       </div>
@@ -243,7 +243,7 @@ export default function Book() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#888888' }}>
+                        <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>
                           {type === 'stay' ? 'Check-In Date' : 'Pick-Up Date'}
                         </label>
                         <input
@@ -266,7 +266,7 @@ export default function Book() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#888888' }}>
+                        <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>
                           {type === 'stay' ? 'Check-Out Date' : 'Return Date'}
                         </label>
                         <input
@@ -288,7 +288,7 @@ export default function Book() {
                     </div>
 
                     <div className="mt-5">
-                      <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#888888' }}>
+                      <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>
                         {type === 'stay' ? 'Number of Guests' : 'Number of Passengers'}
                       </label>
                       <div className="flex items-center gap-4">
@@ -306,7 +306,7 @@ export default function Book() {
                           onChange={e => setChauffeur(e.target.checked)}
                           className="w-4 h-4 accent-yellow-500"
                         />
-                        <span className="text-sm" style={{ color: '#888888' }}>Add Chauffeur Service (+₦30,000/day)</span>
+                        <span className="text-sm" style={{ color: '#aaaaaa' }}>Add Chauffeur Service (+₦30,000/day)</span>
                       </label>
                     )}
                   </div>
@@ -314,12 +314,12 @@ export default function Book() {
                   {startDate && endDate && canProceedStep2 && (
                     <div className="p-5 mb-8" style={{ backgroundColor: 'rgba(201,168,76,0.07)', border: '1px solid rgba(201,168,76,0.2)' }}>
                       <div className="text-xs tracking-widest uppercase mb-3" style={{ color: '#C9A84C' }}>Booking Summary</div>
-                      <div className="flex justify-between text-sm mb-2" style={{ color: '#888888' }}>
+                      <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
                         <span>{selectedItem?.name}</span>
                         <span>₦{unitPrice?.toLocaleString()} × {nights} {type === 'stay' ? 'nights' : 'days'}</span>
                       </div>
                       {chauffeur && (
-                        <div className="flex justify-between text-sm mb-2" style={{ color: '#888888' }}>
+                        <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
                           <span>Chauffeur Service</span>
                           <span>₦{(chauffeurFee).toLocaleString()}</span>
                         </div>
@@ -364,9 +364,9 @@ export default function Book() {
                       { field: 'phone', label: 'Phone Number', icon: Phone, type: 'tel', required: true },
                     ].map(({ field, label, icon: Icon, type: t, required }) => (
                       <div key={field}>
-                        <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#888888' }}>{label}</label>
+                        <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>{label}</label>
                         <div className="relative">
-                          <Icon size={14} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: '#888888' }} />
+                          <Icon size={14} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: '#aaaaaa' }} />
                           <input
                             type={t}
                             required={required}
@@ -381,9 +381,9 @@ export default function Book() {
                       </div>
                     ))}
                     <div>
-                      <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#888888' }}>Special Requests (Optional)</label>
+                      <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>Special Requests (Optional)</label>
                       <div className="relative">
-                        <MessageSquare size={14} className="absolute left-4 top-4" style={{ color: '#888888' }} />
+                        <MessageSquare size={14} className="absolute left-4 top-4" style={{ color: '#aaaaaa' }} />
                         <textarea
                           rows={3}
                           value={guestInfo.requests}
@@ -441,18 +441,18 @@ export default function Book() {
                       { label: 'Phone', value: guestInfo.phone },
                     ].map(({ label, value }) => (
                       <div key={label} className="flex justify-between py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                        <span className="text-xs tracking-widest uppercase" style={{ color: '#888888' }}>{label}</span>
+                        <span className="text-xs tracking-widest uppercase" style={{ color: '#aaaaaa' }}>{label}</span>
                         <span className="text-sm" style={{ color: '#F9F9F9' }}>{value}</span>
                       </div>
                     ))}
 
                     <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                      <div className="flex justify-between text-sm mb-2" style={{ color: '#888888' }}>
+                      <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
                         <span>Subtotal ({nights} {type === 'stay' ? 'nights' : 'days'})</span>
                         <span>₦{subtotal.toLocaleString()}</span>
                       </div>
                       {chauffeur && (
-                        <div className="flex justify-between text-sm mb-2" style={{ color: '#888888' }}>
+                        <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
                           <span>Chauffeur Service</span>
                           <span>₦{chauffeurFee.toLocaleString()}</span>
                         </div>
@@ -464,7 +464,7 @@ export default function Book() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 text-xs mb-6" style={{ color: '#888888' }}>
+                  <div className="flex items-center gap-2 text-xs mb-6" style={{ color: '#aaaaaa' }}>
                     <Lock size={12} style={{ color: '#C9A84C' }} />
                     Secured by Paystack — Your payment is 256-bit SSL encrypted
                   </div>
@@ -508,10 +508,10 @@ export default function Book() {
                   <Check size={36} style={{ color: '#C9A84C' }} />
                 </div>
                 <h2 className="font-serif text-4xl mb-4" style={{ color: '#F9F9F9' }}>Booking Confirmed!</h2>
-                <p className="text-sm leading-relaxed max-w-md mx-auto mb-3" style={{ color: '#888888' }}>
+                <p className="text-sm leading-relaxed max-w-md mx-auto mb-3" style={{ color: '#aaaaaa' }}>
                   Your booking for <strong style={{ color: '#F9F9F9' }}>{selectedItem?.name}</strong> has been confirmed and payment processed.
                 </p>
-                <p className="text-sm mb-10" style={{ color: '#888888' }}>
+                <p className="text-sm mb-10" style={{ color: '#aaaaaa' }}>
                   A confirmation will be sent to <strong style={{ color: '#F9F9F9' }}>{guestInfo.email}</strong>
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -546,7 +546,7 @@ export default function Book() {
             <div>
               <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#C9A84C' }}>Get Any Problem With The Booking?</div>
               <h2 className="font-serif font-light text-3xl mb-4" style={{ color: '#F9F9F9' }}>Let our team help you</h2>
-              <p className="text-sm leading-relaxed mb-6" style={{ color: '#888888' }}>
+              <p className="text-sm leading-relaxed mb-6" style={{ color: '#aaaaaa' }}>
                 From selecting the perfect luxury vehicle to arranging your ideal stay, our experienced team is here to make every step effortless.
               </p>
               <div className="space-y-3 mb-6">

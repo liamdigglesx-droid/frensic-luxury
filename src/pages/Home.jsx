@@ -12,7 +12,7 @@ export default function Home() {
     <div style={{ backgroundColor: '#050505' }}>
 
       {/* Hero */}
-      <section className="relative min-h-screen flex items-end pb-24 overflow-hidden">
+      <section className="relative min-h-screen flex items-end pb-24 overflow-hidden pt-20 md:pt-0">
         <div className="absolute inset-0 grid grid-cols-2">
           <div
             className="relative overflow-hidden"
@@ -52,7 +52,7 @@ export default function Home() {
               <span style={{ color: '#C9A84C', fontStyle: 'italic' }}>Luxurious</span>{' '}
               Living
             </h1>
-            <p className="mt-6 max-w-2xl mx-auto text-base leading-relaxed" style={{ color: '#888888' }}>
+            <p className="mt-6 max-w-2xl mx-auto text-base leading-relaxed" style={{ color: '#aaaaaa' }}>
               Redefines luxury with world-class accommodations and Automobile Rental Services in Abuja, Nigeria.
             </p>
           </motion.div>
@@ -98,12 +98,12 @@ export default function Home() {
                   </div>
                 </div>
                 <h3 className="font-serif text-xl mb-2" style={{ color: '#F9F9F9' }}>{room.name}</h3>
-                <p className="text-sm leading-relaxed mb-4 line-clamp-2" style={{ color: '#888888' }}>{room.description}</p>
+                <p className="text-sm leading-relaxed mb-4 line-clamp-2" style={{ color: '#aaaaaa' }}>{room.description}</p>
                 <div className="flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1rem' }}>
                   <div>
-                    <div className="text-[10px] tracking-widest uppercase mb-1" style={{ color: '#888888' }}>Starts From</div>
+                    <div className="text-[10px] tracking-widest uppercase mb-1" style={{ color: '#aaaaaa' }}>Starts From</div>
                     <div className="font-serif text-lg" style={{ color: '#F9F9F9' }}>
-                      ₦{(room.price_per_night / 1000).toFixed(0)}k <span className="text-xs font-sans" style={{ color: '#888888' }}>/ night</span>
+                      ₦{(room.price_per_night / 1000).toFixed(0)}k <span className="text-xs font-sans" style={{ color: '#aaaaaa' }}>/ night</span>
                     </div>
                   </div>
                   <Link
@@ -148,12 +148,12 @@ export default function Home() {
             <h2 className="font-serif font-light text-3xl mb-6" style={{ color: '#F9F9F9' }}>
               Redefines luxury with world-class accommodations and Automobile Rental Services
             </h2>
-            <p className="text-sm leading-relaxed mb-8" style={{ color: '#888888' }}>
+            <p className="text-sm leading-relaxed mb-8" style={{ color: '#aaaaaa' }}>
               Frensic Luxury is a premium lifestyle and hospitality brand dedicated to delivering exceptional luxury transportation and accommodation experiences across Nigeria.
             </p>
             <div className="space-y-3 mb-8">
               {['Luxury Automobile Rentals', 'Executive Chauffeur Services', 'Premium Furnished Apartments'].map(item => (
-                <div key={item} className="flex items-center gap-3 text-sm" style={{ color: '#888888' }}>
+                <div key={item} className="flex items-center gap-3 text-sm" style={{ color: '#aaaaaa' }}>
                   <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#C9A84C' }} />
                   {item}
                 </div>
@@ -181,7 +181,7 @@ export default function Home() {
               <h2 className="font-serif font-light" style={{ color: '#F9F9F9', fontSize: 'clamp(1.8rem, 3vw, 2.8rem)' }}>
                 Read our real testimonial services
               </h2>
-              <p className="text-sm leading-relaxed pt-2" style={{ color: '#888888' }}>
+              <p className="text-sm leading-relaxed pt-2" style={{ color: '#aaaaaa' }}>
                 Our guests enjoy more than just a stay — they indulge in a true escape. Here's what our distinguished guests have to say.
               </p>
             </div>
@@ -203,11 +203,11 @@ export default function Home() {
                     <div className="font-serif text-lg mb-1" style={{ color: '#C9A84C' }}>{t.headline}</div>
                   </div>
                 </div>
-                <p className="text-sm leading-relaxed mb-5" style={{ color: '#888888' }}>{t.body}</p>
+                <p className="text-sm leading-relaxed mb-5" style={{ color: '#aaaaaa' }}>{t.body}</p>
                 <div className="flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '1rem' }}>
                   <div>
                     <div className="text-sm font-medium" style={{ color: '#F9F9F9' }}>{t.guest_name}</div>
-                    <div className="text-xs tracking-wider uppercase" style={{ color: '#888888' }}>{t.guest_title}</div>
+                    <div className="text-xs tracking-wider uppercase" style={{ color: '#aaaaaa' }}>{t.guest_title}</div>
                   </div>
                   <div className="flex gap-1">
                     {[...Array(t.rating)].map((_, j) => (
@@ -255,11 +255,11 @@ export default function Home() {
                   {activeFaq === i ? (
                     <Minus size={16} className="flex-shrink-0" style={{ color: '#C9A84C' }} />
                   ) : (
-                    <Plus size={16} className="flex-shrink-0" style={{ color: '#888888' }} />
+                    <Plus size={16} className="flex-shrink-0" style={{ color: '#aaaaaa' }} />
                   )}
                 </button>
                 {activeFaq === i && (
-                  <div className="pb-5 text-sm leading-relaxed" style={{ color: '#888888' }}>
+                  <div className="pb-5 text-sm leading-relaxed" style={{ color: '#aaaaaa' }}>
                     {faq.a}
                   </div>
                 )}

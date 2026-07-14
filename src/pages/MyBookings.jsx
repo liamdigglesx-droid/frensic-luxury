@@ -45,7 +45,7 @@ function BookingCard({ booking }) {
             </div>
             <div>
               <div className="font-serif text-lg" style={{ color: '#F9F9F9' }}>{booking.item_name}</div>
-              <div className="text-xs tracking-[0.15em] uppercase mt-0.5" style={{ color: '#888888' }}>
+              <div className="text-xs tracking-[0.15em] uppercase mt-0.5" style={{ color: '#aaaaaa' }}>
                 {isStay ? 'Apartment Stay' : 'Car Rental'}
               </div>
             </div>
@@ -77,7 +77,7 @@ function BookingCard({ booking }) {
         <button
           onClick={() => setExpanded(!expanded)}
           className="flex items-center gap-1 mt-4 text-xs transition-colors"
-          style={{ color: '#888888' }}
+          style={{ color: '#aaaaaa' }}
           onMouseEnter={e => { e.currentTarget.style.color = '#C9A84C'; }}
           onMouseLeave={e => { e.currentTarget.style.color = '#888888'; }}
         >
@@ -172,7 +172,7 @@ export default function MyBookings() {
                 <Calendar size={24} style={{ color: '#C9A84C' }} />
               </div>
               <h2 className="font-serif text-2xl mb-3" style={{ color: '#F9F9F9' }}>View Your Bookings</h2>
-              <p className="text-sm mb-8 leading-relaxed" style={{ color: '#888888' }}>
+              <p className="text-sm mb-8 leading-relaxed" style={{ color: '#aaaaaa' }}>
                 Enter the email address you used when booking to see all your reservations.
               </p>
               <form onSubmit={handleEmailSubmit} className="space-y-4">
@@ -206,13 +206,13 @@ export default function MyBookings() {
             <>
               <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
                 <div>
-                  <p className="text-xs tracking-[0.15em] uppercase mb-1" style={{ color: '#888888' }}>Showing bookings for</p>
+                  <p className="text-xs tracking-[0.15em] uppercase mb-1" style={{ color: '#aaaaaa' }}>Showing bookings for</p>
                   <p className="font-serif text-lg" style={{ color: '#F9F9F9' }}>{email}</p>
                 </div>
                 <button
                   onClick={() => { localStorage.removeItem('frensic_guest_email'); setEmail(''); setBookings([]); setEmailInput(''); }}
                   className="text-xs tracking-[0.15em] uppercase transition-colors"
-                  style={{ color: '#888888' }}
+                  style={{ color: '#aaaaaa' }}
                   onMouseEnter={e => { e.currentTarget.style.color = '#C9A84C'; }}
                   onMouseLeave={e => { e.currentTarget.style.color = '#888888'; }}
                 >
@@ -229,7 +229,7 @@ export default function MyBookings() {
                 ].map(({ label, value }) => (
                   <div key={label} className="p-5 text-center" style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}>
                     <div className="font-serif text-3xl mb-1" style={{ color: '#C9A84C' }}>{value}</div>
-                    <div className="text-[10px] tracking-[0.15em] uppercase" style={{ color: '#888888' }}>{label}</div>
+                    <div className="text-[10px] tracking-[0.15em] uppercase" style={{ color: '#aaaaaa' }}>{label}</div>
                   </div>
                 ))}
               </div>
@@ -257,9 +257,9 @@ export default function MyBookings() {
               {displayed.length === 0 ? (
                 <div className="text-center py-20">
                   <div className="w-12 h-12 flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    {tab === 'upcoming' ? <Clock size={20} style={{ color: '#888888' }} /> : <CheckCircle size={20} style={{ color: '#888888' }} />}
+                    {tab === 'upcoming' ? <Clock size={20} style={{ color: '#aaaaaa' }} /> : <CheckCircle size={20} style={{ color: '#aaaaaa' }} />}
                   </div>
-                  <p className="text-sm" style={{ color: '#888888' }}>
+                  <p className="text-sm" style={{ color: '#aaaaaa' }}>
                     {tab === 'upcoming' ? 'No upcoming bookings.' : 'No past bookings yet.'}
                   </p>
                 </div>

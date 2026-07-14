@@ -66,7 +66,7 @@ export default function Rooms() {
           <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-end">
             {/* Search */}
             <div className="flex-1 relative">
-              <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: '#888888' }} />
+              <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: '#aaaaaa' }} />
               <input
                 type="text"
                 placeholder="Search suites..."
@@ -81,7 +81,7 @@ export default function Rooms() {
 
             {/* Bedrooms */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#888888' }}>Bedrooms</span>
+              <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#aaaaaa' }}>Bedrooms</span>
               <div className="flex gap-1">
                 {BEDROOM_OPTIONS.map(opt => (
                   <button
@@ -102,7 +102,7 @@ export default function Rooms() {
 
             {/* Guests */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#888888' }}>Guests</span>
+              <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#aaaaaa' }}>Guests</span>
               <div className="flex gap-1">
                 {GUEST_OPTIONS.map(opt => (
                   <button
@@ -123,7 +123,7 @@ export default function Rooms() {
 
             {/* Max Price */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#888888' }}>Max Price / Night (₦)</span>
+              <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#aaaaaa' }}>Max Price / Night (₦)</span>
               <input
                 type="number"
                 placeholder="e.g. 300000"
@@ -150,7 +150,7 @@ export default function Rooms() {
           </div>
 
           {/* Results count */}
-          <div className="mt-4 text-xs" style={{ color: '#888888' }}>
+          <div className="mt-4 text-xs" style={{ color: '#aaaaaa' }}>
             {filtered.length === ROOMS.length
               ? `Showing all ${ROOMS.length} suites`
               : `Showing ${filtered.length} of ${ROOMS.length} suites`}
@@ -164,7 +164,7 @@ export default function Rooms() {
           {filtered.length === 0 ? (
             <div className="text-center py-24">
               <SlidersHorizontal size={40} className="mx-auto mb-4" style={{ color: '#333' }} />
-              <p className="text-lg font-serif mb-2" style={{ color: '#888888' }}>No suites match your filters</p>
+              <p className="text-lg font-serif mb-2" style={{ color: '#aaaaaa' }}>No suites match your filters</p>
               <button onClick={clearFilters} className="text-sm underline" style={{ color: '#C9A84C' }}>Clear all filters</button>
             </div>
           ) : (
@@ -197,7 +197,7 @@ export default function Rooms() {
                     style={{ backgroundColor: '#080808', direction: 'ltr' }}
                   >
                     <h3 className="font-serif text-3xl mb-3" style={{ color: '#F9F9F9' }}>{room.name}</h3>
-                    <p className="text-sm leading-relaxed mb-8" style={{ color: '#888888' }}>{room.description}</p>
+                    <p className="text-sm leading-relaxed mb-8" style={{ color: '#aaaaaa' }}>{room.description}</p>
 
                     <div className="grid grid-cols-2 gap-4 mb-8">
                       {[
@@ -209,7 +209,7 @@ export default function Rooms() {
                         <div key={label} className="flex items-center gap-3 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                           <Icon size={14} style={{ color: '#C9A84C' }} />
                           <div>
-                            <div className="text-[10px] tracking-widest uppercase" style={{ color: '#888888' }}>{label}</div>
+                            <div className="text-[10px] tracking-widest uppercase" style={{ color: '#aaaaaa' }}>{label}</div>
                             <div className="text-sm font-medium" style={{ color: '#F9F9F9' }}>{value}</div>
                           </div>
                         </div>
@@ -217,7 +217,7 @@ export default function Rooms() {
                     </div>
 
                     <div className="mb-8">
-                      <div className="text-[10px] tracking-[0.2em] uppercase mb-4" style={{ color: '#888888' }}>Amenities</div>
+                      <div className="text-[10px] tracking-[0.2em] uppercase mb-4" style={{ color: '#aaaaaa' }}>Amenities</div>
                       <div className="flex flex-wrap gap-2">
                         {room.amenities.map(a => (
                           <span key={a} className="px-3 py-1 text-xs" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#888888' }}>{a}</span>
@@ -227,9 +227,9 @@ export default function Rooms() {
 
                     <div className="flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.5rem' }}>
                       <div>
-                        <div className="text-[10px] tracking-widest uppercase mb-1" style={{ color: '#888888' }}>Starting From</div>
+                        <div className="text-[10px] tracking-widest uppercase mb-1" style={{ color: '#aaaaaa' }}>Starting From</div>
                         <div className="font-serif text-2xl" style={{ color: '#F9F9F9' }}>
-                          ₦{room.price_per_night.toLocaleString()} <span className="text-sm font-sans" style={{ color: '#888888' }}>/ night</span>
+                          ₦{room.price_per_night.toLocaleString()} <span className="text-sm font-sans" style={{ color: '#aaaaaa' }}>/ night</span>
                         </div>
                       </div>
                       <Link
@@ -263,7 +263,7 @@ export default function Rooms() {
           <div className="relative z-10 max-w-lg">
             <div className="text-xs tracking-[0.35em] uppercase mb-4" style={{ color: '#C9A84C' }}>We Will Plan Your Perfect Trip</div>
             <h2 className="font-serif text-3xl md:text-4xl font-light mb-4" style={{ color: '#F9F9F9' }}>Extend Your Luxury Stay</h2>
-            <p className="text-sm leading-relaxed mb-8" style={{ color: '#888888' }}>
+            <p className="text-sm leading-relaxed mb-8" style={{ color: '#aaaaaa' }}>
               Every moment deserves more than just a night. When you're traveling for business, a family getaway, or a well-deserved retreat, let us continue to provide what you need.
             </p>
             <Link

@@ -58,7 +58,7 @@ export default function Cars() {
           <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-end flex-wrap">
             {/* Search */}
             <div className="flex-1 min-w-48 relative">
-              <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: '#888888' }} />
+              <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: '#aaaaaa' }} />
               <input
                 type="text"
                 placeholder="Search vehicles..."
@@ -73,7 +73,7 @@ export default function Cars() {
 
             {/* Vehicle Style */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#888888' }}>Type</span>
+              <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#aaaaaa' }}>Type</span>
               <div className="flex gap-1 flex-wrap">
                 {STYLE_OPTIONS.map(opt => (
                   <button
@@ -94,7 +94,7 @@ export default function Cars() {
 
             {/* Seats */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#888888' }}>Seats</span>
+              <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#aaaaaa' }}>Seats</span>
               <div className="flex gap-1">
                 {SEAT_OPTIONS.map(opt => (
                   <button
@@ -115,7 +115,7 @@ export default function Cars() {
 
             {/* Max Price */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#888888' }}>Max Price / Day (₦)</span>
+              <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#aaaaaa' }}>Max Price / Day (₦)</span>
               <input
                 type="number"
                 placeholder="e.g. 150000"
@@ -141,7 +141,7 @@ export default function Cars() {
             )}
           </div>
 
-          <div className="mt-4 text-xs" style={{ color: '#888888' }}>
+          <div className="mt-4 text-xs" style={{ color: '#aaaaaa' }}>
             {filtered.length === CARS.length
               ? `Showing all ${CARS.length} vehicles`
               : `Showing ${filtered.length} of ${CARS.length} vehicles`}
@@ -155,7 +155,7 @@ export default function Cars() {
           {filtered.length === 0 ? (
             <div className="text-center py-24">
               <SlidersHorizontal size={40} className="mx-auto mb-4" style={{ color: '#333' }} />
-              <p className="text-lg font-serif mb-2" style={{ color: '#888888' }}>No vehicles match your filters</p>
+              <p className="text-lg font-serif mb-2" style={{ color: '#aaaaaa' }}>No vehicles match your filters</p>
               <button onClick={clearFilters} className="text-sm underline" style={{ color: '#C9A84C' }}>Clear all filters</button>
             </div>
           ) : (
@@ -188,7 +188,7 @@ export default function Cars() {
                     style={{ backgroundColor: '#080808', direction: 'ltr' }}
                   >
                     <h3 className="font-serif text-3xl mb-3" style={{ color: '#F9F9F9' }}>{car.name}</h3>
-                    <p className="text-sm leading-relaxed mb-8" style={{ color: '#888888' }}>{car.description}</p>
+                    <p className="text-sm leading-relaxed mb-8" style={{ color: '#aaaaaa' }}>{car.description}</p>
 
                     <div className="grid grid-cols-2 gap-4 mb-8">
                       {[
@@ -200,7 +200,7 @@ export default function Cars() {
                         <div key={label} className="flex items-center gap-3 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                           <Icon size={14} style={{ color: '#C9A84C' }} />
                           <div>
-                            <div className="text-[10px] tracking-widest uppercase" style={{ color: '#888888' }}>{label}</div>
+                            <div className="text-[10px] tracking-widest uppercase" style={{ color: '#aaaaaa' }}>{label}</div>
                             <div className="text-sm font-medium" style={{ color: '#F9F9F9' }}>{value}</div>
                           </div>
                         </div>
@@ -208,10 +208,10 @@ export default function Cars() {
                     </div>
 
                     <div className="mb-8">
-                      <div className="text-[10px] tracking-[0.2em] uppercase mb-4" style={{ color: '#888888' }}>Features</div>
+                      <div className="text-[10px] tracking-[0.2em] uppercase mb-4" style={{ color: '#aaaaaa' }}>Features</div>
                       <div className="space-y-2">
                         {car.features.map(f => (
-                          <div key={f} className="flex items-center gap-2 text-sm" style={{ color: '#888888' }}>
+                          <div key={f} className="flex items-center gap-2 text-sm" style={{ color: '#aaaaaa' }}>
                             <CheckCircle size={13} style={{ color: '#C9A84C' }} />
                             {f}
                           </div>
@@ -221,9 +221,9 @@ export default function Cars() {
 
                     <div className="flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.5rem' }}>
                       <div>
-                        <div className="text-[10px] tracking-widest uppercase mb-1" style={{ color: '#888888' }}>From</div>
+                        <div className="text-[10px] tracking-widest uppercase mb-1" style={{ color: '#aaaaaa' }}>From</div>
                         <div className="font-serif text-2xl" style={{ color: '#F9F9F9' }}>
-                          ₦{car.price_per_day.toLocaleString()} <span className="text-sm font-sans" style={{ color: '#888888' }}>/ day</span>
+                          ₦{car.price_per_day.toLocaleString()} <span className="text-sm font-sans" style={{ color: '#aaaaaa' }}>/ day</span>
                         </div>
                       </div>
                       <Link
@@ -257,7 +257,7 @@ export default function Cars() {
           <div className="relative z-10 max-w-lg">
             <div className="text-xs tracking-[0.35em] uppercase mb-4" style={{ color: '#C9A84C' }}>Extend The Journey</div>
             <h2 className="font-serif text-3xl md:text-4xl font-light mb-4" style={{ color: '#F9F9F9' }}>Extend The Journey and Keep the Experience</h2>
-            <p className="text-sm leading-relaxed mb-8" style={{ color: '#888888' }}>
+            <p className="text-sm leading-relaxed mb-8" style={{ color: '#aaaaaa' }}>
               Why settle when the road still has more to offer? Whether it's one more day or an entire week, your perfect ride is ready.
             </p>
             <Link

@@ -30,7 +30,7 @@ export default function Reviews() {
               <h2 className="font-serif font-light" style={{ color: '#F9F9F9', fontSize: 'clamp(2rem, 4vw, 3.5rem)' }}>
                 Read our real testimonial services
               </h2>
-              <p className="text-sm leading-relaxed" style={{ color: '#888888' }}>
+              <p className="text-sm leading-relaxed" style={{ color: '#aaaaaa' }}>
                 Our guests enjoy more than just a stay — they indulge in a true escape. Here's what our distinguished guests have to say.
               </p>
             </div>
@@ -50,7 +50,7 @@ export default function Reviews() {
                 <div className="md:col-span-1 p-8 flex flex-col items-center md:items-start justify-center" style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
                   <img src={t.avatar_url} alt={t.guest_name} className="w-20 h-20 rounded-full object-cover mb-4" />
                   <div className="font-serif text-base" style={{ color: '#F9F9F9' }}>{t.guest_name}</div>
-                  <div className="text-xs tracking-wider uppercase mt-1" style={{ color: '#888888' }}>{t.guest_title}</div>
+                  <div className="text-xs tracking-wider uppercase mt-1" style={{ color: '#aaaaaa' }}>{t.guest_title}</div>
                   <div className="flex gap-1 mt-3">
                     {[...Array(t.rating)].map((_, j) => (
                       <Star key={j} size={11} fill="#C9A84C" color="#C9A84C" />
@@ -62,7 +62,7 @@ export default function Reviews() {
                 </div>
                 <div className="md:col-span-4 p-8 md:p-12 flex flex-col justify-center">
                   <div className="font-serif text-2xl md:text-3xl mb-5 italic" style={{ color: '#C9A84C' }}>{t.headline}</div>
-                  <p className="text-sm leading-relaxed" style={{ color: '#888888' }}>{t.body}</p>
+                  <p className="text-sm leading-relaxed" style={{ color: '#aaaaaa' }}>{t.body}</p>
                 </div>
               </motion.div>
             ))}
@@ -78,10 +78,10 @@ export default function Reviews() {
             <h2 className="font-serif font-light text-4xl mb-6" style={{ color: '#F9F9F9' }}>
               We hear you, let us know what you feel and get your compensation
             </h2>
-            <p className="text-sm leading-relaxed mb-4" style={{ color: '#888888' }}>
+            <p className="text-sm leading-relaxed mb-4" style={{ color: '#aaaaaa' }}>
               Your feedback matters to us because your experience is our top priority. Whether you have a compliment, a concern, or a suggestion, we'd love to hear from you. Every message helps us improve our services and deliver the exceptional luxury experience you deserve.
             </p>
-            <p className="text-sm leading-relaxed mb-8 italic" style={{ color: '#888888' }}>
+            <p className="text-sm leading-relaxed mb-8 italic" style={{ color: '#aaaaaa' }}>
               Speak up. We'll listen. We'll make it right.
             </p>
             <Link
