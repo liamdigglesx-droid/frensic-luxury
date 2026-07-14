@@ -42,7 +42,7 @@ function buildEmailHtml(booking) {
         <!-- Header -->
         <tr>
           <td style="background:#050505;padding:30px 40px;text-align:center;border-bottom:1px solid rgba(201,168,76,0.15);">
-            <img src="https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/622215c82_FrensicLuxuryApartmentLogo.png" width="160" alt="Frensic Luxury" style="display:block;margin:0 auto;" />
+            <img src="https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/602d336b8_Untitleddesign1.png" width="160" alt="Frensic Luxury" style="display:block;margin:0 auto;" />
           </td>
         </tr>
         <!-- Body -->
