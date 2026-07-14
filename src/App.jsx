@@ -18,6 +18,12 @@ import Reviews from './pages/Reviews';
 import Contact from './pages/Contact';
 import Privacy from './pages/Privacy';
 import MyBookings from './pages/MyBookings';
+import AdminLayout from './components/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminBookings from './pages/admin/AdminBookings';
+import AdminMessages from './pages/admin/AdminMessages';
+import AdminNotifications from './pages/admin/AdminNotifications';
+import AdminStaff from './pages/admin/AdminStaff';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -47,6 +53,13 @@ const AuthenticatedApp = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/my-bookings" element={<MyBookings />} />
+      </Route>
+      <Route element={<AdminLayout />}>
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/bookings" element={<AdminBookings />} />
+        <Route path="/admin/messages" element={<AdminMessages />} />
+        <Route path="/admin/notifications" element={<AdminNotifications />} />
+        <Route path="/admin/staff" element={<AdminStaff />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
