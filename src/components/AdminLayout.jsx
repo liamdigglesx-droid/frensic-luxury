@@ -20,11 +20,17 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const [authChecked, setAuthChecked] = useState(false);
+
   useEffect(() => {
     if (!checkAdminAuth()) {
       navigate('/admin/login', { replace: true });
+    } else {
+      setAuthChecked(true);
     }
   }, [location.pathname]);
+
+  if (!authChecked) return null;
 
   const handleLogout = () => {
     adminLogout();
