@@ -42,8 +42,8 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     Promise.all([
-      base44.entities.Booking.list('-created_date', 500),
-      base44.entities.ContactMessage.list('-created_date', 100),
+      base44.entities.Booking.list('-created_date', 500).catch(() => []),
+      base44.entities.ContactMessage.list('-created_date', 100).catch(() => []),
     ]).then(([b, m]) => {
       setBookings(b);
       setMessages(m);

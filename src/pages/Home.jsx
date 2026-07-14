@@ -41,19 +41,34 @@ export default function Home() {
               Luxury Apartment & Automobile Rental
             </div>
             <h1
-              className="font-serif font-light leading-[1.05]"
+              className="font-serif leading-[1.05]"
               style={{
                 color: '#F9F9F9',
                 fontSize: 'clamp(2.8rem, 7vw, 8rem)',
-                textShadow: '0 2px 40px rgba(0,0,0,0.8)'
+                textShadow: '0 2px 40px rgba(0,0,0,0.8)',
+                fontWeight: 700,
               }}>
-              
               Let us be your gateway to a{' '}
-              <span style={{ color: '#C9A84C', fontStyle: 'italic' }}>Luxurious</span>{' '}
+              <motion.span
+                initial={{ backgroundSize: '0% 4px' }}
+                animate={{ backgroundSize: '100% 4px' }}
+                transition={{ duration: 1, delay: 1.2, ease: 'easeOut' }}
+                style={{
+                  color: '#C9A84C',
+                  fontStyle: 'italic',
+                  backgroundImage: 'linear-gradient(#C9A84C, #C9A84C)',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: '0 95%',
+                  paddingBottom: '4px',
+                  display: 'inline',
+                }}
+              >
+                Luxurious
+              </motion.span>{' '}
               Living
             </h1>
-            <p className="mt-6 max-w-2xl mx-auto text-base leading-relaxed" style={{ color: '#aaaaaa' }}>
-              Redefines luxury with world-class accommodations and Automobile Rental Services in Abuja, Nigeria.
+            <p className="mt-6 max-w-2xl mx-auto leading-relaxed font-medium" style={{ color: '#ffffff', fontSize: 'clamp(1rem, 1.5vw, 1.2rem)', textShadow: '0 1px 8px rgba(0,0,0,0.9)' }}>
+              Redefines luxury with world-class accommodations and automobile rental services in Abuja, Nigeria.
             </p>
           </motion.div>
 
