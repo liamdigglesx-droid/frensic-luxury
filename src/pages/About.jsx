@@ -1,13 +1,34 @@
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
+import { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, Award, Users, Clock } from 'lucide-react';
 
 const stats = [
-  { label: 'Happy Guests', value: '500+' },
-  { label: 'Luxury Vehicles', value: '20+' },
-  { label: 'Suites Available', value: '3' },
-  { label: 'Years of Service', value: '5+' },
+  { label: 'Happy Guests', value: 500, suffix: '+' },
+  { label: 'Luxury Vehicles', value: 20, suffix: '+' },
+  { label: 'Suites Available', value: 3, suffix: '' },
+  { label: 'Years of Service', value: 5, suffix: '+' },
 ];
+
+function CountUp({ target, suffix, duration = 2000 }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true });
+
+  useEffect(() => {
+    if (!inView) return;
+    let start = 0;
+    const step = Math.ceil(target / (duration / 16));
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= target) { setCount(target); clearInterval(timer); }
+      else setCount(start);
+    }, 16);
+    return () => clearInterval(timer);
+  }, [inView, target, duration]);
+
+  return <span ref={ref}>{count}{suffix}</span>;
+}
 
 const values = [
   { icon: Shield, title: 'Safety & Trust', desc: 'Your safety and trust are paramount. All vehicles are fully insured and regularly serviced. Our apartments meet the highest security standards.' },
@@ -67,7 +88,7 @@ export default function About() {
               className="text-center py-8 px-4"
               style={{ borderRight: i < 3 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}
             >
-              <div className="font-serif text-4xl md:text-5xl mb-2" style={{ color: '#C9A84C' }}>{s.value}</div>
+              <div className="font-serif text-4xl md:text-5xl mb-2" style={{ color: '#C9A84C' }}><CountUp target={s.value} suffix={s.suffix} /></div>
               <div className="text-xs tracking-[0.2em] uppercase" style={{ color: '#aaaaaa' }}>{s.label}</div>
             </motion.div>
           ))}
