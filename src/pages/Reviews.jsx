@@ -1,9 +1,19 @@
+import { useEffect, useState } from 'react';
 import { Star } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import ReviewForm from '@/components/reviews/ReviewForm';
 import { TESTIMONIALS } from '@/lib/constants';
 
 export default function Reviews() {
+  const [guestReviews, setGuestReviews] = useState([]);
+
+  useEffect(() => {
+    base44.entities.Review.list('-created_date', 50).then(setGuestReviews);
+  }, []);
+
+  const reviews = [...guestReviews, ...TESTIMONIALS];
+
   return (
     <div style={{ backgroundColor: '#050505' }}>
       {/* Hero */}
@@ -37,7 +47,7 @@ export default function Reviews() {
           </div>
 
           <div className="space-y-1">
-            {TESTIMONIALS.map((t, i) => (
+            {reviews.map((t, i) => (
               <motion.div
                 key={t.id}
                 initial={{ opacity: 0, y: 30 }}
@@ -48,7 +58,13 @@ export default function Reviews() {
                 style={{ backgroundColor: '#080808', border: '1px solid rgba(255,255,255,0.06)' }}
               >
                 <div className="md:col-span-1 p-8 flex flex-col items-center md:items-start justify-center" style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-                  <img src={t.avatar_url} alt={t.guest_name} className="w-20 h-20 rounded-full object-cover mb-4" />
+                  {t.avatar_url ? (
+                    <img src={t.avatar_url} alt={t.guest_name} className="w-20 h-20 rounded-full object-cover mb-4" />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full mb-4 flex items-center justify-center font-serif text-3xl" style={{ backgroundColor: 'rgba(201,168,76,0.12)', color: '#C9A84C' }}>
+                      {t.guest_name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                   <div className="font-serif text-base" style={{ color: '#F9F9F9' }}>{t.guest_name}</div>
                   <div className="text-xs tracking-wider uppercase mt-1" style={{ color: '#aaaaaa' }}>{t.guest_title}</div>
                   <div className="flex gap-1 mt-3">
@@ -84,28 +100,9 @@ export default function Reviews() {
             <p className="text-sm leading-relaxed mb-8 italic" style={{ color: '#aaaaaa' }}>
               Speak up. We'll listen. We'll make it right.
             </p>
-            <Link
-              to="/contact"
-              className="inline-flex px-8 h-12 items-center text-xs tracking-[0.2em] uppercase font-medium transition-all"
-              style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
-            >
-              Tell Us Your Feedback
-            </Link>
+
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              'https://images.unsplash.com/photo-1631049552240-59c37f38802b?w=500',
-              'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=500',
-              'https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/d7450e02f_generated_21bb45e6.png',
-              'https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/556ba3447_generated_e98d5d1f.png',
-            ].map((img, i) => (
-              <div key={i} className="aspect-square overflow-hidden">
-                <img src={img} alt="" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
-              </div>
-            ))}
-          </div>
+          <ReviewForm onSubmitted={review => setGuestReviews(current => [review, ...current])} />
         </div>
       </section>
     </div>
