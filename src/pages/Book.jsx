@@ -585,7 +585,7 @@ export default function Book() {
             <div
               className="aspect-[4/3] overflow-hidden"
               style={{
-                backgroundImage: 'url(https://images.unsplash.com/photo-1568992688065-536aad8a12f6?w=800)',
+                backgroundImage: 'url(https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/b6f1629da_generated_95d6086b.png)',
                 backgroundSize: 'cover', backgroundPosition: 'center',
               }}
             />
