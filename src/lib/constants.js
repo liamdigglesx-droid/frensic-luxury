@@ -88,7 +88,7 @@ export const TESTIMONIALS = [
     body: "I rented one of Frensic Luxury's executive SUVs for a business trip, and the experience exceeded my expectations. The booking process was seamless, the vehicle arrived on time, looked brand new, and the chauffeur was punctual, courteous, and highly professional. Every detail reflected excellence. I highly recommend Frensic Luxury to anyone looking for premium transportation.",
     rating: 5,
     service_type: 'drive',
-    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
+    avatar_url: 'https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/22fde00dc_images2.jpg',
   },
   {
     id: 2,
@@ -98,7 +98,7 @@ export const TESTIMONIALS = [
     body: "My family stayed in Frensic Luxury's 5-bedroom apartment during our holiday, and it felt like a five-star hotel with the comfort of home. The apartment was beautifully furnished, spacious, immaculately clean, and equipped with everything we needed. The customer service team was responsive and made our stay effortless. We'll definitely book again.",
     rating: 5,
     service_type: 'stay',
-    avatar_url: 'https://images.unsplash.com/photo-1494790108755-2616b612b1bc?w=100',
+    avatar_url: 'https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/85cc00370_images.jpg',
   },
   {
     id: 3,
