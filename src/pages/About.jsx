@@ -10,7 +10,7 @@ const stats = [
   { label: 'Years of Service', value: 5, suffix: '+' },
 ];
 
-function CountUp({ target, suffix, duration = 2000 }) {
+function CountUp({ target, suffix, duration = 4000 }) {
   const [count, setCount] = useState(0);
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
