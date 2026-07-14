@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Building2, Car, Calendar, Users, User, Mail, Phone, MessageSquare,
+  Building2, Car, Users, User, Mail, Phone, MessageSquare,
   ChevronRight, ChevronLeft, Check, Lock, Loader2
 } from 'lucide-react';
 import { ROOMS, CARS } from '@/lib/constants';
