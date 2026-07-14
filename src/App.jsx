@@ -24,14 +24,13 @@ import AdminBookings from './pages/admin/AdminBookings';
 import AdminMessages from './pages/admin/AdminMessages';
 import AdminNotifications from './pages/admin/AdminNotifications';
 import AdminStaff from './pages/admin/AdminStaff';
-import AdminLogin from './pages/admin/AdminLogin';
 import AdminChangePassword from './pages/admin/AdminChangePassword';
 
 const AuthenticatedApp = () => {
   const { isLoadingPublicSettings, authError } = useAuth();
+  const isAdminRoute = window.location.pathname.startsWith('/dashboard/admin');
 
-  // Only block on loading, never on auth errors — admin has its own auth system
-  if (isLoadingPublicSettings) {
+  if (!isAdminRoute && isLoadingPublicSettings) {
     return (
       <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: '#050505' }}>
         <div className="w-8 h-8 border-2 border-slate-800 rounded-full animate-spin" style={{ borderTopColor: '#C9A84C' }}></div>
@@ -39,7 +38,7 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (authError?.type === 'user_not_registered') {
+  if (!isAdminRoute && authError?.type === 'user_not_registered') {
     return <UserNotRegisteredError />;
   }
 
@@ -56,7 +55,6 @@ const AuthenticatedApp = () => {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/my-bookings" element={<MyBookings />} />
       </Route>
-      <Route path="/login/admin" element={<AdminLogin />} />
       <Route element={<AdminLayout />}>
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
         <Route path="/dashboard/admin/bookings" element={<AdminBookings />} />

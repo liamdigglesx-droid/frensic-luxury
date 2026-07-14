@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, CalendarCheck, MessageSquare, Bell, Users,
-  LogOut, Menu, X, ChevronRight, Building2, KeyRound
+  Menu, X, ChevronRight, Building2, KeyRound
 } from 'lucide-react';
-import { checkAdminAuth, adminLogout } from '@/pages/admin/AdminLogin';
 
 const navItems = [
   { path: '/dashboard/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
@@ -17,21 +16,7 @@ const navItems = [
 
 export default function AdminLayout() {
   const location = useLocation();
-  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    if (!checkAdminAuth()) {
-      navigate('/login/admin', { replace: true });
-    }
-  }, [location.pathname]);
-
-  if (!checkAdminAuth()) return null;
-
-  const handleLogout = () => {
-    adminLogout();
-    navigate('/login/admin', { replace: true });
-  };
 
   const isActive = (item) =>
     item.exact ? location.pathname === item.path : location.pathname.startsWith(item.path);
@@ -77,19 +62,6 @@ export default function AdminLayout() {
           ))}
         </nav>
 
-        {/* Logout */}
-        <div className="px-3 py-4" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 text-sm w-full transition-all"
-            style={{ color: '#888888' }}
-            onMouseEnter={e => e.currentTarget.style.color = '#f87171'}
-            onMouseLeave={e => e.currentTarget.style.color = '#888888'}
-          >
-            <LogOut size={16} />
-            <span>Logout</span>
-          </button>
-        </div>
       </aside>
 
       {/* Overlay */}
