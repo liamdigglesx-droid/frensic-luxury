@@ -81,3 +81,16 @@
     font-family: var(--font-body);
   }
 }
+
+@layer utilities {
+  .public-site .text-xs,
+  .public-site [class*="text-[8px]"],
+  .public-site [class*="text-[9px]"],
+  .public-site [class*="text-[10px]"],
+  .public-site [class*="text-[11px]"],
+  .public-site [class*="text-[12px]"],
+  .public-site [class*="text-[13px]"] {
+    font-size: 14px !important;
+    line-height: 1.5rem;
+  }
+}

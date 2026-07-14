@@ -42,8 +42,8 @@ export default function Navbar() {
             <img
               src="https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/602d336b8_Untitleddesign1.png"
               alt="Frensic Luxury Apartment"
-              className="h-14 w-auto object-contain"
-              style={{ filter: 'drop-shadow(0 0 8px rgba(201,168,76,0.25))' }}
+              className="h-[4.2rem] w-auto object-contain"
+              style={{ filter: 'contrast(1.15) saturate(1.1) drop-shadow(0 0 10px rgba(201,168,76,0.35))' }}
             />
           </Link>
 
@@ -53,10 +53,10 @@ export default function Navbar() {
               <Link
                 key={path}
                 to={path}
-                className="text-xs tracking-[0.15em] uppercase transition-colors duration-200"
-                style={{ color: location.pathname === path ? '#C9A84C' : '#888888' }}
-                onMouseEnter={e => { if (location.pathname !== path) e.target.style.color = '#F9F9F9'; }}
-                onMouseLeave={e => { if (location.pathname !== path) e.target.style.color = '#888888'; }}
+                className="text-sm font-semibold tracking-[0.15em] uppercase transition-colors duration-200"
+                style={{ color: location.pathname === path ? '#F9F9F9' : '#C9A84C' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#F9F9F9'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = location.pathname === path ? '#F9F9F9' : '#C9A84C'; }}
               >
                 {label}
               </Link>
@@ -67,7 +67,7 @@ export default function Navbar() {
           <div className="flex items-center gap-4">
             <Link
               to="/book"
-              className="hidden lg:flex items-center px-6 h-11 text-xs tracking-[0.15em] uppercase font-medium transition-all duration-200"
+              className="hidden lg:flex items-center px-6 h-11 text-sm tracking-[0.15em] uppercase font-semibold transition-all duration-200"
               style={{ backgroundColor: '#C9A84C', color: '#050505' }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#b8943e'; }}
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
@@ -101,8 +101,8 @@ export default function Navbar() {
                 <Link
                   key={path}
                   to={path}
-                  className="text-2xl font-serif font-light tracking-widest transition-colors"
-                  style={{ color: location.pathname === path ? '#C9A84C' : '#F9F9F9' }}
+                  className="text-2xl font-serif font-semibold tracking-widest transition-colors"
+                  style={{ color: location.pathname === path ? '#F9F9F9' : '#C9A84C' }}
                 >
                   {label}
                 </Link>

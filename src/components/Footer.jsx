@@ -11,8 +11,8 @@ export default function Footer() {
             <img
               src="https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/602d336b8_Untitleddesign1.png"
               alt="Frensic Luxury Apartment"
-              className="h-20 w-auto object-contain"
-              style={{ filter: 'drop-shadow(0 0 8px rgba(201,168,76,0.2))' }}
+              className="h-24 w-auto object-contain"
+              style={{ filter: 'contrast(1.15) saturate(1.1) drop-shadow(0 0 10px rgba(201,168,76,0.3))' }}
             />
           </div>
           <p className="text-sm leading-relaxed" style={{ color: '#aaaaaa' }}>
@@ -36,7 +36,7 @@ export default function Footer() {
 
         {/* Quick Links */}
         <div>
-          <h4 className="text-xs tracking-[0.3em] uppercase mb-6 font-medium" style={{ color: '#F9F9F9' }}>Navigation</h4>
+          <h4 className="text-sm tracking-[0.3em] uppercase mb-6 font-medium" style={{ color: '#F9F9F9' }}>Navigation</h4>
           <ul className="space-y-3">
             {[
               { label: 'Home', path: '/' },
@@ -63,7 +63,7 @@ export default function Footer() {
 
         {/* Services */}
         <div>
-          <h4 className="text-xs tracking-[0.3em] uppercase mb-6 font-medium" style={{ color: '#F9F9F9' }}>Services</h4>
+          <h4 className="text-sm tracking-[0.3em] uppercase mb-6 font-medium" style={{ color: '#F9F9F9' }}>Services</h4>
           <ul className="space-y-3">
             {['Luxury Apartments', 'Executive Car Rental', 'Chauffeur Service', 'Airport Transfers', 'Event Transportation', 'Corporate Bookings'].map(s => (
               <li key={s}>
@@ -75,7 +75,7 @@ export default function Footer() {
 
         {/* Contact */}
         <div>
-          <h4 className="text-xs tracking-[0.3em] uppercase mb-6 font-medium" style={{ color: '#F9F9F9' }}>Contact</h4>
+          <h4 className="text-sm tracking-[0.3em] uppercase mb-6 font-medium" style={{ color: '#F9F9F9' }}>Contact</h4>
           <ul className="space-y-4">
             <li className="flex gap-3">
               <MapPin size={14} className="mt-1 flex-shrink-0" style={{ color: '#C9A84C' }} />
@@ -103,16 +103,16 @@ export default function Footer() {
         className="max-w-7xl mx-auto px-6 lg:px-12 py-6 flex flex-col md:flex-row items-center justify-between gap-4"
         style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
       >
-        <p className="text-xs" style={{ color: '#aaaaaa' }}>
+        <p className="text-sm" style={{ color: '#aaaaaa' }}>
           © {new Date().getFullYear()} Frensic Luxury Apartment. All rights reserved.
         </p>
         <div className="flex gap-6">
-          <Link to="/privacy" className="text-xs transition-colors" style={{ color: '#aaaaaa' }}
+          <Link to="/privacy" className="text-sm transition-colors" style={{ color: '#aaaaaa' }}
             onMouseEnter={e => { e.target.style.color = '#C9A84C'; }}
             onMouseLeave={e => { e.target.style.color = '#888888'; }}>
             Privacy Policy
           </Link>
-          <Link to="/contact" className="text-xs transition-colors" style={{ color: '#aaaaaa' }}
+          <Link to="/contact" className="text-sm transition-colors" style={{ color: '#aaaaaa' }}
             onMouseEnter={e => { e.target.style.color = '#C9A84C'; }}
             onMouseLeave={e => { e.target.style.color = '#888888'; }}>
             Contact
