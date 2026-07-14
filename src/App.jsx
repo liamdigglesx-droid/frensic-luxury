@@ -56,14 +56,14 @@ const AuthenticatedApp = () => {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/my-bookings" element={<MyBookings />} />
       </Route>
-      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/login/admin" element={<AdminLogin />} />
       <Route element={<AdminLayout />}>
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/bookings" element={<AdminBookings />} />
-        <Route path="/admin/messages" element={<AdminMessages />} />
-        <Route path="/admin/notifications" element={<AdminNotifications />} />
-        <Route path="/admin/staff" element={<AdminStaff />} />
-        <Route path="/admin/change-password" element={<AdminChangePassword />} />
+        <Route path="/dashboard/admin" element={<AdminDashboard />} />
+        <Route path="/dashboard/admin/bookings" element={<AdminBookings />} />
+        <Route path="/dashboard/admin/messages" element={<AdminMessages />} />
+        <Route path="/dashboard/admin/notifications" element={<AdminNotifications />} />
+        <Route path="/dashboard/admin/staff" element={<AdminStaff />} />
+        <Route path="/dashboard/admin/change-password" element={<AdminChangePassword />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

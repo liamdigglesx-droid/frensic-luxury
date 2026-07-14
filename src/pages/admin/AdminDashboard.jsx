@@ -175,7 +175,7 @@ export default function AdminDashboard() {
             <div className="text-xs tracking-[0.2em] uppercase mb-1" style={{ color: '#888' }}>Latest Activity</div>
             <div className="font-serif text-xl" style={{ color: '#F9F9F9' }}>Recent Bookings</div>
           </div>
-          <Link to="/admin/bookings" className="flex items-center gap-1 text-xs tracking-widest uppercase transition-all" style={{ color: GOLD }}>
+          <Link to="/dashboard/admin/bookings" className="flex items-center gap-1 text-xs tracking-widest uppercase transition-all" style={{ color: GOLD }}>
             View All <ChevronRight size={12} />
           </Link>
         </div>
@@ -213,7 +213,7 @@ export default function AdminDashboard() {
             <div className="text-xs tracking-[0.2em] uppercase mb-1" style={{ color: '#888' }}>Inbox</div>
             <div className="font-serif text-xl" style={{ color: '#F9F9F9' }}>Recent Messages</div>
           </div>
-          <Link to="/admin/messages" className="flex items-center gap-1 text-xs tracking-widest uppercase" style={{ color: GOLD }}>
+          <Link to="/dashboard/admin/messages" className="flex items-center gap-1 text-xs tracking-widest uppercase" style={{ color: GOLD }}>
             View All <ChevronRight size={12} />
           </Link>
         </div>

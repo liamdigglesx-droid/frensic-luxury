@@ -42,7 +42,7 @@ export default function AdminLogin() {
       const creds = getStoredCreds();
       if (username === creds.username && password === creds.password) {
         localStorage.setItem('frensic_admin_session', 'authenticated');
-        navigate('/admin');
+        navigate('/dashboard/admin');
       } else {
         setError('Invalid username or password.');
       }

@@ -7,12 +7,12 @@ import {
 import { checkAdminAuth, adminLogout } from '@/pages/admin/AdminLogin';
 
 const navItems = [
-  { path: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { path: '/admin/bookings', label: 'Bookings', icon: CalendarCheck },
-  { path: '/admin/messages', label: 'Messages', icon: MessageSquare },
-  { path: '/admin/notifications', label: 'Notifications', icon: Bell },
-  { path: '/admin/staff', label: 'Staff', icon: Users },
-  { path: '/admin/change-password', label: 'Change Password', icon: KeyRound },
+  { path: '/dashboard/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { path: '/dashboard/admin/bookings', label: 'Bookings', icon: CalendarCheck },
+  { path: '/dashboard/admin/messages', label: 'Messages', icon: MessageSquare },
+  { path: '/dashboard/admin/notifications', label: 'Notifications', icon: Bell },
+  { path: '/dashboard/admin/staff', label: 'Staff', icon: Users },
+  { path: '/dashboard/admin/change-password', label: 'Change Password', icon: KeyRound },
 ];
 
 export default function AdminLayout() {
@@ -22,13 +22,13 @@ export default function AdminLayout() {
 
   // Synchronous check — no flicker, no black screen
   if (!checkAdminAuth()) {
-    navigate('/admin/login', { replace: true });
+    navigate('/login/admin', { replace: true });
     return null;
   }
 
   const handleLogout = () => {
     adminLogout();
-    navigate('/admin/login', { replace: true });
+    navigate('/login/admin', { replace: true });
   };
 
   const isActive = (item) =>
