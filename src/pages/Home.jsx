@@ -198,7 +198,7 @@ export default function Home() {
               style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}>
               
                 <div className="flex items-start gap-4 mb-5">
-                  <img src="https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/34a1b6154_images.jpg" alt={t.guest_name} className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
+                  <img src={t.avatar_url} alt={t.guest_name} className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
                   <div>
                     <div className="font-serif text-lg mb-1" style={{ color: '#C9A84C' }}>{t.headline}</div>
                   </div>
