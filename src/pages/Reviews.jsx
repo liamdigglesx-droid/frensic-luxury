@@ -36,13 +36,18 @@ export default function Reviews() {
         <div className="max-w-7xl mx-auto">
           <div className="mb-16">
             <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#C9A84C' }}>Guest Testimonials</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
               <h2 className="font-serif font-light" style={{ color: '#F9F9F9', fontSize: 'clamp(2rem, 4vw, 3.5rem)' }}>
                 Read our real testimonial services
               </h2>
-              <p className="text-sm leading-relaxed" style={{ color: '#aaaaaa' }}>
-                Our guests enjoy more than just a stay — they indulge in a true escape. Here's what our distinguished guests have to say.
-              </p>
+              <div>
+                <p className="text-sm leading-relaxed mb-6" style={{ color: '#aaaaaa' }}>
+                  Our guests enjoy more than just a stay — they indulge in a true escape. Here's what our distinguished guests have to say.
+                </p>
+                <a href="#leave-a-review" className="inline-flex items-center justify-center h-12 px-8 text-xs tracking-[0.2em] uppercase font-medium" style={{ backgroundColor: '#C9A84C', color: '#050505' }}>
+                  Leave a Review
+                </a>
+              </div>
             </div>
           </div>
 
@@ -86,21 +91,17 @@ export default function Reviews() {
         </div>
       </section>
 
-      {/* Feedback CTA */}
-      <section className="py-20 px-6 lg:px-16" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+      {/* Review submission */}
+      <section id="leave-a-review" className="py-20 px-6 lg:px-16 scroll-mt-24" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <div>
-            <div className="text-xs tracking-[0.35em] uppercase mb-4" style={{ color: '#C9A84C' }}>Do You Have Any Problem With Our Services?</div>
+            <div className="text-xs tracking-[0.35em] uppercase mb-4" style={{ color: '#C9A84C' }}>Share Your Feedback</div>
             <h2 className="font-serif font-light text-4xl mb-6" style={{ color: '#F9F9F9' }}>
-              We hear you, let us know what you feel and get your compensation
+              Tell us about your stay or drive
             </h2>
             <p className="text-sm leading-relaxed mb-4" style={{ color: '#aaaaaa' }}>
-              Your feedback matters to us because your experience is our top priority. Whether you have a compliment, a concern, or a suggestion, we'd love to hear from you. Every message helps us improve our services and deliver the exceptional luxury experience you deserve.
+              Choose a rating, add a headline, and write about your experience. Your review helps us improve and helps future guests choose with confidence.
             </p>
-            <p className="text-sm leading-relaxed mb-8 italic" style={{ color: '#aaaaaa' }}>
-              Speak up. We'll listen. We'll make it right.
-            </p>
-
           </div>
           <ReviewForm onSubmitted={review => setGuestReviews(current => [review, ...current])} />
         </div>
