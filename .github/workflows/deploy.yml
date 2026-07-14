@@ -26,17 +26,15 @@ jobs:
 
       - name: Build project
         run: npm run build
+      - name: Sync Compiled Files to WhoGoHost via FTP
+        uses: SebastianVettel/ftp-action@v2.0.0
+        with:
+          host: ${{ secrets.FTP_SERVER }}
+          user: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          localDir: 'dist'
+          remoteDir: '/domains/frensicluxuryapartment.com.ng/public_html/'
 
-      - name: Verify build output exists
-        run: |
-          if [ ! -d "./dist/" ]; then
-            echo "ERROR: ./dist/ directory not found after build."
-            echo "Check vite.config.js for a custom outDir and update server-dir/local-dir in this workflow accordingly."
-            exit 1
-          fi
-
-      - name: Deploy via FTPS
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           protocol: ftps
