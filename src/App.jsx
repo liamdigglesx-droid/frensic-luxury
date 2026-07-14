@@ -30,19 +30,18 @@ import AdminChangePassword from './pages/admin/AdminChangePassword';
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  if (isLoadingPublicSettings || isLoadingAuth) {
+  if (isLoadingPublicSettings) {
     return (
       <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: '#050505' }}>
-        <div className="w-8 h-8 border-2 border-slate-800 rounded-full animate-spin" style={{ borderTopColor: '#2D5BFF' }}></div>
+        <div className="w-8 h-8 border-2 border-slate-800 rounded-full animate-spin" style={{ borderTopColor: '#C9A84C' }}></div>
       </div>
     );
   }
 
-  if (authError) {
-    if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
-    // Don't redirect to platform login — app is public, admin has its own auth
-    if (authError.type === 'auth_required') return null;
+  if (authError && authError.type === 'user_not_registered') {
+    return <UserNotRegisteredError />;
   }
+  // For all other errors (including auth_required), render normally — admin has its own auth
 
   return (
     <Routes>
