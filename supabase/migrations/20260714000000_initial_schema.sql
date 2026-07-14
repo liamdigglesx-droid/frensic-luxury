@@ -1,15 +1,8 @@
 create extension if not exists pgcrypto;
 
 create or replace function public.set_updated_at()
-returns trigger
-language plpgsql
-security invoker
-set search_path = ''
-as $$
-begin
-  new.updated_at = now();
-  return new;
-end;
+returns trigger language plpgsql security invoker set search_path = '' as $$
+begin new.updated_at = now(); return new; end;
 $$;
 
 create table public.profiles (
@@ -21,11 +14,7 @@ create table public.profiles (
 );
 
 create or replace function public.handle_new_user()
-returns trigger
-language plpgsql
-security definer
-set search_path = ''
-as $$
+returns trigger language plpgsql security definer set search_path = '' as $$
 begin
   insert into public.profiles (id, full_name)
   values (new.id, coalesce(new.raw_user_meta_data ->> 'full_name', ''));
@@ -33,17 +22,11 @@ begin
 end;
 $$;
 
-create trigger on_auth_user_created
-after insert on auth.users
+create trigger on_auth_user_created after insert on auth.users
 for each row execute function public.handle_new_user();
 
 create or replace function public.is_admin()
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
+returns boolean language sql stable security definer set search_path = '' as $$
   select exists (
     select 1 from public.profiles
     where id = auth.uid() and role in ('admin', 'staff')
@@ -144,16 +127,11 @@ create index bookings_dates_idx on public.bookings (start_date, end_date);
 create index bookings_payment_status_idx on public.bookings (payment_status);
 create index contact_messages_created_at_idx on public.contact_messages (created_at desc);
 
-create trigger profiles_set_updated_at before update on public.profiles
-for each row execute function public.set_updated_at();
-create trigger bookings_set_updated_at before update on public.bookings
-for each row execute function public.set_updated_at();
-create trigger rooms_set_updated_at before update on public.rooms
-for each row execute function public.set_updated_at();
-create trigger cars_set_updated_at before update on public.cars
-for each row execute function public.set_updated_at();
-create trigger reviews_set_updated_at before update on public.reviews
-for each row execute function public.set_updated_at();
+create trigger profiles_set_updated_at before update on public.profiles for each row execute function public.set_updated_at();
+create trigger bookings_set_updated_at before update on public.bookings for each row execute function public.set_updated_at();
+create trigger rooms_set_updated_at before update on public.rooms for each row execute function public.set_updated_at();
+create trigger cars_set_updated_at before update on public.cars for each row execute function public.set_updated_at();
+create trigger reviews_set_updated_at before update on public.reviews for each row execute function public.set_updated_at();
 
 alter table public.profiles enable row level security;
 alter table public.bookings enable row level security;
@@ -162,35 +140,16 @@ alter table public.rooms enable row level security;
 alter table public.cars enable row level security;
 alter table public.reviews enable row level security;
 
-create policy "Users read own profile" on public.profiles
-for select to authenticated using (id = auth.uid() or public.is_admin());
-create policy "Admins manage profiles" on public.profiles
-for all to authenticated using (public.is_admin()) with check (public.is_admin());
-
-create policy "Public creates pending bookings" on public.bookings
-for insert to anon, authenticated
-with check (payment_status = 'pending' and payment_reference is null);
-create policy "Admins manage bookings" on public.bookings
-for all to authenticated using (public.is_admin()) with check (public.is_admin());
-
-create policy "Public sends contact messages" on public.contact_messages
-for insert to anon, authenticated with check (true);
-create policy "Admins manage contact messages" on public.contact_messages
-for all to authenticated using (public.is_admin()) with check (public.is_admin());
-
-create policy "Public reads rooms" on public.rooms
-for select to anon, authenticated using (true);
-create policy "Admins manage rooms" on public.rooms
-for all to authenticated using (public.is_admin()) with check (public.is_admin());
-
-create policy "Public reads cars" on public.cars
-for select to anon, authenticated using (true);
-create policy "Admins manage cars" on public.cars
-for all to authenticated using (public.is_admin()) with check (public.is_admin());
-
-create policy "Public reads reviews" on public.reviews
-for select to anon, authenticated using (true);
-create policy "Public submits reviews" on public.reviews
-for insert to anon, authenticated with check (rating between 1 and 5);
-create policy "Admins manage reviews" on public.reviews
-for all to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy "Users read own profile" on public.profiles for select to authenticated using (id = auth.uid() or public.is_admin());
+create policy "Admins manage profiles" on public.profiles for all to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy "Public creates pending bookings" on public.bookings for insert to anon, authenticated with check (payment_status = 'pending' and payment_reference is null);
+create policy "Admins manage bookings" on public.bookings for all to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy "Public sends contact messages" on public.contact_messages for insert to anon, authenticated with check (true);
+create policy "Admins manage contact messages" on public.contact_messages for all to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy "Public reads rooms" on public.rooms for select to anon, authenticated using (true);
+create policy "Admins manage rooms" on public.rooms for all to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy "Public reads cars" on public.cars for select to anon, authenticated using (true);
+create policy "Admins manage cars" on public.cars for all to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy "Public reads reviews" on public.reviews for select to anon, authenticated using (true);
+create policy "Public submits reviews" on public.reviews for insert to anon, authenticated with check (rating between 1 and 5);
+create policy "Admins manage reviews" on public.reviews for all to authenticated using (public.is_admin()) with check (public.is_admin());
