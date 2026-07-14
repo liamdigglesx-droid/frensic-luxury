@@ -40,7 +40,8 @@ const AuthenticatedApp = () => {
 
   if (authError) {
     if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
-    if (authError.type === 'auth_required') { navigateToLogin(); return null; }
+    // Don't redirect to platform login — app is public, admin has its own auth
+    if (authError.type === 'auth_required') return null;
   }
 
   return (

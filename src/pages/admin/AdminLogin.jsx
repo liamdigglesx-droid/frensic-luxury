@@ -2,17 +2,19 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, Eye, EyeOff, Lock, User } from 'lucide-react';
 
-// Credentials stored in localStorage key 'frensic_admin_creds'
-// Default: admin / Frednsidebe@001
+// Default credentials (always work on any domain)
 const DEFAULT_CREDS = { username: 'admin', password: 'Frednsidebe@001' };
 
 function getStoredCreds() {
   try {
     const stored = localStorage.getItem('frensic_admin_creds');
-    return stored ? JSON.parse(stored) : DEFAULT_CREDS;
-  } catch {
-    return DEFAULT_CREDS;
-  }
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Only use stored creds if both fields are non-empty
+      if (parsed.username && parsed.password) return parsed;
+    }
+  } catch {}
+  return DEFAULT_CREDS;
 }
 
 export function checkAdminAuth() {
