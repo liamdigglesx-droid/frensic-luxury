@@ -36,13 +36,13 @@ export default function Navbar() {
           backdropFilter: scrolled ? 'blur(20px)' : 'none',
         }}
       >
-        <div className="flex items-center justify-between px-6 lg:px-12 h-20">
+        <div className="flex items-center justify-between px-6 lg:px-12 h-24">
           {/* Logo */}
           <Link to="/" className="flex items-center group">
             <img
               src="https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/602d336b8_Untitleddesign1.png"
               alt="Frensic Luxury Apartment"
-              className="h-[4.2rem] w-auto object-contain"
+              className="h-[5.45rem] w-auto object-contain"
               style={{ filter: 'contrast(1.15) saturate(1.1) drop-shadow(0 0 10px rgba(201,168,76,0.35))' }}
             />
           </Link>
