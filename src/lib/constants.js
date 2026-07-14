@@ -88,7 +88,7 @@ export const CARS = [
     seats: 7,
     transmission: 'Automatic',
     features: ['Professional Chauffeur Available', 'VIP Privacy Glass', 'Executive Leather Seating', 'Tri-Zone Climate Control', 'Premium Surround Sound', 'Panoramic Roof'],
-    image_url: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=1200',
+    image_url: 'https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/30098f244_generated_image.png',
   },
   {
     id: 'grand-style',
