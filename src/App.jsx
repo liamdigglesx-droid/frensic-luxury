@@ -28,8 +28,9 @@ import AdminLogin from './pages/admin/AdminLogin';
 import AdminChangePassword from './pages/admin/AdminChangePassword';
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingPublicSettings, authError } = useAuth();
 
+  // Only block on loading, never on auth errors — admin has its own auth system
   if (isLoadingPublicSettings) {
     return (
       <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: '#050505' }}>
@@ -38,10 +39,9 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (authError && authError.type === 'user_not_registered') {
+  if (authError?.type === 'user_not_registered') {
     return <UserNotRegisteredError />;
   }
-  // For all other errors (including auth_required), render normally — admin has its own auth
 
   return (
     <Routes>
