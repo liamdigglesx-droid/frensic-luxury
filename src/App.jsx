@@ -25,6 +25,13 @@ import AdminMessages from './pages/admin/AdminMessages';
 import AdminNotifications from './pages/admin/AdminNotifications';
 import AdminStaff from './pages/admin/AdminStaff';
 import AdminChangePassword from './pages/admin/AdminChangePassword';
+import ProtectedRoute from './components/ProtectedRoute';
+import StaffLayout from './components/staff/StaffLayout';
+import StaffBookings from './pages/staff/StaffBookings';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 const AuthenticatedApp = () => {
   const { isLoadingPublicSettings, authError } = useAuth();
@@ -54,6 +61,15 @@ const AuthenticatedApp = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/my-bookings" element={<MyBookings />} />
+      </Route>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/staff" replace />} />}>
+        <Route element={<StaffLayout />}>
+          <Route path="/staff" element={<StaffBookings />} />
+        </Route>
       </Route>
       <Route element={<AdminLayout />}>
         <Route path="/dashboard/admin" element={<AdminDashboard />} />

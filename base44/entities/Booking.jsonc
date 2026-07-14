@@ -51,6 +51,17 @@
     "total_amount": {
       "type": "number"
     },
+    "booking_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "checked_in",
+        "completed",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
     "payment_status": {
       "type": "string",
       "enum": [
@@ -84,6 +95,15 @@
     "receipt_submitted_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "assigned_staff_id": {
+      "type": "string"
+    },
+    "assigned_staff_name": {
+      "type": "string"
+    },
+    "assigned_staff_email": {
+      "type": "string"
     }
   },
   "required": [
