@@ -20,11 +20,13 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Synchronous check — no flicker, no black screen
-  if (!checkAdminAuth()) {
-    navigate('/login/admin', { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (!checkAdminAuth()) {
+      navigate('/login/admin', { replace: true });
+    }
+  }, [location.pathname]);
+
+  if (!checkAdminAuth()) return null;
 
   const handleLogout = () => {
     adminLogout();
@@ -64,9 +66,9 @@ export default function AdminLayout() {
               onClick={() => setSidebarOpen(false)}
               className="flex items-center gap-3 px-4 py-3 text-sm transition-all group"
               style={{
-                backgroundColor: isActive({ path, exact: path === '/admin' }) ? 'rgba(201,168,76,0.1)' : 'transparent',
-                color: isActive({ path, exact: path === '/admin' }) ? '#C9A84C' : '#888888',
-                borderLeft: isActive({ path, exact: path === '/admin' }) ? '2px solid #C9A84C' : '2px solid transparent',
+                backgroundColor: isActive({ path, exact: path === '/dashboard/admin' }) ? 'rgba(201,168,76,0.1)' : 'transparent',
+                color: isActive({ path, exact: path === '/dashboard/admin' }) ? '#C9A84C' : '#888888',
+                borderLeft: isActive({ path, exact: path === '/dashboard/admin' }) ? '2px solid #C9A84C' : '2px solid transparent',
               }}
             >
               <Icon size={16} />
