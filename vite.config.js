@@ -1,6 +1,7 @@
 import base44 from "@base44/vite-plugin"
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import { copyFileSync, writeFileSync } from 'node:fs'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -15,5 +16,13 @@ export default defineConfig({
       visualEditAgent: true
     }),
     react(),
+    {
+      name: 'spa-route-fallbacks',
+      apply: 'build',
+      closeBundle() {
+        copyFileSync('dist/index.html', 'dist/404.html')
+        writeFileSync('dist/.htaccess', `<IfModule mod_rewrite.c>\nRewriteEngine On\nRewriteBase /\nRewriteRule ^index\\.html$ - [L]\nRewriteCond %{REQUEST_FILENAME} !-f\nRewriteCond %{REQUEST_FILENAME} !-d\nRewriteRule . /index.html [L]\n</IfModule>\n`)
+      }
+    },
   ]
 });
