@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, CalendarCheck, MessageSquare, Bell, Users,
-  LogOut, Menu, X, ChevronRight, Building2
+  LogOut, Menu, X, ChevronRight, Building2, KeyRound
 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { checkAdminAuth, adminLogout } from '@/pages/admin/AdminLogin';
 
 const navItems = [
   { path: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
@@ -12,6 +12,7 @@ const navItems = [
   { path: '/admin/messages', label: 'Messages', icon: MessageSquare },
   { path: '/admin/notifications', label: 'Notifications', icon: Bell },
   { path: '/admin/staff', label: 'Staff', icon: Users },
+  { path: '/admin/change-password', label: 'Change Password', icon: KeyRound },
 ];
 
 export default function AdminLayout() {
@@ -19,8 +20,15 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const handleLogout = async () => {
-    await base44.auth.logout('/');
+  useEffect(() => {
+    if (!checkAdminAuth()) {
+      navigate('/admin/login', { replace: true });
+    }
+  }, [location.pathname]);
+
+  const handleLogout = () => {
+    adminLogout();
+    navigate('/admin/login', { replace: true });
   };
 
   const isActive = (item) =>

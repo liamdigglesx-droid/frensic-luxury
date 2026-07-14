@@ -24,6 +24,8 @@ import AdminBookings from './pages/admin/AdminBookings';
 import AdminMessages from './pages/admin/AdminMessages';
 import AdminNotifications from './pages/admin/AdminNotifications';
 import AdminStaff from './pages/admin/AdminStaff';
+import AdminLogin from './pages/admin/AdminLogin';
+import AdminChangePassword from './pages/admin/AdminChangePassword';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -54,12 +56,14 @@ const AuthenticatedApp = () => {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/my-bookings" element={<MyBookings />} />
       </Route>
+      <Route path="/admin/login" element={<AdminLogin />} />
       <Route element={<AdminLayout />}>
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/bookings" element={<AdminBookings />} />
         <Route path="/admin/messages" element={<AdminMessages />} />
         <Route path="/admin/notifications" element={<AdminNotifications />} />
         <Route path="/admin/staff" element={<AdminStaff />} />
+        <Route path="/admin/change-password" element={<AdminChangePassword />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
