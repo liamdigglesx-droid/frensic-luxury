@@ -72,6 +72,7 @@ export default function BankTransferDialog({ open, onOpenChange, booking, total 
           </div>
           <button onClick={() => navigator.clipboard.writeText('0012903444')} className="flex items-center justify-center gap-2 text-xs uppercase tracking-widest text-primary"><Copy size={14} /> Copy Account Number</button>
           <p className="text-center text-sm text-muted-foreground">Complete your transfer within <strong className="text-primary">{minutes}:{remainingSeconds}</strong></p>
+          <p className="border border-primary/20 bg-primary/5 p-3 text-center text-sm text-foreground">Kindly screenshot your receipt after payment for submission.</p>
           <button onClick={() => setStep('receipt')} className="h-12 bg-primary text-primary-foreground text-xs uppercase tracking-[0.18em]">I Have Made Payment</button>
         </>}
 

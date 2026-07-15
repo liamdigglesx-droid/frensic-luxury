@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Building2, Car, Search, Filter, Download } from 'lucide-react';
+import BookingsExcelExport from '@/components/admin/BookingsExcelExport';
 
 const GOLD = '#C9A84C';
 const CARD_BG = { backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' };
@@ -97,6 +98,7 @@ export default function AdminBookings() {
         <div className="text-xs tracking-wide" style={{ color: '#888' }}>
           {filtered.length} results · <span style={{ color: GOLD }}>₦{totalFiltered.toLocaleString()}</span>
         </div>
+        <BookingsExcelExport bookings={filtered} />
       </div>
 
       {/* Table */}

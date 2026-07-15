@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
       fromName: 'Frensic Luxury Apartment',
     });
     const rawBusiness = buildMimeEmail({
-      to: 'info@frensicluxuryapartments.com.ng',
+      to: isReceiptNotification ? 'frensicluxuryapartment@gmail.com' : 'info@frensicluxuryapartments.com.ng',
       subject: isReceiptNotification ? `[PAYMENT RECEIPT] ${booking.item_name} — ${booking.guest_name || booking.guest_email}` : `[NEW BOOKING] ${booking.item_name} — ${booking.guest_name || booking.guest_email}`,
       html,
       fromName: 'Frensic Luxury Apartment',
