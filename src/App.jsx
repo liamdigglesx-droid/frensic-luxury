@@ -72,6 +72,7 @@ const AuthenticatedApp = () => {
           <Route path="/staff" element={<StaffBookings />} />
         </Route>
       </Route>
+      <Route path="/admin" element={<Navigate to="/dashboard/admin" replace />} />
       <Route element={<AdminAccessRoute />}>
         <Route element={<AdminLayout />}>
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
