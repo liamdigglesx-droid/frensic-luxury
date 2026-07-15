@@ -52,7 +52,7 @@ export default function AdminMessages() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ minHeight: 400 }}>
         {/* List */}
-        <div style={CARD_BG} className="lg:col-span-1 overflow-y-auto" style={{ maxHeight: 600, ...CARD_BG }}>
+        <div style={{ ...CARD_BG, maxHeight: 600 }} className="lg:col-span-1 overflow-y-auto" >
           {loading ? (
             <div className="flex items-center justify-center h-32">
               <div className="w-6 h-6 border-2 border-transparent rounded-full animate-spin" style={{ borderTopColor: GOLD }} />
