@@ -14,6 +14,9 @@ Deno.serve(async (req) => {
     const keys = await keysResponse.json();
     const serviceKey = keys.find((item) => item.name === 'service_role')?.api_key;
     if (!serviceKey) return Response.json({ error: 'Supabase service key unavailable' }, { status: 500 });
+    const projectUrl = `https://${project.id}.supabase.co`;
+    const schemaCheck = await fetch(`${projectUrl}/rest/v1/bookings?select=id&limit=1`, { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } });
+    if (!schemaCheck.ok) return Response.json({ error: 'Apply the Supabase migrations before transferring data' }, { status: 409 });
 
     const mappings = [
       ['Booking', 'bookings'], ['ContactMessage', 'contact_messages'], ['Room', 'rooms'], ['Car', 'cars'], ['Review', 'reviews'],
