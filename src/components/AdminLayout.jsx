@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, CalendarCheck, MessageSquare, Bell, Users,
-  Menu, X, ChevronRight, Building2, KeyRound
+  Menu, X, ChevronRight, Building2, KeyRound, LogOut
 } from 'lucide-react';
 
 const navItems = [
@@ -20,6 +20,11 @@ export default function AdminLayout() {
 
   const isActive = (item) =>
     item.exact ? location.pathname === item.path : location.pathname.startsWith(item.path);
+
+  const signOut = () => {
+    sessionStorage.removeItem('frensic_admin_token');
+    window.location.href = '/admin';
+  };
 
   return (
     <div className="min-h-screen flex" style={{ backgroundColor: '#050505' }}>
@@ -62,6 +67,12 @@ export default function AdminLayout() {
           ))}
         </nav>
 
+        <div className="border-t border-border p-3">
+          <button onClick={signOut} className="flex w-full items-center gap-3 px-4 py-3 text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <LogOut size={16} />
+            <span className="tracking-wide">Sign Out</span>
+          </button>
+        </div>
       </aside>
 
       {/* Overlay */}

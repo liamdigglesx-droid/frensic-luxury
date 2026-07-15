@@ -44,7 +44,9 @@ export default function AdminBookings() {
     const matchSearch = !search ||
       (b.guest_name || '').toLowerCase().includes(search.toLowerCase()) ||
       (b.guest_email || '').toLowerCase().includes(search.toLowerCase()) ||
-      (b.item_name || '').toLowerCase().includes(search.toLowerCase());
+      (b.item_name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (b.start_date || '').toLowerCase().includes(search.toLowerCase()) ||
+      (b.end_date || '').toLowerCase().includes(search.toLowerCase());
     const matchType = filterType === 'all' || b.booking_type === filterType;
     const matchStatus = filterStatus === 'all' || b.payment_status === filterStatus;
     return matchSearch && matchType && matchStatus;
@@ -66,7 +68,7 @@ export default function AdminBookings() {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search guest, item..."
+            placeholder="Search customer, room, car, or date..."
             className="w-full h-10 pl-9 pr-4 text-sm bg-transparent outline-none"
             style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F9F9F9' }}
           />
