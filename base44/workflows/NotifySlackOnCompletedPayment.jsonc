@@ -1,0 +1,40 @@
+{
+  "name": "Notify Slack on Completed Payment",
+  "description": "Sends an instant notification to #bookings when a booking payment becomes paid.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "Booking",
+      "events": [
+        "update"
+      ]
+    },
+    "condition": "${ .trigger.data.payment_status == \"paid\" and .trigger.old_data.payment_status != \"paid\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "notify_slack_on_completed_payment",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "send_slack_notification": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "sendPaidBookingSlack",
+            "args": {
+              "booking": "${ .trigger.data }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Notify #bookings",
+            "description": "Send payment details"
+          }
+        }
+      }
+    ]
+  }
+}
