@@ -19,6 +19,7 @@ import Contact from './pages/Contact';
 import Privacy from './pages/Privacy';
 import MyBookings from './pages/MyBookings';
 import AdminLayout from './components/AdminLayout';
+import AdminAccessRoute from './components/AdminAccessRoute';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminBookings from './pages/admin/AdminBookings';
 import AdminMessages from './pages/admin/AdminMessages';
@@ -71,13 +72,15 @@ const AuthenticatedApp = () => {
           <Route path="/staff" element={<StaffBookings />} />
         </Route>
       </Route>
-      <Route element={<AdminLayout />}>
-        <Route path="/dashboard/admin" element={<AdminDashboard />} />
-        <Route path="/dashboard/admin/bookings" element={<AdminBookings />} />
-        <Route path="/dashboard/admin/messages" element={<AdminMessages />} />
-        <Route path="/dashboard/admin/notifications" element={<AdminNotifications />} />
-        <Route path="/dashboard/admin/staff" element={<AdminStaff />} />
-        <Route path="/dashboard/admin/change-password" element={<AdminChangePassword />} />
+      <Route element={<AdminAccessRoute />}>
+        <Route element={<AdminLayout />}>
+          <Route path="/dashboard/admin" element={<AdminDashboard />} />
+          <Route path="/dashboard/admin/bookings" element={<AdminBookings />} />
+          <Route path="/dashboard/admin/messages" element={<AdminMessages />} />
+          <Route path="/dashboard/admin/notifications" element={<AdminNotifications />} />
+          <Route path="/dashboard/admin/staff" element={<AdminStaff />} />
+          <Route path="/dashboard/admin/change-password" element={<AdminChangePassword />} />
+        </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
