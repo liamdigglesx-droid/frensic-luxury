@@ -1,14 +1,15 @@
 import { createClient } from '@base44/sdk';
 import { appParams } from '@/lib/app-params';
+import { supabaseCompat } from '@/api/supabaseCompat';
 
 const { appId, token, functionsVersion, appBaseUrl } = appParams;
-
-//Create a client with authentication required
-export const base44 = createClient({
+const legacyClient = createClient({
   appId,
   token,
   functionsVersion,
   serverUrl: 'https://base44.app',
   requiresAuth: false,
-  appBaseUrl
+  appBaseUrl,
 });
+
+export const base44 = import.meta.env.VITE_SUPABASE_URL ? supabaseCompat : legacyClient;

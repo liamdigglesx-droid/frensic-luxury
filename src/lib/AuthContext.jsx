@@ -24,6 +24,12 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAppState = async () => {
+    if (import.meta.env.VITE_SUPABASE_URL) {
+      setIsLoadingPublicSettings(false);
+      setAuthError(null);
+      await checkUserAuth();
+      return;
+    }
     try {
       setIsLoadingPublicSettings(true);
       setAuthError(null);
