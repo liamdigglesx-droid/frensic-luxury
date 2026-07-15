@@ -112,7 +112,7 @@ export default function AdminStaff() {
                 </div>
                 <div className="flex-1">
                   <div className="text-sm" style={{ color: '#F9F9F9' }}>{u.full_name || '—'}</div>
-                  <div className="text-xs" style={{ color: '#666' }}>{u.email}</div>
+                  <div className="text-xs" style={{ color: '#666' }}>{u.role === 'admin' ? 'frensicluxuryapartment@gmail.com' : u.email}</div>
                 </div>
                 <div className="flex items-center gap-1.5 px-3 py-1 text-[10px] tracking-widest uppercase" style={{
                   backgroundColor: u.role === 'admin' ? 'rgba(201,168,76,0.1)' : 'rgba(255,255,255,0.05)',

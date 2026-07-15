@@ -83,7 +83,7 @@ export default function AdminLayout() {
               {navItems.find(n => isActive(n))?.label || 'Dashboard'}
             </span>
           </div>
-          <div className="text-xs tracking-widest uppercase" style={{ color: '#C9A84C' }}>Frensic Luxury</div>
+          <div className="text-xs tracking-wider" style={{ color: '#C9A84C' }}>frensicluxuryapartment@gmail.com</div>
         </header>
 
         {/* Page Content */}
