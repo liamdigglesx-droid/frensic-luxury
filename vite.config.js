@@ -2,9 +2,15 @@ import base44 from "@base44/vite-plugin"
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { copyFileSync, writeFileSync } from 'node:fs'
+import { fileURLToPath, URL } from 'node:url'
 
 // https://vite.dev/config/
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
+  },
   plugins: [
     ...(process.env.VERCEL ? [] : [base44({
       legacySDKImports: process.env.BASE44_LEGACY_SDK_IMPORTS === 'true',
