@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { UserPlus, Mail, Shield, User } from 'lucide-react';
+import { UserPlus, Mail } from 'lucide-react';
+import StaffMemberRow from '@/components/admin/StaffMemberRow';
 
 const GOLD = '#C9A84C';
 const CARD_BG = { backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' };
@@ -14,12 +15,31 @@ export default function AdminStaff() {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    base44.entities.User.list().then(u => {
-      setUsers(u);
-      setLoading(false);
-    });
-  }, []);
+  const manageStaff = (action, payload = {}) => base44.functions.invoke('manageStaff', {
+    action,
+    sessionToken: sessionStorage.getItem('frensic_admin_token'),
+    ...payload,
+  });
+
+  const loadUsers = () => manageStaff('list').then(({ data }) => setUsers(data.users)).finally(() => setLoading(false));
+  useEffect(() => { loadUsers(); }, []);
+
+  const updateRole = async (member, nextRole) => {
+    setError(''); setSuccess('');
+    try { await manageStaff('updateRole', { userId: member.id, role: nextRole }); setSuccess(`${member.email} updated.`); await loadUsers(); }
+    catch (err) { setError(err?.response?.data?.error || 'Unable to update staff member.'); }
+  };
+  const resetPassword = async (member) => {
+    setError(''); setSuccess('');
+    try { await manageStaff('resetPassword', { email: member.email }); setSuccess(`Password reset link sent to ${member.email}.`); }
+    catch (err) { setError(err?.response?.data?.error || 'Unable to send reset link.'); }
+  };
+  const deleteStaff = async (member) => {
+    if (!window.confirm(`Delete ${member.email}?`)) return;
+    setError(''); setSuccess('');
+    try { await manageStaff('delete', { userId: member.id }); setSuccess(`${member.email} deleted.`); await loadUsers(); }
+    catch (err) { setError(err?.response?.data?.error || 'Unable to delete staff member.'); }
+  };
 
   const handleInvite = async (e) => {
     e.preventDefault();
@@ -94,37 +114,15 @@ export default function AdminStaff() {
         </form>
       </div>
 
+      {(error || success) && <p className="text-sm" style={{ color: error ? '#f87171' : '#4ade80' }}>{error || success}</p>}
+
       {/* Users Table */}
       <div style={CARD_BG}>
         <div className="px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="font-serif text-lg" style={{ color: '#F9F9F9' }}>Team Members</div>
         </div>
-        {loading ? (
-          <div className="flex items-center justify-center h-32">
-            <div className="w-6 h-6 border-2 border-transparent rounded-full animate-spin" style={{ borderTopColor: GOLD }} />
-          </div>
-        ) : (
-          <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
-            {users.map(u => (
-              <div key={u.id} className="flex items-center gap-4 px-5 py-4">
-                <div className="w-9 h-9 flex items-center justify-center font-serif flex-shrink-0" style={{ backgroundColor: 'rgba(201,168,76,0.1)', color: GOLD }}>
-                  {(u.full_name || u.email || '?')[0].toUpperCase()}
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm" style={{ color: '#F9F9F9' }}>{u.full_name || '—'}</div>
-                  <div className="text-xs" style={{ color: '#666' }}>{u.role === 'admin' ? 'frensicluxuryapartment@gmail.com' : u.email}</div>
-                </div>
-                <div className="flex items-center gap-1.5 px-3 py-1 text-[10px] tracking-widest uppercase" style={{
-                  backgroundColor: u.role === 'admin' ? 'rgba(201,168,76,0.1)' : 'rgba(255,255,255,0.05)',
-                  color: u.role === 'admin' ? GOLD : '#888',
-                }}>
-                  {u.role === 'admin' ? <Shield size={10} /> : <User size={10} />}
-                  {u.role}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {loading ? <div className="flex items-center justify-center h-32"><div className="w-6 h-6 border-2 border-transparent rounded-full animate-spin" style={{ borderTopColor: GOLD }} /></div>
+          : <div className="divide-y divide-border">{users.map(member => <StaffMemberRow key={member.id} member={member} onRoleChange={updateRole} onReset={resetPassword} onDelete={deleteStaff} />)}</div>}
       </div>
     </div>
   );

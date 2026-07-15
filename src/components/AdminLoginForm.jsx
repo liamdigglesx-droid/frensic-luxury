@@ -15,7 +15,7 @@ export default function AdminLoginForm({ onSuccess }) {
     try {
       const response = await base44.functions.invoke('verifyAdminCredentials', { username, password });
       if (!response.data?.authorized) throw new Error('Invalid username or password.');
-      sessionStorage.setItem('frensic_admin_access', 'granted');
+      sessionStorage.setItem('frensic_admin_token', response.data.sessionToken);
       onSuccess();
     } catch {
       setError('Invalid username or password.');

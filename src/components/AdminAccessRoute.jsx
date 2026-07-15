@@ -4,7 +4,7 @@ import AdminLoginForm from '@/components/AdminLoginForm';
 
 export default function AdminAccessRoute() {
   const [hasAccess, setHasAccess] = useState(
-    () => sessionStorage.getItem('frensic_admin_access') === 'granted'
+    () => Boolean(sessionStorage.getItem('frensic_admin_token'))
   );
 
   if (!hasAccess) {
