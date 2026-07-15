@@ -6,7 +6,7 @@ export default function StaffMemberRow({ member, busy, onRoleChange, onReset, on
   const changeRole = (nextRole) => { setRole(nextRole); onRoleChange(member, nextRole); };
   return <div className="flex flex-col gap-3 px-5 py-4 md:flex-row md:items-center">
     <div className="flex-1 min-w-0">
-      <div className="text-sm text-foreground">{member.full_name || 'Staff member'}</div>
+      <div className="text-sm text-foreground">{member.role === 'admin' ? 'Admin' : (member.full_name || 'Staff member')}</div>
       <div className="text-xs text-muted-foreground truncate">{member.role === 'admin' ? 'frensicluxuryapartment@gmail.com' : member.email}</div>
     </div>
     <select value={role} disabled={busy} onChange={(e) => changeRole(e.target.value)} className="h-9 border border-input bg-card px-3 text-xs text-foreground">
