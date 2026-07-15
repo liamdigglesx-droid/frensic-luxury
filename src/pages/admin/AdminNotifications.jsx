@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Bell, Building2, Car, MessageSquare, CheckCheck } from 'lucide-react';
 
@@ -12,6 +13,7 @@ function buildNotifications(bookings, messages) {
     if (b.transfer_status === 'receipt_submitted') {
       notifs.push({
         id: `booking-receipt-${b.id}`,
+        bookingId: b.id,
         type: 'booking_receipt',
         icon: b.booking_type === 'stay' ? Building2 : Car,
         title: 'Payment Receipt Submitted',
@@ -22,6 +24,7 @@ function buildNotifications(bookings, messages) {
     } else if (b.payment_status === 'paid') {
       notifs.push({
         id: `booking-paid-${b.id}`,
+        bookingId: b.id,
         type: 'booking_paid',
         icon: b.booking_type === 'stay' ? Building2 : Car,
         title: `New ${b.booking_type === 'stay' ? 'Stay' : 'Car Rental'} Booking`,
@@ -32,6 +35,7 @@ function buildNotifications(bookings, messages) {
     } else if (b.payment_status === 'pending') {
       notifs.push({
         id: `booking-pending-${b.id}`,
+        bookingId: b.id,
         type: 'booking_pending',
         icon: b.booking_type === 'stay' ? Building2 : Car,
         title: 'Pending Booking',
@@ -58,6 +62,7 @@ function buildNotifications(bookings, messages) {
 }
 
 export default function AdminNotifications() {
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -87,10 +92,12 @@ export default function AdminNotifications() {
     localStorage.setItem('frensic_read_notifs', JSON.stringify(ids));
   };
 
-  const markRead = (id) => {
-    const next = [...new Set([...read, id])];
+  const openNotification = (notification) => {
+    const next = [...new Set([...read, notification.id])];
     setRead(next);
     localStorage.setItem('frensic_read_notifs', JSON.stringify(next));
+    if (notification.bookingId) navigate(`/dashboard/admin/bookings?bookingId=${notification.bookingId}`);
+    else if (notification.type === 'message') navigate('/dashboard/admin/messages');
   };
 
   return (
@@ -153,7 +160,7 @@ export default function AdminNotifications() {
                   backgroundColor: isRead ? 'transparent' : 'rgba(201,168,76,0.03)',
                   borderLeft: isRead ? '3px solid transparent' : `3px solid ${n.color}`,
                 }}
-                onClick={() => markRead(n.id)}
+                onClick={() => openNotification(n)}
               >
                 <div className="w-9 h-9 flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${n.color}15`, color: n.color }}>
                   <Icon size={15} />

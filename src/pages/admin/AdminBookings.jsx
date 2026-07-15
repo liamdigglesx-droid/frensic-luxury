@@ -25,7 +25,7 @@ export default function AdminBookings() {
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [expanded, setExpanded] = useState(null);
+  const [expanded, setExpanded] = useState(() => new URLSearchParams(window.location.search).get('bookingId'));
 
   useEffect(() => {
     base44.entities.Booking.list('-created_date', 500).then(b => {
@@ -33,6 +33,12 @@ export default function AdminBookings() {
       setLoading(false);
     });
   }, []);
+
+  useEffect(() => {
+    if (!loading && expanded) {
+      requestAnimationFrame(() => document.getElementById(`booking-${expanded}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+    }
+  }, [loading, expanded]);
 
   const filtered = bookings.filter(b => {
     const matchSearch = !search ||
@@ -114,6 +120,7 @@ export default function AdminBookings() {
                   <>
                     <tr
                       key={b.id}
+                      id={`booking-${b.id}`}
                       className="cursor-pointer transition-all"
                       onClick={() => setExpanded(expanded === b.id ? null : b.id)}
                       style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
