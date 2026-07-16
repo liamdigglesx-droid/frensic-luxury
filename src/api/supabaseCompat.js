@@ -1,6 +1,24 @@
 import { supabase } from '@/lib/supabase';
 
 const entityNames = ['Booking', 'ContactMessage', 'Room', 'Car', 'Review', 'User'];
+const publicTables = { Booking: 'bookings', ContactMessage: 'contact_messages', Room: 'rooms', Car: 'cars', Review: 'reviews' };
+const toDb = data => Object.fromEntries(Object.entries(data || {}).map(([key, value]) => [key === 'created_date' ? 'created_at' : key === 'updated_date' ? 'updated_at' : key === 'order' ? 'display_order' : key, value]));
+const fromDb = row => row && Object.fromEntries(Object.entries(row).map(([key, value]) => [key === 'created_at' ? 'created_date' : key === 'updated_at' ? 'updated_date' : key === 'display_order' ? 'order' : key, value]));
+
+async function createPublic(name, data) {
+  const record = { id: crypto.randomUUID(), created_at: new Date().toISOString(), ...toDb(data) };
+  const { error } = await supabase.from(publicTables[name]).insert(record);
+  if (error) throw error;
+  return fromDb(record);
+}
+
+async function listPublic(name, sort, limit) {
+  const descending = sort.startsWith('-');
+  const field = Object.keys(toDb({ [sort.replace(/^-/, '')]: true }))[0];
+  const { data, error } = await supabase.from(publicTables[name]).select('*').order(field, { ascending: !descending }).limit(limit);
+  if (error) throw error;
+  return data.map(fromDb);
+}
 
 async function request(path, payload) {
   const { data: { session } } = await supabase.auth.getSession();
@@ -29,10 +47,14 @@ async function request(path, payload) {
 }
 
 const entity = name => ({
-  list: (sort = '-created_date', limit = 50) => request('data', { entity: name, action: 'list', sort, limit }),
+  list: (sort = '-created_date', limit = 50) => ['Room', 'Car', 'Review'].includes(name)
+    ? listPublic(name, sort, limit)
+    : request('data', { entity: name, action: 'list', sort, limit }),
   filter: (query = {}, sort = '-created_date', limit = 500) => request('data', { entity: name, action: 'filter', query, sort, limit }),
   get: id => request('data', { entity: name, action: 'get', id }),
-  create: data => request('data', { entity: name, action: 'create', data }),
+  create: data => publicTables[name] && ['Booking', 'ContactMessage', 'Review'].includes(name)
+    ? createPublic(name, data)
+    : request('data', { entity: name, action: 'create', data }),
   bulkCreate: data => request('data', { entity: name, action: 'bulkCreate', data }),
   update: (id, data) => request('data', { entity: name, action: 'update', id, data }),
   delete: id => request('data', { entity: name, action: 'delete', id }),

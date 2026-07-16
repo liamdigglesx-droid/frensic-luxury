@@ -31,34 +31,29 @@ export default function BankTransferDialog({ open, onOpenChange, booking, total,
     return () => window.clearTimeout(timer);
   }, [open, seconds, step, booking?.id, onOpenChange]);
 
-  const continueToReceipt = async () => {
-    setUploading(true);
+  const continueToReceipt = () => {
     setError('');
-    try {
-      if (!booking?.id) await onPrepareBooking();
-      setStep('receipt');
-    } catch (err) {
-      setError(err.message || 'Could not start bank transfer. Please try again.');
-    } finally {
-      setUploading(false);
-    }
+    setStep('receipt');
   };
 
   const uploadReceipt = async () => {
-    if (!file || !booking?.id) return;
+    if (!file) return;
     if (file.size > MAX_FILE_SIZE) return setError('Receipt must be 50MB or smaller.');
     setUploading(true);
     setError('');
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       const receiptSubmittedAt = new Date().toISOString();
-      const updated = await base44.entities.Booking.update(booking.id, {
+      const receiptData = {
         payment_receipt_url: file_url,
         receipt_submitted_at: receiptSubmittedAt,
         transfer_status: 'receipt_submitted',
-      });
+      };
+      const savedBooking = booking?.id
+        ? await base44.entities.Booking.update(booking.id, receiptData)
+        : await onPrepareBooking(receiptData);
       await base44.functions.invoke('sendBookingConfirmation', {
-        booking: { ...booking, ...updated, payment_receipt_url: file_url, receipt_submitted_at: receiptSubmittedAt },
+        booking: { ...savedBooking, ...receiptData },
         notificationType: 'receipt_submitted',
       }).catch(() => {});
       setStep('success');
@@ -87,8 +82,8 @@ export default function BankTransferDialog({ open, onOpenChange, booking, total,
           <p className="text-center text-sm text-muted-foreground">Complete your transfer within <strong className="text-primary">{minutes}:{remainingSeconds}</strong></p>
           <p className="border border-primary/20 bg-primary/5 p-3 text-center text-sm text-foreground">Kindly screenshot your receipt after payment for submission.</p>
           {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-          <button onClick={continueToReceipt} disabled={uploading} className="h-12 bg-primary text-primary-foreground disabled:opacity-40 flex items-center justify-center gap-2 text-xs uppercase tracking-[0.18em]">
-            {uploading ? <><Loader2 size={16} className="animate-spin" /> Preparing</> : 'I Have Made Payment'}
+          <button onClick={continueToReceipt} className="h-12 bg-primary text-primary-foreground flex items-center justify-center text-xs uppercase tracking-[0.18em]">
+            I Have Made Payment
           </button>
         </>}
 

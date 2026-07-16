@@ -50,7 +50,7 @@ export default function Book() {
   const canProceedStep2 = startDate && endDate && new Date(endDate) > new Date(startDate);
   const canProceedStep3 = guestInfo.name && guestInfo.email && guestInfo.phone;
 
-  const createPendingBooking = (paymentMethod) => base44.entities.Booking.create({
+  const createPendingBooking = (paymentMethod, additionalData = {}) => base44.entities.Booking.create({
     booking_type: type,
     item_id: selectedItem.id,
     item_name: selectedItem.name,
@@ -68,6 +68,7 @@ export default function Book() {
     payment_status: 'pending',
     payment_method: paymentMethod,
     ...(paymentMethod === 'bank_transfer' ? { transfer_status: 'awaiting_payment' } : {}),
+    ...additionalData,
   });
 
   const handlePayment = async () => {
@@ -118,9 +119,9 @@ export default function Book() {
     }
   };
 
-  const prepareTransferBooking = async () => {
+  const prepareTransferBooking = async (additionalData = {}) => {
     if (transferBooking) return transferBooking;
-    const booking = await createPendingBooking('bank_transfer');
+    const booking = await createPendingBooking('bank_transfer', additionalData);
     setTransferBooking(booking);
     return booking;
   };
