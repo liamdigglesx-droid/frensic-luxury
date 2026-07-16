@@ -62,11 +62,19 @@ export default function AdminBookings() {
         payment_status: 'paid',
         booking_status: 'confirmed',
       });
+
+      const original = bookings.find(b => b.id === bookingId);
       setBookings(prev =>
         prev.map(b =>
           b.id === bookingId ? { ...b, payment_status: 'paid', booking_status: 'confirmed' } : b
         )
       );
+
+      // Email the guest and the business inbox — don't block confirmation if this fails
+      base44.functions.invoke('sendBookingConfirmation', {
+        booking: { ...original, payment_status: 'paid', booking_status: 'confirmed' },
+        notificationType: 'admin_confirmed',
+      }).catch(err => console.error('Failed to send confirmation email:', err));
     } catch (err) {
       console.error('Failed to confirm booking:', err);
       alert('Could not confirm the booking. Please try again.');
