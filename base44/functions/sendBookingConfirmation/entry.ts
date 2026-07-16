@@ -24,12 +24,17 @@ function buildMimeEmail({ to, subject, html, fromName }) {
     .replace(/=+$/, '');
 }
 
-function buildEmailHtml(booking) {
+function buildEmailHtml(booking, options = {}) {
+  const { confirmedByAdmin = false } = options;
   const isStay = booking.booking_type === 'stay';
   const typeLabel = isStay ? 'Apartment Stay' : 'Car Rental';
   const startLabel = isStay ? 'Check-In' : 'Pick-Up';
   const endLabel = isStay ? 'Check-Out' : 'Return';
   const unitLabel = isStay ? 'nights' : 'days';
+
+  const introText = confirmedByAdmin
+    ? 'Your booking has been confirmed by our team and your payment has been verified. We look forward to providing you with an exceptional luxury experience.'
+    : 'Your booking has been confirmed and payment has been successfully processed. We look forward to providing you with an exceptional luxury experience.';
 
   return `
 <!DOCTYPE html>
@@ -55,7 +60,7 @@ function buildEmailHtml(booking) {
               Dear <strong style="color:#C9A84C;">${booking.guest_name || 'Valued Guest'}</strong>,
             </p>
             <p style="color:#888888;font-size:14px;line-height:1.8;margin:0 0 32px 0;">
-              Your booking has been confirmed and payment has been successfully processed. We look forward to providing you with an exceptional luxury experience.
+              ${introText}
             </p>
 
             <!-- Booking Details -->
@@ -147,19 +152,32 @@ Deno.serve(async (req) => {
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
 
     const isReceiptNotification = notificationType === 'receipt_submitted';
+    const isAdminConfirmed = notificationType === 'admin_confirmed';
+
     const subject = isReceiptNotification
       ? `Payment Receipt Submitted — ${booking.item_name || 'Frensic Luxury'}`
       : `Booking Confirmed — ${booking.item_name || 'Frensic Luxury'}`;
-    const html = isReceiptNotification ? buildReceiptEmailHtml(booking) : buildEmailHtml(booking);
+
+    const html = isReceiptNotification
+      ? buildReceiptEmailHtml(booking)
+      : buildEmailHtml(booking, { confirmedByAdmin: isAdminConfirmed });
+
     const rawGuest = isReceiptNotification ? null : buildMimeEmail({
       to: booking.guest_email,
       subject,
       html,
       fromName: 'Frensic Luxury Apartment',
     });
+
+    const businessSubject = isReceiptNotification
+      ? `[PAYMENT RECEIPT] ${booking.item_name} — ${booking.guest_name || booking.guest_email}`
+      : isAdminConfirmed
+        ? `[BOOKING CONFIRMED BY ADMIN] ${booking.item_name} — ${booking.guest_name || booking.guest_email}`
+        : `[NEW BOOKING] ${booking.item_name} — ${booking.guest_name || booking.guest_email}`;
+
     const rawBusiness = buildMimeEmail({
-      to: isReceiptNotification ? 'frensicluxuryapartment@gmail.com' : 'info@frensicluxuryapartments.com.ng',
-      subject: isReceiptNotification ? `[PAYMENT RECEIPT] ${booking.item_name} — ${booking.guest_name || booking.guest_email}` : `[NEW BOOKING] ${booking.item_name} — ${booking.guest_name || booking.guest_email}`,
+      to: isReceiptNotification ? 'frensicluxuryapartment@gmail.com' : 'info@frensicluxuryapartment.com.ng',
+      subject: businessSubject,
       html,
       fromName: 'Frensic Luxury Apartment',
     });
