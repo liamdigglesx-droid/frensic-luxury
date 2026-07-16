@@ -29,10 +29,7 @@ export default function AdminBookings() {
   const [expanded, setExpanded] = useState(() => new URLSearchParams(window.location.search).get('bookingId'));
 
   useEffect(() => {
-    base44.entities.Booking.list('-created_date', 500).then(b => {
-      setBookings(b);
-      setLoading(false);
-    });
+    base44.entities.Booking.list('-created_date', 500).then(setBookings).catch(() => setBookings([])).finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {

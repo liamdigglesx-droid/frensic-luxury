@@ -42,7 +42,7 @@ export default function Book() {
     : 1;
 
   const unitPrice = type === 'stay' ? selectedItem?.price_per_night : selectedItem?.price_per_day;
-  const chauffeurFee = chauffeur ? 30000 : 0;
+  const chauffeurFee = chauffeur ? 30000 * nights : 0;
   const subtotal = (unitPrice || 0) * nights;
   const total = subtotal + chauffeurFee;
 
@@ -118,19 +118,17 @@ export default function Book() {
     }
   };
 
-  const handleBankTransfer = async () => {
+  const prepareTransferBooking = async () => {
+    if (transferBooking) return transferBooking;
+    const booking = await createPendingBooking('bank_transfer');
+    setTransferBooking(booking);
+    return booking;
+  };
+
+  const handleBankTransfer = () => {
     if (transferLoading) return;
-    setTransferLoading(true);
     setPaymentError('');
-    try {
-      const booking = transferBooking || await createPendingBooking('bank_transfer');
-      setTransferBooking(booking);
-      setTransferOpen(true);
-    } catch {
-      setPaymentError('Could not start bank transfer. Please try again.');
-    } finally {
-      setTransferLoading(false);
-    }
+    setTransferOpen(true);
   };
 
   const stepLabels = ['Select', 'Dates', 'Details', 'Confirm'];
@@ -585,6 +583,7 @@ export default function Book() {
         onOpenChange={setTransferOpen}
         booking={transferBooking}
         total={total}
+        onPrepareBooking={prepareTransferBooking}
       />
 
       {/* Support Section */}

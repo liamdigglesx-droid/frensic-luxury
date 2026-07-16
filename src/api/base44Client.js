@@ -1,6 +1,7 @@
 import { createClient } from '@base44/sdk';
 import { appParams } from '@/lib/app-params';
 import { supabaseCompat } from '@/api/supabaseCompat';
+import { supabase } from '@/lib/supabase';
 
 const { appId, token, functionsVersion, appBaseUrl } = appParams;
 const legacyClient = createClient({
@@ -12,4 +13,4 @@ const legacyClient = createClient({
   appBaseUrl,
 });
 
-export const base44 = import.meta.env.VITE_SUPABASE_URL ? supabaseCompat : legacyClient;
+export const base44 = supabase ? supabaseCompat : legacyClient;

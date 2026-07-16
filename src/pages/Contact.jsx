@@ -7,13 +7,20 @@ export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    await base44.entities.ContactMessage.create(form);
-    setLoading(false);
-    setSent(true);
+    setError('');
+    try {
+      await base44.entities.ContactMessage.create(form);
+      setSent(true);
+    } catch (err) {
+      setError(err.message || 'Your message could not be sent. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -139,6 +146,7 @@ export default function Contact() {
                     onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; }}
                   />
                 </div>
+                {error && <p role="alert" className="text-sm" style={{ color: '#f87171' }}>{error}</p>}
                 <button
                   type="submit"
                   disabled={loading}

@@ -9,7 +9,7 @@ export default function Reviews() {
   const [guestReviews, setGuestReviews] = useState([]);
 
   useEffect(() => {
-    base44.entities.Review.list('-created_date', 50).then(setGuestReviews);
+    base44.entities.Review.list('-created_date', 50).then(setGuestReviews).catch(() => setGuestReviews([]));
   }, []);
 
   const reviews = [...guestReviews, ...TESTIMONIALS];

@@ -10,11 +10,11 @@ export default async function handler(req, res) {
   const { entity, action, query = {}, sort = '-created_date', limit = 50, id, data } = req.body || {};
   const table = tables[entity];
   if (!table) return res.status(400).json({ error: 'Unknown entity' });
-  const client = getAdminClient();
-  const staff = await getStaff(req);
-  const adminToken = req.headers['x-admin-token'];
-  const privileged = Boolean(staff || await verifyAdminToken(adminToken));
   try {
+    const client = getAdminClient();
+    const staff = await getStaff(req);
+    const adminToken = req.headers['x-admin-token'];
+    const privileged = Boolean(staff || await verifyAdminToken(adminToken));
     if (entity === 'User') {
       if (!privileged) return res.status(403).json({ error: 'Forbidden' });
       const { data: users, error } = await client.auth.admin.listUsers({ perPage: limit });

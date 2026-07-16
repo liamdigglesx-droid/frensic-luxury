@@ -13,7 +13,13 @@ async function request(path, payload) {
     },
     body: JSON.stringify(payload),
   });
-  const data = await response.json();
+  const responseText = await response.text();
+  let data;
+  try {
+    data = responseText ? JSON.parse(responseText) : {};
+  } catch {
+    data = { error: 'The server returned an invalid response.' };
+  }
   if (!response.ok) {
     const error = new Error(data.error || 'Request failed');
     error.response = { data, status: response.status };

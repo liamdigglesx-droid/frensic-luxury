@@ -115,6 +115,7 @@ export default function MyBookings() {
   const [email, setEmail] = useState('');
   const [emailInput, setEmailInput] = useState('');
   const [tab, setTab] = useState('upcoming');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const stored = localStorage.getItem('frensic_guest_email');
@@ -128,9 +129,16 @@ export default function MyBookings() {
 
   const loadBookings = async (guestEmail) => {
     setLoading(true);
-    const results = await base44.entities.Booking.filter({ guest_email: guestEmail });
-    setBookings(results);
-    setLoading(false);
+    setError('');
+    try {
+      const results = await base44.entities.Booking.filter({ guest_email: guestEmail });
+      setBookings(results);
+    } catch (err) {
+      setBookings([]);
+      setError(err.message || 'Bookings could not be loaded. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEmailSubmit = (e) => {
@@ -204,6 +212,7 @@ export default function MyBookings() {
             </div>
           ) : (
             <>
+              {error && <p role="alert" className="text-sm mb-6" style={{ color: '#f87171' }}>{error}</p>}
               <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
                 <div>
                   <p className="text-xs tracking-[0.15em] uppercase mb-1" style={{ color: '#aaaaaa' }}>Showing bookings for</p>

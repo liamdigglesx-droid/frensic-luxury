@@ -12,10 +12,7 @@ export default function AdminMessages() {
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    base44.entities.ContactMessage.list('-created_date', 200).then(m => {
-      setMessages(m);
-      setLoading(false);
-    });
+    base44.entities.ContactMessage.list('-created_date', 200).then(setMessages).catch(() => setMessages([])).finally(() => setLoading(false));
   }, []);
 
   const filtered = messages.filter(m =>
