@@ -226,7 +226,7 @@ export default function Cars() {
                           ₦{car.price_per_day.toLocaleString()} <span className="text-sm font-sans" style={{ color: '#aaaaaa' }}>/ day</span>
                         </div>
                       </div>
-                      
+                      <a
                         href="tel:+2348037068265"
                         className="px-8 h-12 flex items-center text-xs tracking-[0.15em] uppercase font-medium transition-all"
                         style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
@@ -260,7 +260,7 @@ export default function Cars() {
             <p className="text-sm leading-relaxed mb-8" style={{ color: '#aaaaaa' }}>
               Why settle when the road still has more to offer? Whether it's one more day or an entire week, your perfect ride is ready.
             </p>
-            
+            <a
               href="tel:+2348037068265"
               className="inline-flex px-8 h-12 items-center text-xs tracking-[0.2em] uppercase font-medium transition-all"
               style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
