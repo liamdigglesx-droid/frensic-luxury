@@ -1,277 +1,2070 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Gauge, Zap, Users, Settings2, CheckCircle, Search, SlidersHorizontal, X } from 'lucide-react';
-import { CARS } from '@/lib/constants';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Building2, Car, Users, User, Mail, Phone, MessageSquare,
+  ChevronRight, ChevronLeft, Check, Lock, Loader2
+} from 'lucide-react';
+import { ROOMS, CARS } from '@/lib/constants';
+import { base44 } from '@/api/base44Client';
+import { initPaystack } from '@/lib/paystack';
 import AvailabilityBadge from '@/components/AvailabilityBadge';
+import BankTransferDialog from '@/components/BankTransferDialog';
 
-const SEAT_OPTIONS = ['Any', '4', '5', '7+'];
-const STYLE_OPTIONS = ['Any', ...new Set(CARS.map(c => c.style))];
+export default function Book() {
+  const navigate = useNavigate();
+  const urlParams = new URLSearchParams(window.location.search);
 
-export default function Cars() {
-  const [search, setSearch] = useState('');
-  const [seatFilter, setSeatFilter] = useState('Any');
-  const [styleFilter, setStyleFilter] = useState('Any');
-  const [maxPrice, setMaxPrice] = useState('');
+  const [step, setStep] = useState(1); // 1=Type+Item, 2=Dates, 3=Details, 4=Confirm
+  const [type, setType] = useState(urlParams.get('type') || 'stay');
+  const [selectedRoom, setSelectedRoom] = useState(urlParams.get('room') || '');
+  const [selectedCar, setSelectedCar] = useState(urlParams.get('car') || '');
+  const [startDate, setStartDate] = useState(urlParams.get('start') || '');
+  const [endDate, setEndDate] = useState(urlParams.get('end') || '');
+  const [guests, setGuests] = useState(Number(urlParams.get('guests')) || 2);
+  const [chauffeur, setChauffeur] = useState(false);
+  const [guestInfo, setGuestInfo] = useState({ name: '', email: '', phone: '', requests: '' });
+  const [loading, setLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
+  const [booked, setBooked] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [transferBooking, setTransferBooking] = useState(null);
+  const [transferLoading, setTransferLoading] = useState(false);
 
-  const filtered = CARS.filter(car => {
-    const q = search.toLowerCase();
-    if (q && !car.name.toLowerCase().includes(q) && !car.style.toLowerCase().includes(q) && !car.description.toLowerCase().includes(q)) return false;
-    if (seatFilter !== 'Any') {
-      if (seatFilter === '7+' && car.seats < 7) return false;
-      else if (seatFilter !== '7+' && car.seats !== parseInt(seatFilter)) return false;
-    }
-    if (styleFilter !== 'Any' && car.style !== styleFilter) return false;
-    if (maxPrice && car.price_per_day > parseInt(maxPrice)) return false;
-    return true;
-  });
-
-  const hasFilters = search || seatFilter !== 'Any' || styleFilter !== 'Any' || maxPrice;
-
-  const clearFilters = () => {
-    setSearch('');
-    setSeatFilter('Any');
-    setStyleFilter('Any');
-    setMaxPrice('');
-  };
-
-  return (
-    <div style={{ backgroundColor: '#050505' }}>
-      {/* Page Hero */}
-      <section
-        className="relative h-64 md:h-80 flex items-end pb-12"
-        style={{
-          backgroundImage: 'url(https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/6e5a5ceee_generated_3119a26d.png)',
-          backgroundSize: 'cover', backgroundPosition: 'center',
-        }}
-      >
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(5,5,5,0.2), rgba(5,5,5,0.85))' }} />
-        <div className="relative z-10 px-6 lg:px-16 w-full">
-          <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#C9A84C' }}>Home / Cars</div>
-          <h1 className="font-serif font-light text-5xl" style={{ color: '#F9F9F9' }}>Cars</h1>
-        </div>
-      </section>
-
-      {/* Search & Filters */}
-      <section className="px-6 lg:px-16 pt-12 pb-0">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-end flex-wrap">
-            {/* Search */}
-            <div className="flex-1 min-w-48 relative">
-              <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: '#aaaaaa' }} />
-              <input
-                type="text"
-                placeholder="Search vehicles..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full h-12 pl-10 pr-4 text-sm bg-transparent outline-none"
-                style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F9F9F9' }}
-                onFocus={e => { e.currentTarget.style.borderColor = '#C9A84C'; }}
-                onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
-              />
-            </div>
-
-            {/* Vehicle Style */}
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#aaaaaa' }}>Type</span>
-              <div className="flex gap-1 flex-wrap">
-                {STYLE_OPTIONS.map(opt => (
-                  <button
-                    key={opt}
-                    onClick={() => setStyleFilter(opt)}
-                    className="px-3 h-10 text-xs transition-all whitespace-nowrap"
-                    style={{
-                      border: `1px solid ${styleFilter === opt ? '#C9A84C' : 'rgba(255,255,255,0.1)'}`,
-                      backgroundColor: styleFilter === opt ? 'rgba(201,168,76,0.12)' : 'transparent',
-                      color: styleFilter === opt ? '#C9A84C' : '#888888',
-                    }}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Seats */}
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#aaaaaa' }}>Seats</span>
-              <div className="flex gap-1">
-                {SEAT_OPTIONS.map(opt => (
-                  <button
-                    key={opt}
-                    onClick={() => setSeatFilter(opt)}
-                    className="px-3 h-10 text-xs transition-all"
-                    style={{
-                      border: `1px solid ${seatFilter === opt ? '#C9A84C' : 'rgba(255,255,255,0.1)'}`,
-                      backgroundColor: seatFilter === opt ? 'rgba(201,168,76,0.12)' : 'transparent',
-                      color: seatFilter === opt ? '#C9A84C' : '#888888',
-                    }}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Max Price */}
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: '#aaaaaa' }}>Max Price / Day (₦)</span>
-              <input
-                type="number"
-                placeholder="e.g. 150000"
-                value={maxPrice}
-                onChange={e => setMaxPrice(e.target.value)}
-                className="h-10 px-4 text-sm bg-transparent outline-none w-44"
-                style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F9F9F9' }}
-                onFocus={e => { e.currentTarget.style.borderColor = '#C9A84C'; }}
-                onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
-              />
-            </div>
-
-            {hasFilters && (
-              <button
-                onClick={clearFilters}
-                className="flex items-center gap-2 px-4 h-10 text-xs transition-all self-end"
-                style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#888888' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = '#C9A84C'; e.currentTarget.style.color = '#C9A84C'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#888888'; }}
-              >
-                <X size={12} /> Clear
-              </button>
-            )}
-          </div>
-
-          <div className="mt-4 text-xs" style={{ color: '#aaaaaa' }}>
-            {filtered.length === CARS.length
-              ? `Showing all ${CARS.length} vehicles`
-              : `Showing ${filtered.length} of ${CARS.length} vehicles`}
-          </div>
-        </div>
-      </section>
-
-      {/* Cars List */}
-      <section className="py-12 px-6 lg:px-16">
-        <div className="max-w-7xl mx-auto">
-          {filtered.length === 0 ? (
-            <div className="text-center py-24">
-              <SlidersHorizontal size={40} className="mx-auto mb-4" style={{ color: '#333' }} />
-              <p className="text-lg font-serif mb-2" style={{ color: '#aaaaaa' }}>No vehicles match your filters</p>
-              <button onClick={clearFilters} className="text-sm underline" style={{ color: '#C9A84C' }}>Clear all filters</button>
-            </div>
-          ) : (
-            <div className="space-y-24">
-              {filtered.map((car, i) => (
-                <motion.div
-                  key={car.id}
-                  initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.9 }}
-                  className="grid grid-cols-1 lg:grid-cols-2 gap-0 items-stretch"
-                  style={i % 2 === 1 ? { direction: 'rtl' } : {}}
-                >
-                  <div style={{ direction: 'ltr' }} className="relative overflow-hidden min-h-[420px]">
-                    <img
-                      src={car.image_url}
-                      alt={car.name}
-                      className="w-full h-full object-cover absolute inset-0 hover:scale-105 transition-transform duration-1000"
-                    />
-                    <div className="absolute top-6 left-6 px-3 py-1.5 text-[10px] tracking-[0.2em] uppercase" style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}>
-                      {car.style}
-                    </div>
-                    <div className="absolute bottom-6 left-6">
-                      <AvailabilityBadge itemId={car.id} bookingType="drive" />
-                    </div>
-                  </div>
-                  <div
-                    className="flex flex-col justify-center p-10 lg:p-16"
-                    style={{ backgroundColor: '#080808', direction: 'ltr' }}
-                  >
-                    <h3 className="font-serif text-3xl mb-3" style={{ color: '#F9F9F9' }}>{car.name}</h3>
-                    <p className="text-sm leading-relaxed mb-8" style={{ color: '#aaaaaa' }}>{car.description}</p>
-
-                    <div className="grid grid-cols-2 gap-4 mb-8">
-                      {[
-                        { icon: Zap, label: 'Horsepower', value: `${car.horsepower} HP` },
-                        { icon: Gauge, label: 'Top Speed', value: car.top_speed },
-                        { icon: Users, label: 'Seating', value: `${car.seats} Seats` },
-                        { icon: Settings2, label: 'Transmission', value: car.transmission },
-                      ].map(({ icon: Icon, label, value }) => (
-                        <div key={label} className="flex items-center gap-3 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                          <Icon size={14} style={{ color: '#C9A84C' }} />
-                          <div>
-                            <div className="text-[10px] tracking-widest uppercase" style={{ color: '#aaaaaa' }}>{label}</div>
-                            <div className="text-sm font-medium" style={{ color: '#F9F9F9' }}>{value}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mb-8">
-                      <div className="text-[10px] tracking-[0.2em] uppercase mb-4" style={{ color: '#aaaaaa' }}>Features</div>
-                      <div className="space-y-2">
-                        {car.features.map(f => (
-                          <div key={f} className="flex items-center gap-2 text-sm" style={{ color: '#aaaaaa' }}>
-                            <CheckCircle size={13} style={{ color: '#C9A84C' }} />
-                            {f}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.5rem' }}>
-                      <div>
-                        <div className="text-[10px] tracking-widest uppercase mb-1" style={{ color: '#aaaaaa' }}>From</div>
-                        <div className="font-serif text-2xl" style={{ color: '#F9F9F9' }}>
-                          ₦{car.price_per_day.toLocaleString()} <span className="text-sm font-sans" style={{ color: '#aaaaaa' }}>/ day</span>
-                        </div>
-                      </div>
-                      <a
-                        href="tel:+2348037068265"
-                        className="px-8 h-12 flex items-center text-xs tracking-[0.15em] uppercase font-medium transition-all"
-                        style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
-                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
-                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
-                      >
-                        Call to Book This Car
-                      </a>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Promo Banner */}
-      <section className="mx-6 lg:mx-16 mb-20">
-        <div
-          className="relative p-12 md:p-20 overflow-hidden"
+  // Car rentals are booked by phone only — block the online booking flow entirely.
+  if (type === 'drive' || type === 'car') {
+    return (
+      <div style={{ backgroundColor: '#050505', minHeight: '100vh' }}>
+        <section
+          className="relative h-64 flex items-end pb-12"
           style={{
-            backgroundImage: `url(https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/8930a48a6_generated_66061811.png)`,
+            backgroundImage: 'url(https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1600)',
             backgroundSize: 'cover', backgroundPosition: 'center',
           }}
         >
-          <div className="absolute inset-0" style={{ background: 'rgba(5,5,5,0.82)' }} />
-          <div className="relative z-10 max-w-lg">
-            <div className="text-xs tracking-[0.35em] uppercase mb-4" style={{ color: '#C9A84C' }}>Extend The Journey</div>
-            <h2 className="font-serif text-3xl md:text-4xl font-light mb-4" style={{ color: '#F9F9F9' }}>Extend The Journey and Keep the Experience</h2>
-            <p className="text-sm leading-relaxed mb-8" style={{ color: '#aaaaaa' }}>
-              Why settle when the road still has more to offer? Whether it's one more day or an entire week, your perfect ride is ready.
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(5,5,5,0.3), rgba(5,5,5,0.85))' }} />
+          <div className="relative z-10 px-6 lg:px-16 w-full">
+            <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#C9A84C' }}>Home / Book Now</div>
+            <h1 className="font-serif font-light text-5xl" style={{ color: '#F9F9F9' }}>Book Now</h1>
+          </div>
+        </section>
+
+        <section className="py-24 px-6 lg:px-16">
+          <div className="max-w-xl mx-auto text-center">
+            <div
+              className="w-20 h-20 flex items-center justify-center mx-auto mb-8"
+              style={{ backgroundColor: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.4)' }}
+            >
+              <Phone size={32} style={{ color: '#C9A84C' }} />
+            </div>
+            <h2 className="font-serif text-3xl mb-4" style={{ color: '#F9F9F9' }}>Car Rentals Are Booked by Phone</h2>
+            <p className="text-sm leading-relaxed mb-10" style={{ color: '#aaaaaa' }}>
+              To arrange a luxury car rental, please call our customer service team directly. They'll confirm availability and finalize your booking with you personally.
             </p>
             <a
               href="tel:+2348037068265"
-              className="inline-flex px-8 h-12 items-center text-xs tracking-[0.2em] uppercase font-medium transition-all"
+              className="inline-flex items-center gap-2 px-10 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
               style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
             >
-              Call to Extend Your Rental
+              <Phone size={16} />
+              Call: +234 803 706 8265
             </a>
+            <div className="mt-8">
+              <button
+                onClick={() => navigate('/cars')}
+                className="text-xs tracking-[0.2em] uppercase underline"
+                style={{ color: '#888888' }}
+              >
+                Back to Cars
+              </button>
+            </div>
           </div>
+        </section>
+      </div>
+    );
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+
+  const selectedItem = type === 'stay'
+    ? ROOMS.find(r => r.id === selectedRoom) || ROOMS[0]
+    : CARS.find(c => c.id === selectedCar) || CARS[0];
+
+  const nights = startDate && endDate
+    ? Math.max(1, Math.ceil((new Date(endDate) - new Date(startDate)) / 86400000))
+    : 1;
+
+  const unitPrice = type === 'stay' ? selectedItem?.price_per_night : selectedItem?.price_per_day;
+  const chauffeurFee = chauffeur ? 30000 * nights : 0;
+  const subtotal = (unitPrice || 0) * nights;
+  const total = subtotal + chauffeurFee;
+
+  const canProceedStep1 = type && (type === 'stay' ? selectedRoom : selectedCar);
+  const canProceedStep2 = startDate && endDate && new Date(endDate) > new Date(startDate);
+  const canProceedStep3 = guestInfo.name && guestInfo.email && guestInfo.phone;
+
+  const createPendingBooking = (paymentMethod, additionalData = {}) => base44.entities.Booking.create({
+    booking_type: type,
+    item_id: selectedItem.id,
+    item_name: selectedItem.name,
+    start_date: startDate,
+    end_date: endDate,
+    guest_name: guestInfo.name,
+    guest_email: guestInfo.email,
+    guest_phone: guestInfo.phone,
+    guests_count: guests,
+    chauffeur,
+    special_requests: guestInfo.requests,
+    nights_or_days: nights,
+    unit_price: unitPrice,
+    total_amount: total,
+    payment_status: 'pending',
+    payment_method: paymentMethod,
+    ...(paymentMethod === 'bank_transfer' ? { transfer_status: 'awaiting_payment' } : {}),
+    ...additionalData,
+  });
+
+  const handlePayment = async () => {
+    if (!canProceedStep3 || loading) return;
+    setLoading(true);
+    setPaymentError('');
+
+    let booking;
+    try {
+      booking = await createPendingBooking('paystack');
+    } catch (err) {
+      setLoading(false);
+      alert('Could not create booking. Please try again.');
+      return;
+    }
+
+    try {
+      await initPaystack({
+        email: guestInfo.email,
+        amount: total,
+        ref: `FRENSIC_${booking.id.slice(-8).toUpperCase()}_${Date.now()}`,
+        onSuccess: async (response) => {
+          try {
+            await base44.entities.Booking.update(booking.id, {
+              payment_status: 'paid',
+              payment_reference: response.reference,
+            });
+            const confirmedBooking = { ...booking, payment_reference: response.reference, payment_status: 'paid' };
+            base44.functions.invoke('sendBookingConfirmation', { booking: confirmedBooking }).catch(() => {});
+            base44.functions.invoke('addBookingToCalendar', { booking: confirmedBooking }).catch(() => {});
+            setBooked(true);
+            setStep(5);
+          } catch {
+            setPaymentError('Payment succeeded, but confirmation could not be saved. Please contact support with your payment reference.');
+          } finally {
+            setLoading(false);
+          }
+        },
+        onClose: () => {
+          setLoading(false);
+          base44.entities.Booking.update(booking.id, { payment_status: 'failed' }).catch(() => {});
+        },
+      });
+    } catch {
+      setLoading(false);
+      setPaymentError('Payment gateway could not open. Check your connection and try again.');
+      base44.entities.Booking.update(booking.id, { payment_status: 'failed' }).catch(() => {});
+    }
+  };
+
+  const prepareTransferBooking = async (additionalData = {}) => {
+    if (transferBooking) return transferBooking;
+    const booking = await createPendingBooking('bank_transfer', additionalData);
+    setTransferBooking(booking);
+    return booking;
+  };
+
+  const handleBankTransfer = () => {
+    if (transferLoading) return;
+    setPaymentError('');
+    setTransferOpen(true);
+  };
+
+  const stepLabels = ['Select', 'Dates', 'Details', 'Confirm'];
+
+  return (
+    <div style={{ backgroundColor: '#050505', minHeight: '100vh' }}>
+      {/* Hero */}
+      <section
+        className="relative h-64 flex items-end pb-12"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1600)',
+          backgroundSize: 'cover', backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(5,5,5,0.3), rgba(5,5,5,0.85))' }} />
+        <div className="relative z-10 px-6 lg:px-16 w-full">
+          <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#C9A84C' }}>Home / Book Now</div>
+          <h1 className="font-serif font-light text-5xl" style={{ color: '#F9F9F9' }}>Book Now</h1>
         </div>
       </section>
+
+      {/* Stepper + Form */}
+      <section className="py-16 px-6 lg:px-16">
+        <div className="max-w-5xl mx-auto">
+          {/* Step Indicator */}
+          {step <= 4 && (
+            <div className="flex items-center justify-center mb-12 gap-0">
+              {stepLabels.map((label, i) => (
+                <div key={i} className="flex items-center">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className="w-10 h-10 flex items-center justify-center text-xs font-medium transition-all"
+                      style={{
+                        backgroundColor: step > i + 1 ? '#C9A84C' : step === i + 1 ? '#C9A84C' : 'transparent',
+                        border: `1px solid ${step >= i + 1 ? '#C9A84C' : 'rgba(255,255,255,0.15)'}`,
+                        color: step >= i + 1 ? '#F9F9F9' : '#888888',
+                      }}
+                    >
+                      {step > i + 1 ? <Check size={14} /> : i + 1}
+                    </div>
+                    <div className="text-[10px] tracking-widest uppercase mt-2" style={{ color: step === i + 1 ? '#F9F9F9' : '#888888' }}>
+                      {label}
+                    </div>
+                  </div>
+                  {i < 3 && (
+                    <div className="w-16 md:w-24 h-px mx-2 mb-5" style={{ backgroundColor: step > i + 1 ? '#C9A84C' : 'rgba(255,255,255,0.1)' }} />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <AnimatePresence mode="wait">
+
+            {/* STEP 1: Type & Item Selection */}
+            {step === 1 && (
+              <motion.div key="step1" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
+                <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>What are you booking?</h2>
+
+                {/* Type Toggle */}
+                <div className="flex gap-4 mb-10 justify-center">
+                  {[{ key: 'stay', label: 'Apartment Stay', icon: Building2 }, { key: 'drive', label: 'Car Rental', icon: Car }].map(({ key, label, icon: Icon }) => (
+                    <button
+                      key={key}
+                      onClick={() => setType(key)}
+                      className="flex-1 max-w-xs flex flex-col items-center gap-3 py-6 px-8 transition-all"
+                      style={{
+                        border: `1px solid ${type === key ? '#C9A84C' : 'rgba(255,255,255,0.1)'}`,
+                        backgroundColor: type === key ? 'rgba(201,168,76,0.1)' : 'transparent',
+                      }}
+                    >
+                      <Icon size={24} style={{ color: type === key ? '#C9A84C' : '#888888' }} />
+                      <span className="text-sm tracking-widest uppercase" style={{ color: type === key ? '#F9F9F9' : '#888888' }}>{label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Item Selection */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+                  {(type === 'stay' ? ROOMS : CARS).map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => type === 'stay' ? setSelectedRoom(item.id) : setSelectedCar(item.id)}
+                      className="text-left overflow-hidden transition-all group"
+                      style={{
+                        border: `1px solid ${(type === 'stay' ? selectedRoom : selectedCar) === item.id ? '#C9A84C' : 'rgba(255,255,255,0.08)'}`,
+                        backgroundColor: (type === 'stay' ? selectedRoom : selectedCar) === item.id ? 'rgba(201,168,76,0.07)' : '#080808',
+                      }}
+                    >
+                      <div className="aspect-video overflow-hidden relative">
+                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute bottom-2 left-2">
+                          <AvailabilityBadge itemId={item.id} bookingType={type} />
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <div className="font-serif text-base mb-1" style={{ color: '#F9F9F9' }}>{item.name}</div>
+                        <div className="text-xs" style={{ color: '#aaaaaa' }}>
+                          {type === 'stay' ? `₦${item.price_per_night.toLocaleString()} / night` : `₦${item.price_per_day.toLocaleString()} / day`}
+                        </div>
+                      </div>
+                      {(type === 'stay' ? selectedRoom : selectedCar) === item.id && (
+                        <div className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center" style={{ backgroundColor: '#C9A84C' }}>
+                          <Check size={12} color="#fff" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => canProceedStep1 && setStep(2)}
+                    disabled={!canProceedStep1}
+                    className="flex items-center gap-2 px-10 h-13 text-xs tracking-[0.2em] uppercase font-medium transition-all"
+                    style={{ height: '52px', backgroundColor: canProceedStep1 ? '#C9A84C' : '#333', color: canProceedStep1 ? '#F9F9F9' : '#666' }}
+                  >
+                    Continue <ChevronRight size={16} />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 2: Dates */}
+            {step === 2 && (
+              <motion.div key="step2" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
+                <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>Select Your Dates</h2>
+                <div className="max-w-2xl mx-auto">
+                  <div className="p-8 mb-8" style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div className="flex items-center gap-4 mb-6">
+                      <img src={selectedItem?.image_url} alt={selectedItem?.name} className="w-16 h-16 object-cover" />
+                      <div>
+                        <div className="font-serif text-xl" style={{ color: '#F9F9F9' }}>{selectedItem?.name}</div>
+                        <div className="text-xs mt-1" style={{ color: '#aaaaaa' }}>
+                          {type === 'stay' ? `₦${selectedItem?.price_per_night?.toLocaleString()} / night` : `₦${selectedItem?.price_per_day?.toLocaleString()} / day`}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div>
+                        <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>
+                          {type === 'stay' ? 'Check-In Date' : 'Pick-Up Date'}
+                        </label>
+                        <input
+                          type="date"
+                          min={today}
+                          value={startDate}
+                          onChange={e => {
+                            setStartDate(e.target.value);
+                            if (endDate && e.target.value >= endDate) setEndDate('');
+                          }}
+                          className="w-full h-12 px-4 text-sm outline-none"
+                          style={{
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            color: '#F9F9F9',
+                            backgroundColor: '#0d0d0d',
+                            colorScheme: 'dark',
+                          }}
+                          onFocus={e => { e.currentTarget.style.borderColor = '#C9A84C'; }}
+                          onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>
+                          {type === 'stay' ? 'Check-Out Date' : 'Return Date'}
+                        </label>
+                        <input
+                          type="date"
+                          min={startDate ? (() => { const d = new Date(startDate); d.setDate(d.getDate() + 1); return d.toISOString().split('T')[0]; })() : today}
+                          value={endDate}
+                          onChange={e => setEndDate(e.target.value)}
+                          className="w-full h-12 px-4 text-sm outline-none"
+                          style={{
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            color: '#F9F9F9',
+                            backgroundColor: '#0d0d0d',
+                            colorScheme: 'dark',
+                          }}
+                          onFocus={e => { e.currentTarget.style.borderColor = '#C9A84C'; }}
+                          onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-5">
+                      <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>
+                        {type === 'stay' ? 'Number of Guests' : 'Number of Passengers'}
+                      </label>
+                      <div className="flex items-center gap-4">
+                        <button onClick={() => setGuests(Math.max(1, guests - 1))} className="w-10 h-10 flex items-center justify-center text-xl" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#C9A84C' }}>−</button>
+                        <span className="text-lg font-medium w-8 text-center" style={{ color: '#F9F9F9' }}>{guests}</span>
+                        <button onClick={() => setGuests(Math.min(10, guests + 1))} className="w-10 h-10 flex items-center justify-center text-xl" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#C9A84C' }}>+</button>
+                      </div>
+                    </div>
+
+                    {type === 'drive' && (
+                      <label className="flex items-center gap-3 mt-5 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={chauffeur}
+                          onChange={e => setChauffeur(e.target.checked)}
+                          className="w-4 h-4 accent-yellow-500"
+                        />
+                        <span className="text-sm" style={{ color: '#aaaaaa' }}>Add Chauffeur Service (+₦30,000/day)</span>
+                      </label>
+                    )}
+                  </div>
+
+                  {startDate && endDate && canProceedStep2 && (
+                    <div className="p-5 mb-8" style={{ backgroundColor: 'rgba(201,168,76,0.07)', border: '1px solid rgba(201,168,76,0.2)' }}>
+                      <div className="text-xs tracking-widest uppercase mb-3" style={{ color: '#C9A84C' }}>Booking Summary</div>
+                      <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
+                        <span>{selectedItem?.name}</span>
+                        <span>₦{unitPrice?.toLocaleString()} × {nights} {type === 'stay' ? 'nights' : 'days'}</span>
+                      </div>
+                      {chauffeur && (
+                        <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
+                          <span>Chauffeur Service</span>
+                          <span>₦{(chauffeurFee).toLocaleString()}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between font-serif text-lg mt-3 pt-3" style={{ borderTop: '1px solid rgba(201,168,76,0.2)', color: '#F9F9F9' }}>
+                        <span>Total</span>
+                        <span>₦{total.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between">
+                    <button
+                      onClick={() => setStep(1)}
+                      className="flex items-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase transition-all"
+                      style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#888888' }}
+                    >
+                      <ChevronLeft size={16} /> Back
+                    </button>
+                    <button
+                      onClick={() => canProceedStep2 && setStep(3)}
+                      disabled={!canProceedStep2}
+                      className="flex items-center gap-2 px-10 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
+                      style={{ height: '52px', backgroundColor: canProceedStep2 ? '#C9A84C' : '#333', color: canProceedStep2 ? '#F9F9F9' : '#666' }}
+                    >
+                      Continue <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 3: Guest Details */}
+            {step === 3 && (
+              <motion.div key="step3" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
+                <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>Your Details</h2>
+                <div className="max-w-2xl mx-auto">
+                  <div className="space-y-5 mb-8">
+                    {[
+                      { field: 'name', label: 'Full Name', icon: User, type: 'text', required: true },
+                      { field: 'email', label: 'Email Address', icon: Mail, type: 'email', required: true },
+                      { field: 'phone', label: 'Phone Number', icon: Phone, type: 'tel', required: true },
+                    ].map(({ field, label, icon: Icon, type: t, required }) => (
+                      <div key={field}>
+                        <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>{label}</label>
+                        <div className="relative">
+                          <Icon size={14} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: '#aaaaaa' }} />
+                          <input
+                            type={t}
+                            required={required}
+                            value={guestInfo[field]}
+                            onChange={e => setGuestInfo({ ...guestInfo, [field]: e.target.value })}
+                            className="w-full h-12 pl-10 pr-4 text-sm bg-transparent outline-none"
+                            style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F9F9F9' }}
+                            onFocus={e => { e.currentTarget.style.borderColor = '#C9A84C'; }}
+                            onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    <div>
+                      <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>Special Requests (Optional)</label>
+                      <div className="relative">
+                        <MessageSquare size={14} className="absolute left-4 top-4" style={{ color: '#aaaaaa' }} />
+                        <textarea
+                          rows={3}
+                          value={guestInfo.requests}
+                          onChange={e => setGuestInfo({ ...guestInfo, requests: e.target.value })}
+                          className="w-full pl-10 pr-4 py-3 text-sm bg-transparent outline-none resize-none"
+                          style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F9F9F9' }}
+                          onFocus={e => { e.target.style.borderColor = '#C9A84C'; }}
+                          onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <button onClick={() => setStep(2)} className="flex items-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase transition-all" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#888888' }}>
+                      <ChevronLeft size={16} /> Back
+                    </button>
+                    <button
+                      onClick={() => canProceedStep3 && setStep(4)}
+                      disabled={!canProceedStep3}
+                      className="flex items-center gap-2 px-10 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
+                      style={{ height: '52px', backgroundColor: canProceedStep3 ? '#C9A84C' : '#333', color: canProceedStep3 ? '#F9F9F9' : '#666' }}
+                    >
+                      Review Booking <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 4: Confirm & Pay */}
+            {step === 4 && (
+              <motion.div key="step4" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
+                <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>Confirm & Pay</h2>
+                <div className="max-w-2xl mx-auto">
+                  {/* Summary Card */}
+                  <div className="p-8 mb-6" style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div className="flex items-center gap-4 pb-5 mb-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                      <img src={selectedItem?.image_url} alt={selectedItem?.name} className="w-20 h-20 object-cover" />
+                      <div>
+                        <div className="font-serif text-xl mb-1" style={{ color: '#F9F9F9' }}>{selectedItem?.name}</div>
+                        <div className="text-xs tracking-widest uppercase" style={{ color: '#C9A84C' }}>
+                          {type === 'stay' ? 'Apartment Stay' : 'Car Rental'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {[
+                      { label: type === 'stay' ? 'Check-In' : 'Pick-Up', value: startDate },
+                      { label: type === 'stay' ? 'Check-Out' : 'Return', value: endDate },
+                      { label: 'Duration', value: `${nights} ${type === 'stay' ? 'nights' : 'days'}` },
+                      { label: 'Guests', value: guests },
+                      { label: 'Name', value: guestInfo.name },
+                      { label: 'Email', value: guestInfo.email },
+                      { label: 'Phone', value: guestInfo.phone },
+                    ].map(({ label, value }) => (
+                      <div key={label} className="flex justify-between py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <span className="text-xs tracking-widest uppercase" style={{ color: '#aaaaaa' }}>{label}</span>
+                        <span className="text-sm" style={{ color: '#F9F9F9' }}>{value}</span>
+                      </div>
+                    ))}
+
+                    <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
+                        <span>Subtotal ({nights} {type === 'stay' ? 'nights' : 'days'})</span>
+                        <span>₦{subtotal.toLocaleString()}</span>
+                      </div>
+                      {chauffeur && (
+                        <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
+                          <span>Chauffeur Service</span>
+                          <span>₦{chauffeurFee.toLocaleString()}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between font-serif text-2xl mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', color: '#F9F9F9' }}>
+                        <span>Total</span>
+                        <span>₦{total.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs mb-6" style={{ color: '#aaaaaa' }}>
+                    <Lock size={12} style={{ color: '#C9A84C' }} />
+                    Secured by Paystack — Your payment is 256-bit SSL encrypted
+                  </div>
+
+                  {paymentError && (
+                    <p className="text-sm mb-5" role="alert" style={{ color: '#f87171' }}>{paymentError}</p>
+                  )}
+
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <button onClick={() => setStep(3)} className="flex items-center justify-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase transition-all" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#888888' }}>
+                      <ChevronLeft size={16} /> Back
+                    </button>
+                    <button
+                      onClick={handleBankTransfer}
+                      disabled={transferLoading}
+                      className="flex-1 flex items-center justify-center gap-2 h-14 px-5 text-xs tracking-[0.15em] uppercase font-medium transition-all"
+                      style={{ border: '1px solid #C9A84C', color: '#C9A84C' }}
+                    >
+                      {transferLoading ? <Loader2 size={18} className="animate-spin" /> : 'Pay by Bank Transfer'}
+                    </button>
+                    <button
+                      onClick={handlePayment}
+                      disabled={loading}
+                      className="flex-1 flex items-center justify-center gap-2 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
+                      style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
+                      onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
+                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
+                    >
+                      {loading ? (
+                        <><Loader2 size={18} className="animate-spin" /> Processing...</>
+                      ) : (
+                        <><Lock size={16} /> Pay ₦{total.toLocaleString()}</>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 5: Success */}
+            {step === 5 && (
+              <motion.div
+                key="step5"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="text-center py-16"
+              >
+                <div
+                  className="w-20 h-20 flex items-center justify-center mx-auto mb-8"
+                  style={{ backgroundColor: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.4)' }}
+                >
+                  <Check size={36} style={{ color: '#C9A84C' }} />
+                </div>
+                <h2 className="font-serif text-4xl mb-4" style={{ color: '#F9F9F9' }}>Booking Confirmed!</h2>
+                <p className="text-sm leading-relaxed max-w-md mx-auto mb-3" style={{ color: '#aaaaaa' }}>
+                  Your booking for <strong style={{ color: '#F9F9F9' }}>{selectedItem?.name}</strong> has been confirmed and payment processed.
+                </p>
+                <p className="text-sm mb-10" style={{ color: '#aaaaaa' }}>
+                  A confirmation will be sent to <strong style={{ color: '#F9F9F9' }}>{guestInfo.email}</strong>
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    onClick={() => navigate('/')}
+                    className="px-10 h-12 text-xs tracking-[0.2em] uppercase transition-all"
+                    style={{ border: '1px solid rgba(255,255,255,0.15)', color: '#F9F9F9' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#C9A84C'; e.currentTarget.style.color = '#C9A84C'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = '#F9F9F9'; }}
+                  >
+                    Back to Home
+                  </button>
+                  <button
+                    onClick={() => navigate('/contact')}
+                    className="px-10 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
+                    style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
+                  >
+                    Contact Support
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+          </AnimatePresence>
+        </div>
+      </section>
+
+      <BankTransferDialog
+        open={transferOpen}
+        onOpenChange={setTransferOpen}
+        booking={transferBooking}
+        total={total}
+        onPrepareBooking={prepareTransferBooking}
+      />
+
+      {/* Support Section */}
+      {step <= 4 && (
+        <section className="py-16 px-6 lg:px-16" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#C9A84C' }}>Get Any Problem With The Booking?</div>
+              <h2 className="font-serif font-light text-3xl mb-4" style={{ color: '#F9F9F9' }}>Let our team help you</h2>
+              <p className="text-sm leading-relaxed mb-6" style={{ color: '#aaaaaa' }}>
+                From selecting the perfect luxury vehicle to arranging your ideal stay, our experienced team is here to make every step effortless.
+              </p>
+              <div className="space-y-3 mb-6">
+                {[
+                  ['Monday – Tuesday', '8am – 10pm'],
+                  ['Wednesday – Friday', '8am – 11pm'],
+                  ['Weekend', '6am – 11pm'],
+                ].map(([day, time]) => (
+                  <div key={day} className="flex justify-between py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <span className="text-sm" style={{ color: '#C9A84C' }}>{day}</span>
+                    <span className="text-sm" style={{ color: '#F9F9F9' }}>{time}</span>
+                  </div>
+                ))}
+              </div>
+              <a
+                href="tel:+2347046007419"
+                className="inline-flex items-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
+                style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
+              >
+                <Phone size={14} />
+                Call: +234 704 600 7419
+              </a>
+            </div>
+            <div
+              className="aspect-[4/3] overflow-hidden"
+              style={{
+                backgroundImage: 'url(https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/b6f1629da_generated_95d6086b.png)',
+                backgroundSize: 'cover', backgroundPosition: 'center',
+              }}
+            />
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Building2, Car, Users, User, Mail, Phone, MessageSquare,
+  ChevronRight, ChevronLeft, Check, Lock, Loader2
+} from 'lucide-react';
+import { ROOMS, CARS } from '@/lib/constants';
+import { base44 } from '@/api/base44Client';
+import { initPaystack } from '@/lib/paystack';
+import AvailabilityBadge from '@/components/AvailabilityBadge';
+import BankTransferDialog from '@/components/BankTransferDialog';
+
+export default function Book() {
+  const navigate = useNavigate();
+  const urlParams = new URLSearchParams(window.location.search);
+
+  const [step, setStep] = useState(1); // 1=Type+Item, 2=Dates, 3=Details, 4=Confirm
+  const [type, setType] = useState(urlParams.get('type') || 'stay');
+  const [selectedRoom, setSelectedRoom] = useState(urlParams.get('room') || '');
+  const [selectedCar, setSelectedCar] = useState(urlParams.get('car') || '');
+  const [startDate, setStartDate] = useState(urlParams.get('start') || '');
+  const [endDate, setEndDate] = useState(urlParams.get('end') || '');
+  const [guests, setGuests] = useState(Number(urlParams.get('guests')) || 2);
+  const [chauffeur, setChauffeur] = useState(false);
+  const [guestInfo, setGuestInfo] = useState({ name: '', email: '', phone: '', requests: '' });
+  const [loading, setLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
+  const [booked, setBooked] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [transferBooking, setTransferBooking] = useState(null);
+  const [transferLoading, setTransferLoading] = useState(false);
+
+  // Car rentals are booked by phone only — block the online booking flow entirely.
+  if (type === 'drive' || type === 'car') {
+    return (
+      <div style={{ backgroundColor: '#050505', minHeight: '100vh' }}>
+        <section
+          className="relative h-64 flex items-end pb-12"
+          style={{
+            backgroundImage: 'url(https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1600)',
+            backgroundSize: 'cover', backgroundPosition: 'center',
+          }}
+        >
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(5,5,5,0.3), rgba(5,5,5,0.85))' }} />
+          <div className="relative z-10 px-6 lg:px-16 w-full">
+            <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#C9A84C' }}>Home / Book Now</div>
+            <h1 className="font-serif font-light text-5xl" style={{ color: '#F9F9F9' }}>Book Now</h1>
+          </div>
+        </section>
+
+        <section className="py-24 px-6 lg:px-16">
+          <div className="max-w-xl mx-auto text-center">
+            <div
+              className="w-20 h-20 flex items-center justify-center mx-auto mb-8"
+              style={{ backgroundColor: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.4)' }}
+            >
+              <Phone size={32} style={{ color: '#C9A84C' }} />
+            </div>
+            <h2 className="font-serif text-3xl mb-4" style={{ color: '#F9F9F9' }}>Car Rentals Are Booked by Phone</h2>
+            <p className="text-sm leading-relaxed mb-10" style={{ color: '#aaaaaa' }}>
+              To arrange a luxury car rental, please call our customer service team directly. They'll confirm availability and finalize your booking with you personally.
+            </p>
+            <a
+              href="tel:+2348037068265"
+              className="inline-flex items-center gap-2 px-10 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
+              style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
+            >
+              <Phone size={16} />
+              Call: +234 803 706 8265
+            </a>
+            <div className="mt-8">
+              <button
+                onClick={() => navigate('/cars')}
+                className="text-xs tracking-[0.2em] uppercase underline"
+                style={{ color: '#888888' }}
+              >
+                Back to Cars
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+
+  const selectedItem = type === 'stay'
+    ? ROOMS.find(r => r.id === selectedRoom) || ROOMS[0]
+    : CARS.find(c => c.id === selectedCar) || CARS[0];
+
+  const nights = startDate && endDate
+    ? Math.max(1, Math.ceil((new Date(endDate) - new Date(startDate)) / 86400000))
+    : 1;
+
+  const unitPrice = type === 'stay' ? selectedItem?.price_per_night : selectedItem?.price_per_day;
+  const chauffeurFee = chauffeur ? 30000 * nights : 0;
+  const subtotal = (unitPrice || 0) * nights;
+  const total = subtotal + chauffeurFee;
+
+  const canProceedStep1 = type && (type === 'stay' ? selectedRoom : selectedCar);
+  const canProceedStep2 = startDate && endDate && new Date(endDate) > new Date(startDate);
+  const canProceedStep3 = guestInfo.name && guestInfo.email && guestInfo.phone;
+
+  const createPendingBooking = (paymentMethod, additionalData = {}) => base44.entities.Booking.create({
+    booking_type: type,
+    item_id: selectedItem.id,
+    item_name: selectedItem.name,
+    start_date: startDate,
+    end_date: endDate,
+    guest_name: guestInfo.name,
+    guest_email: guestInfo.email,
+    guest_phone: guestInfo.phone,
+    guests_count: guests,
+    chauffeur,
+    special_requests: guestInfo.requests,
+    nights_or_days: nights,
+    unit_price: unitPrice,
+    total_amount: total,
+    payment_status: 'pending',
+    payment_method: paymentMethod,
+    ...(paymentMethod === 'bank_transfer' ? { transfer_status: 'awaiting_payment' } : {}),
+    ...additionalData,
+  });
+
+  const handlePayment = async () => {
+    if (!canProceedStep3 || loading) return;
+    setLoading(true);
+    setPaymentError('');
+
+    let booking;
+    try {
+      booking = await createPendingBooking('paystack');
+    } catch (err) {
+      setLoading(false);
+      alert('Could not create booking. Please try again.');
+      return;
+    }
+
+    try {
+      await initPaystack({
+        email: guestInfo.email,
+        amount: total,
+        ref: `FRENSIC_${booking.id.slice(-8).toUpperCase()}_${Date.now()}`,
+        onSuccess: async (response) => {
+          try {
+            await base44.entities.Booking.update(booking.id, {
+              payment_status: 'paid',
+              payment_reference: response.reference,
+            });
+            const confirmedBooking = { ...booking, payment_reference: response.reference, payment_status: 'paid' };
+            base44.functions.invoke('sendBookingConfirmation', { booking: confirmedBooking }).catch(() => {});
+            base44.functions.invoke('addBookingToCalendar', { booking: confirmedBooking }).catch(() => {});
+            setBooked(true);
+            setStep(5);
+          } catch {
+            setPaymentError('Payment succeeded, but confirmation could not be saved. Please contact support with your payment reference.');
+          } finally {
+            setLoading(false);
+          }
+        },
+        onClose: () => {
+          setLoading(false);
+          base44.entities.Booking.update(booking.id, { payment_status: 'failed' }).catch(() => {});
+        },
+      });
+    } catch {
+      setLoading(false);
+      setPaymentError('Payment gateway could not open. Check your connection and try again.');
+      base44.entities.Booking.update(booking.id, { payment_status: 'failed' }).catch(() => {});
+    }
+  };
+
+  const prepareTransferBooking = async (additionalData = {}) => {
+    if (transferBooking) return transferBooking;
+    const booking = await createPendingBooking('bank_transfer', additionalData);
+    setTransferBooking(booking);
+    return booking;
+  };
+
+  const handleBankTransfer = () => {
+    if (transferLoading) return;
+    setPaymentError('');
+    setTransferOpen(true);
+  };
+
+  const stepLabels = ['Select', 'Dates', 'Details', 'Confirm'];
+
+  return (
+    <div style={{ backgroundColor: '#050505', minHeight: '100vh' }}>
+      {/* Hero */}
+      <section
+        className="relative h-64 flex items-end pb-12"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1600)',
+          backgroundSize: 'cover', backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(5,5,5,0.3), rgba(5,5,5,0.85))' }} />
+        <div className="relative z-10 px-6 lg:px-16 w-full">
+          <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#C9A84C' }}>Home / Book Now</div>
+          <h1 className="font-serif font-light text-5xl" style={{ color: '#F9F9F9' }}>Book Now</h1>
+        </div>
+      </section>
+
+      {/* Stepper + Form */}
+      <section className="py-16 px-6 lg:px-16">
+        <div className="max-w-5xl mx-auto">
+          {/* Step Indicator */}
+          {step <= 4 && (
+            <div className="flex items-center justify-center mb-12 gap-0">
+              {stepLabels.map((label, i) => (
+                <div key={i} className="flex items-center">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className="w-10 h-10 flex items-center justify-center text-xs font-medium transition-all"
+                      style={{
+                        backgroundColor: step > i + 1 ? '#C9A84C' : step === i + 1 ? '#C9A84C' : 'transparent',
+                        border: `1px solid ${step >= i + 1 ? '#C9A84C' : 'rgba(255,255,255,0.15)'}`,
+                        color: step >= i + 1 ? '#F9F9F9' : '#888888',
+                      }}
+                    >
+                      {step > i + 1 ? <Check size={14} /> : i + 1}
+                    </div>
+                    <div className="text-[10px] tracking-widest uppercase mt-2" style={{ color: step === i + 1 ? '#F9F9F9' : '#888888' }}>
+                      {label}
+                    </div>
+                  </div>
+                  {i < 3 && (
+                    <div className="w-16 md:w-24 h-px mx-2 mb-5" style={{ backgroundColor: step > i + 1 ? '#C9A84C' : 'rgba(255,255,255,0.1)' }} />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <AnimatePresence mode="wait">
+
+            {/* STEP 1: Type & Item Selection */}
+            {step === 1 && (
+              <motion.div key="step1" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
+                <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>What are you booking?</h2>
+
+                {/* Type Toggle */}
+                <div className="flex gap-4 mb-10 justify-center">
+                  {[{ key: 'stay', label: 'Apartment Stay', icon: Building2 }, { key: 'drive', label: 'Car Rental', icon: Car }].map(({ key, label, icon: Icon }) => (
+                    <button
+                      key={key}
+                      onClick={() => setType(key)}
+                      className="flex-1 max-w-xs flex flex-col items-center gap-3 py-6 px-8 transition-all"
+                      style={{
+                        border: `1px solid ${type === key ? '#C9A84C' : 'rgba(255,255,255,0.1)'}`,
+                        backgroundColor: type === key ? 'rgba(201,168,76,0.1)' : 'transparent',
+                      }}
+                    >
+                      <Icon size={24} style={{ color: type === key ? '#C9A84C' : '#888888' }} />
+                      <span className="text-sm tracking-widest uppercase" style={{ color: type === key ? '#F9F9F9' : '#888888' }}>{label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Item Selection */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+                  {(type === 'stay' ? ROOMS : CARS).map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => type === 'stay' ? setSelectedRoom(item.id) : setSelectedCar(item.id)}
+                      className="text-left overflow-hidden transition-all group"
+                      style={{
+                        border: `1px solid ${(type === 'stay' ? selectedRoom : selectedCar) === item.id ? '#C9A84C' : 'rgba(255,255,255,0.08)'}`,
+                        backgroundColor: (type === 'stay' ? selectedRoom : selectedCar) === item.id ? 'rgba(201,168,76,0.07)' : '#080808',
+                      }}
+                    >
+                      <div className="aspect-video overflow-hidden relative">
+                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute bottom-2 left-2">
+                          <AvailabilityBadge itemId={item.id} bookingType={type} />
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <div className="font-serif text-base mb-1" style={{ color: '#F9F9F9' }}>{item.name}</div>
+                        <div className="text-xs" style={{ color: '#aaaaaa' }}>
+                          {type === 'stay' ? `₦${item.price_per_night.toLocaleString()} / night` : `₦${item.price_per_day.toLocaleString()} / day`}
+                        </div>
+                      </div>
+                      {(type === 'stay' ? selectedRoom : selectedCar) === item.id && (
+                        <div className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center" style={{ backgroundColor: '#C9A84C' }}>
+                          <Check size={12} color="#fff" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => canProceedStep1 && setStep(2)}
+                    disabled={!canProceedStep1}
+                    className="flex items-center gap-2 px-10 h-13 text-xs tracking-[0.2em] uppercase font-medium transition-all"
+                    style={{ height: '52px', backgroundColor: canProceedStep1 ? '#C9A84C' : '#333', color: canProceedStep1 ? '#F9F9F9' : '#666' }}
+                  >
+                    Continue <ChevronRight size={16} />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 2: Dates */}
+            {step === 2 && (
+              <motion.div key="step2" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
+                <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>Select Your Dates</h2>
+                <div className="max-w-2xl mx-auto">
+                  <div className="p-8 mb-8" style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div className="flex items-center gap-4 mb-6">
+                      <img src={selectedItem?.image_url} alt={selectedItem?.name} className="w-16 h-16 object-cover" />
+                      <div>
+                        <div className="font-serif text-xl" style={{ color: '#F9F9F9' }}>{selectedItem?.name}</div>
+                        <div className="text-xs mt-1" style={{ color: '#aaaaaa' }}>
+                          {type === 'stay' ? `₦${selectedItem?.price_per_night?.toLocaleString()} / night` : `₦${selectedItem?.price_per_day?.toLocaleString()} / day`}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div>
+                        <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>
+                          {type === 'stay' ? 'Check-In Date' : 'Pick-Up Date'}
+                        </label>
+                        <input
+                          type="date"
+                          min={today}
+                          value={startDate}
+                          onChange={e => {
+                            setStartDate(e.target.value);
+                            if (endDate && e.target.value >= endDate) setEndDate('');
+                          }}
+                          className="w-full h-12 px-4 text-sm outline-none"
+                          style={{
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            color: '#F9F9F9',
+                            backgroundColor: '#0d0d0d',
+                            colorScheme: 'dark',
+                          }}
+                          onFocus={e => { e.currentTarget.style.borderColor = '#C9A84C'; }}
+                          onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>
+                          {type === 'stay' ? 'Check-Out Date' : 'Return Date'}
+                        </label>
+                        <input
+                          type="date"
+                          min={startDate ? (() => { const d = new Date(startDate); d.setDate(d.getDate() + 1); return d.toISOString().split('T')[0]; })() : today}
+                          value={endDate}
+                          onChange={e => setEndDate(e.target.value)}
+                          className="w-full h-12 px-4 text-sm outline-none"
+                          style={{
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            color: '#F9F9F9',
+                            backgroundColor: '#0d0d0d',
+                            colorScheme: 'dark',
+                          }}
+                          onFocus={e => { e.currentTarget.style.borderColor = '#C9A84C'; }}
+                          onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-5">
+                      <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>
+                        {type === 'stay' ? 'Number of Guests' : 'Number of Passengers'}
+                      </label>
+                      <div className="flex items-center gap-4">
+                        <button onClick={() => setGuests(Math.max(1, guests - 1))} className="w-10 h-10 flex items-center justify-center text-xl" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#C9A84C' }}>−</button>
+                        <span className="text-lg font-medium w-8 text-center" style={{ color: '#F9F9F9' }}>{guests}</span>
+                        <button onClick={() => setGuests(Math.min(10, guests + 1))} className="w-10 h-10 flex items-center justify-center text-xl" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#C9A84C' }}>+</button>
+                      </div>
+                    </div>
+
+                    {type === 'drive' && (
+                      <label className="flex items-center gap-3 mt-5 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={chauffeur}
+                          onChange={e => setChauffeur(e.target.checked)}
+                          className="w-4 h-4 accent-yellow-500"
+                        />
+                        <span className="text-sm" style={{ color: '#aaaaaa' }}>Add Chauffeur Service (+₦30,000/day)</span>
+                      </label>
+                    )}
+                  </div>
+
+                  {startDate && endDate && canProceedStep2 && (
+                    <div className="p-5 mb-8" style={{ backgroundColor: 'rgba(201,168,76,0.07)', border: '1px solid rgba(201,168,76,0.2)' }}>
+                      <div className="text-xs tracking-widest uppercase mb-3" style={{ color: '#C9A84C' }}>Booking Summary</div>
+                      <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
+                        <span>{selectedItem?.name}</span>
+                        <span>₦{unitPrice?.toLocaleString()} × {nights} {type === 'stay' ? 'nights' : 'days'}</span>
+                      </div>
+                      {chauffeur && (
+                        <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
+                          <span>Chauffeur Service</span>
+                          <span>₦{(chauffeurFee).toLocaleString()}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between font-serif text-lg mt-3 pt-3" style={{ borderTop: '1px solid rgba(201,168,76,0.2)', color: '#F9F9F9' }}>
+                        <span>Total</span>
+                        <span>₦{total.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between">
+                    <button
+                      onClick={() => setStep(1)}
+                      className="flex items-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase transition-all"
+                      style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#888888' }}
+                    >
+                      <ChevronLeft size={16} /> Back
+                    </button>
+                    <button
+                      onClick={() => canProceedStep2 && setStep(3)}
+                      disabled={!canProceedStep2}
+                      className="flex items-center gap-2 px-10 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
+                      style={{ height: '52px', backgroundColor: canProceedStep2 ? '#C9A84C' : '#333', color: canProceedStep2 ? '#F9F9F9' : '#666' }}
+                    >
+                      Continue <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 3: Guest Details */}
+            {step === 3 && (
+              <motion.div key="step3" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
+                <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>Your Details</h2>
+                <div className="max-w-2xl mx-auto">
+                  <div className="space-y-5 mb-8">
+                    {[
+                      { field: 'name', label: 'Full Name', icon: User, type: 'text', required: true },
+                      { field: 'email', label: 'Email Address', icon: Mail, type: 'email', required: true },
+                      { field: 'phone', label: 'Phone Number', icon: Phone, type: 'tel', required: true },
+                    ].map(({ field, label, icon: Icon, type: t, required }) => (
+                      <div key={field}>
+                        <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>{label}</label>
+                        <div className="relative">
+                          <Icon size={14} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: '#aaaaaa' }} />
+                          <input
+                            type={t}
+                            required={required}
+                            value={guestInfo[field]}
+                            onChange={e => setGuestInfo({ ...guestInfo, [field]: e.target.value })}
+                            className="w-full h-12 pl-10 pr-4 text-sm bg-transparent outline-none"
+                            style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F9F9F9' }}
+                            onFocus={e => { e.currentTarget.style.borderColor = '#C9A84C'; }}
+                            onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    <div>
+                      <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>Special Requests (Optional)</label>
+                      <div className="relative">
+                        <MessageSquare size={14} className="absolute left-4 top-4" style={{ color: '#aaaaaa' }} />
+                        <textarea
+                          rows={3}
+                          value={guestInfo.requests}
+                          onChange={e => setGuestInfo({ ...guestInfo, requests: e.target.value })}
+                          className="w-full pl-10 pr-4 py-3 text-sm bg-transparent outline-none resize-none"
+                          style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F9F9F9' }}
+                          onFocus={e => { e.target.style.borderColor = '#C9A84C'; }}
+                          onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <button onClick={() => setStep(2)} className="flex items-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase transition-all" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#888888' }}>
+                      <ChevronLeft size={16} /> Back
+                    </button>
+                    <button
+                      onClick={() => canProceedStep3 && setStep(4)}
+                      disabled={!canProceedStep3}
+                      className="flex items-center gap-2 px-10 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
+                      style={{ height: '52px', backgroundColor: canProceedStep3 ? '#C9A84C' : '#333', color: canProceedStep3 ? '#F9F9F9' : '#666' }}
+                    >
+                      Review Booking <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 4: Confirm & Pay */}
+            {step === 4 && (
+              <motion.div key="step4" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
+                <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>Confirm & Pay</h2>
+                <div className="max-w-2xl mx-auto">
+                  {/* Summary Card */}
+                  <div className="p-8 mb-6" style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div className="flex items-center gap-4 pb-5 mb-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                      <img src={selectedItem?.image_url} alt={selectedItem?.name} className="w-20 h-20 object-cover" />
+                      <div>
+                        <div className="font-serif text-xl mb-1" style={{ color: '#F9F9F9' }}>{selectedItem?.name}</div>
+                        <div className="text-xs tracking-widest uppercase" style={{ color: '#C9A84C' }}>
+                          {type === 'stay' ? 'Apartment Stay' : 'Car Rental'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {[
+                      { label: type === 'stay' ? 'Check-In' : 'Pick-Up', value: startDate },
+                      { label: type === 'stay' ? 'Check-Out' : 'Return', value: endDate },
+                      { label: 'Duration', value: `${nights} ${type === 'stay' ? 'nights' : 'days'}` },
+                      { label: 'Guests', value: guests },
+                      { label: 'Name', value: guestInfo.name },
+                      { label: 'Email', value: guestInfo.email },
+                      { label: 'Phone', value: guestInfo.phone },
+                    ].map(({ label, value }) => (
+                      <div key={label} className="flex justify-between py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <span className="text-xs tracking-widest uppercase" style={{ color: '#aaaaaa' }}>{label}</span>
+                        <span className="text-sm" style={{ color: '#F9F9F9' }}>{value}</span>
+                      </div>
+                    ))}
+
+                    <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
+                        <span>Subtotal ({nights} {type === 'stay' ? 'nights' : 'days'})</span>
+                        <span>₦{subtotal.toLocaleString()}</span>
+                      </div>
+                      {chauffeur && (
+                        <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
+                          <span>Chauffeur Service</span>
+                          <span>₦{chauffeurFee.toLocaleString()}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between font-serif text-2xl mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', color: '#F9F9F9' }}>
+                        <span>Total</span>
+                        <span>₦{total.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs mb-6" style={{ color: '#aaaaaa' }}>
+                    <Lock size={12} style={{ color: '#C9A84C' }} />
+                    Secured by Paystack — Your payment is 256-bit SSL encrypted
+                  </div>
+
+                  {paymentError && (
+                    <p className="text-sm mb-5" role="alert" style={{ color: '#f87171' }}>{paymentError}</p>
+                  )}
+
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <button onClick={() => setStep(3)} className="flex items-center justify-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase transition-all" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#888888' }}>
+                      <ChevronLeft size={16} /> Back
+                    </button>
+                    <button
+                      onClick={handleBankTransfer}
+                      disabled={transferLoading}
+                      className="flex-1 flex items-center justify-center gap-2 h-14 px-5 text-xs tracking-[0.15em] uppercase font-medium transition-all"
+                      style={{ border: '1px solid #C9A84C', color: '#C9A84C' }}
+                    >
+                      {transferLoading ? <Loader2 size={18} className="animate-spin" /> : 'Pay by Bank Transfer'}
+                    </button>
+                    <button
+                      onClick={handlePayment}
+                      disabled={loading}
+                      className="flex-1 flex items-center justify-center gap-2 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
+                      style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
+                      onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
+                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
+                    >
+                      {loading ? (
+                        <><Loader2 size={18} className="animate-spin" /> Processing...</>
+                      ) : (
+                        <><Lock size={16} /> Pay ₦{total.toLocaleString()}</>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 5: Success */}
+            {step === 5 && (
+              <motion.div
+                key="step5"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="text-center py-16"
+              >
+                <div
+                  className="w-20 h-20 flex items-center justify-center mx-auto mb-8"
+                  style={{ backgroundColor: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.4)' }}
+                >
+                  <Check size={36} style={{ color: '#C9A84C' }} />
+                </div>
+                <h2 className="font-serif text-4xl mb-4" style={{ color: '#F9F9F9' }}>Booking Confirmed!</h2>
+                <p className="text-sm leading-relaxed max-w-md mx-auto mb-3" style={{ color: '#aaaaaa' }}>
+                  Your booking for <strong style={{ color: '#F9F9F9' }}>{selectedItem?.name}</strong> has been confirmed and payment processed.
+                </p>
+                <p className="text-sm mb-10" style={{ color: '#aaaaaa' }}>
+                  A confirmation will be sent to <strong style={{ color: '#F9F9F9' }}>{guestInfo.email}</strong>
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    onClick={() => navigate('/')}
+                    className="px-10 h-12 text-xs tracking-[0.2em] uppercase transition-all"
+                    style={{ border: '1px solid rgba(255,255,255,0.15)', color: '#F9F9F9' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#C9A84C'; e.currentTarget.style.color = '#C9A84C'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = '#F9F9F9'; }}
+                  >
+                    Back to Home
+                  </button>
+                  <button
+                    onClick={() => navigate('/contact')}
+                    className="px-10 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
+                    style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
+                  >
+                    Contact Support
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+          </AnimatePresence>
+        </div>
+      </section>
+
+      <BankTransferDialog
+        open={transferOpen}
+        onOpenChange={setTransferOpen}
+        booking={transferBooking}
+        total={total}
+        onPrepareBooking={prepareTransferBooking}
+      />
+
+      {/* Support Section */}
+      {step <= 4 && (
+        <section className="py-16 px-6 lg:px-16" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#C9A84C' }}>Get Any Problem With The Booking?</div>
+              <h2 className="font-serif font-light text-3xl mb-4" style={{ color: '#F9F9F9' }}>Let our team help you</h2>
+              <p className="text-sm leading-relaxed mb-6" style={{ color: '#aaaaaa' }}>
+                From selecting the perfect luxury vehicle to arranging your ideal stay, our experienced team is here to make every step effortless.
+              </p>
+              <div className="space-y-3 mb-6">
+                {[
+                  ['Monday – Tuesday', '8am – 10pm'],
+                  ['Wednesday – Friday', '8am – 11pm'],
+                  ['Weekend', '6am – 11pm'],
+                ].map(([day, time]) => (
+                  <div key={day} className="flex justify-between py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <span className="text-sm" style={{ color: '#C9A84C' }}>{day}</span>
+                    <span className="text-sm" style={{ color: '#F9F9F9' }}>{time}</span>
+                  </div>
+                ))}
+              </div>
+              <a
+                href="tel:+2347046007419"
+                className="inline-flex items-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
+                style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
+              >
+                <Phone size={14} />
+                Call: +234 704 600 7419
+              </a>
+            </div>
+            <div
+              className="aspect-[4/3] overflow-hidden"
+              style={{
+                backgroundImage: 'url(https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/b6f1629da_generated_95d6086b.png)',
+                backgroundSize: 'cover', backgroundPosition: 'center',
+              }}
+            />
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Building2, Car, Users, User, Mail, Phone, MessageSquare,
+  ChevronRight, ChevronLeft, Check, Lock, Loader2
+} from 'lucide-react';
+import { ROOMS, CARS } from '@/lib/constants';
+import { base44 } from '@/api/base44Client';
+import { initPaystack } from '@/lib/paystack';
+import AvailabilityBadge from '@/components/AvailabilityBadge';
+import BankTransferDialog from '@/components/BankTransferDialog';
+
+export default function Book() {
+  const navigate = useNavigate();
+  const urlParams = new URLSearchParams(window.location.search);
+
+  const [step, setStep] = useState(1); // 1=Type+Item, 2=Dates, 3=Details, 4=Confirm
+  const [type, setType] = useState(urlParams.get('type') || 'stay');
+  const [selectedRoom, setSelectedRoom] = useState(urlParams.get('room') || '');
+  const [selectedCar, setSelectedCar] = useState(urlParams.get('car') || '');
+  const [startDate, setStartDate] = useState(urlParams.get('start') || '');
+  const [endDate, setEndDate] = useState(urlParams.get('end') || '');
+  const [guests, setGuests] = useState(Number(urlParams.get('guests')) || 2);
+  const [chauffeur, setChauffeur] = useState(false);
+  const [guestInfo, setGuestInfo] = useState({ name: '', email: '', phone: '', requests: '' });
+  const [loading, setLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
+  const [booked, setBooked] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [transferBooking, setTransferBooking] = useState(null);
+  const [transferLoading, setTransferLoading] = useState(false);
+
+  // Car rentals are booked by phone only — block the online booking flow entirely.
+  if (type === 'drive' || type === 'car') {
+    return (
+      <div style={{ backgroundColor: '#050505', minHeight: '100vh' }}>
+        <section
+          className="relative h-64 flex items-end pb-12"
+          style={{
+            backgroundImage: 'url(https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1600)',
+            backgroundSize: 'cover', backgroundPosition: 'center',
+          }}
+        >
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(5,5,5,0.3), rgba(5,5,5,0.85))' }} />
+          <div className="relative z-10 px-6 lg:px-16 w-full">
+            <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#C9A84C' }}>Home / Book Now</div>
+            <h1 className="font-serif font-light text-5xl" style={{ color: '#F9F9F9' }}>Book Now</h1>
+          </div>
+        </section>
+
+        <section className="py-24 px-6 lg:px-16">
+          <div className="max-w-xl mx-auto text-center">
+            <div
+              className="w-20 h-20 flex items-center justify-center mx-auto mb-8"
+              style={{ backgroundColor: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.4)' }}
+            >
+              <Phone size={32} style={{ color: '#C9A84C' }} />
+            </div>
+            <h2 className="font-serif text-3xl mb-4" style={{ color: '#F9F9F9' }}>Car Rentals Are Booked by Phone</h2>
+            <p className="text-sm leading-relaxed mb-10" style={{ color: '#aaaaaa' }}>
+              To arrange a luxury car rental, please call our customer service team directly. They'll confirm availability and finalize your booking with you personally.
+            </p>
+            <a
+              href="tel:+2348037068265"
+              className="inline-flex items-center gap-2 px-10 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
+              style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
+            >
+              <Phone size={16} />
+              Call: +234 803 706 8265
+            </a>
+            <div className="mt-8">
+              <button
+                onClick={() => navigate('/cars')}
+                className="text-xs tracking-[0.2em] uppercase underline"
+                style={{ color: '#888888' }}
+              >
+                Back to Cars
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+
+  const selectedItem = type === 'stay'
+    ? ROOMS.find(r => r.id === selectedRoom) || ROOMS[0]
+    : CARS.find(c => c.id === selectedCar) || CARS[0];
+
+  const nights = startDate && endDate
+    ? Math.max(1, Math.ceil((new Date(endDate) - new Date(startDate)) / 86400000))
+    : 1;
+
+  const unitPrice = type === 'stay' ? selectedItem?.price_per_night : selectedItem?.price_per_day;
+  const chauffeurFee = chauffeur ? 30000 * nights : 0;
+  const subtotal = (unitPrice || 0) * nights;
+  const total = subtotal + chauffeurFee;
+
+  const canProceedStep1 = type && (type === 'stay' ? selectedRoom : selectedCar);
+  const canProceedStep2 = startDate && endDate && new Date(endDate) > new Date(startDate);
+  const canProceedStep3 = guestInfo.name && guestInfo.email && guestInfo.phone;
+
+  const createPendingBooking = (paymentMethod, additionalData = {}) => base44.entities.Booking.create({
+    booking_type: type,
+    item_id: selectedItem.id,
+    item_name: selectedItem.name,
+    start_date: startDate,
+    end_date: endDate,
+    guest_name: guestInfo.name,
+    guest_email: guestInfo.email,
+    guest_phone: guestInfo.phone,
+    guests_count: guests,
+    chauffeur,
+    special_requests: guestInfo.requests,
+    nights_or_days: nights,
+    unit_price: unitPrice,
+    total_amount: total,
+    payment_status: 'pending',
+    payment_method: paymentMethod,
+    ...(paymentMethod === 'bank_transfer' ? { transfer_status: 'awaiting_payment' } : {}),
+    ...additionalData,
+  });
+
+  const handlePayment = async () => {
+    if (!canProceedStep3 || loading) return;
+    setLoading(true);
+    setPaymentError('');
+
+    let booking;
+    try {
+      booking = await createPendingBooking('paystack');
+    } catch (err) {
+      setLoading(false);
+      alert('Could not create booking. Please try again.');
+      return;
+    }
+
+    try {
+      await initPaystack({
+        email: guestInfo.email,
+        amount: total,
+        ref: `FRENSIC_${booking.id.slice(-8).toUpperCase()}_${Date.now()}`,
+        onSuccess: async (response) => {
+          try {
+            await base44.entities.Booking.update(booking.id, {
+              payment_status: 'paid',
+              payment_reference: response.reference,
+            });
+            const confirmedBooking = { ...booking, payment_reference: response.reference, payment_status: 'paid' };
+            base44.functions.invoke('sendBookingConfirmation', { booking: confirmedBooking }).catch(() => {});
+            base44.functions.invoke('addBookingToCalendar', { booking: confirmedBooking }).catch(() => {});
+            setBooked(true);
+            setStep(5);
+          } catch {
+            setPaymentError('Payment succeeded, but confirmation could not be saved. Please contact support with your payment reference.');
+          } finally {
+            setLoading(false);
+          }
+        },
+        onClose: () => {
+          setLoading(false);
+          base44.entities.Booking.update(booking.id, { payment_status: 'failed' }).catch(() => {});
+        },
+      });
+    } catch {
+      setLoading(false);
+      setPaymentError('Payment gateway could not open. Check your connection and try again.');
+      base44.entities.Booking.update(booking.id, { payment_status: 'failed' }).catch(() => {});
+    }
+  };
+
+  const prepareTransferBooking = async (additionalData = {}) => {
+    if (transferBooking) return transferBooking;
+    const booking = await createPendingBooking('bank_transfer', additionalData);
+    setTransferBooking(booking);
+    return booking;
+  };
+
+  const handleBankTransfer = () => {
+    if (transferLoading) return;
+    setPaymentError('');
+    setTransferOpen(true);
+  };
+
+  const stepLabels = ['Select', 'Dates', 'Details', 'Confirm'];
+
+  return (
+    <div style={{ backgroundColor: '#050505', minHeight: '100vh' }}>
+      {/* Hero */}
+      <section
+        className="relative h-64 flex items-end pb-12"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1600)',
+          backgroundSize: 'cover', backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(5,5,5,0.3), rgba(5,5,5,0.85))' }} />
+        <div className="relative z-10 px-6 lg:px-16 w-full">
+          <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#C9A84C' }}>Home / Book Now</div>
+          <h1 className="font-serif font-light text-5xl" style={{ color: '#F9F9F9' }}>Book Now</h1>
+        </div>
+      </section>
+
+      {/* Stepper + Form */}
+      <section className="py-16 px-6 lg:px-16">
+        <div className="max-w-5xl mx-auto">
+          {/* Step Indicator */}
+          {step <= 4 && (
+            <div className="flex items-center justify-center mb-12 gap-0">
+              {stepLabels.map((label, i) => (
+                <div key={i} className="flex items-center">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className="w-10 h-10 flex items-center justify-center text-xs font-medium transition-all"
+                      style={{
+                        backgroundColor: step > i + 1 ? '#C9A84C' : step === i + 1 ? '#C9A84C' : 'transparent',
+                        border: `1px solid ${step >= i + 1 ? '#C9A84C' : 'rgba(255,255,255,0.15)'}`,
+                        color: step >= i + 1 ? '#F9F9F9' : '#888888',
+                      }}
+                    >
+                      {step > i + 1 ? <Check size={14} /> : i + 1}
+                    </div>
+                    <div className="text-[10px] tracking-widest uppercase mt-2" style={{ color: step === i + 1 ? '#F9F9F9' : '#888888' }}>
+                      {label}
+                    </div>
+                  </div>
+                  {i < 3 && (
+                    <div className="w-16 md:w-24 h-px mx-2 mb-5" style={{ backgroundColor: step > i + 1 ? '#C9A84C' : 'rgba(255,255,255,0.1)' }} />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <AnimatePresence mode="wait">
+
+            {/* STEP 1: Type & Item Selection */}
+            {step === 1 && (
+              <motion.div key="step1" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
+                <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>What are you booking?</h2>
+
+                {/* Type Toggle */}
+                <div className="flex gap-4 mb-10 justify-center">
+                  {[{ key: 'stay', label: 'Apartment Stay', icon: Building2 }, { key: 'drive', label: 'Car Rental', icon: Car }].map(({ key, label, icon: Icon }) => (
+                    <button
+                      key={key}
+                      onClick={() => setType(key)}
+                      className="flex-1 max-w-xs flex flex-col items-center gap-3 py-6 px-8 transition-all"
+                      style={{
+                        border: `1px solid ${type === key ? '#C9A84C' : 'rgba(255,255,255,0.1)'}`,
+                        backgroundColor: type === key ? 'rgba(201,168,76,0.1)' : 'transparent',
+                      }}
+                    >
+                      <Icon size={24} style={{ color: type === key ? '#C9A84C' : '#888888' }} />
+                      <span className="text-sm tracking-widest uppercase" style={{ color: type === key ? '#F9F9F9' : '#888888' }}>{label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Item Selection */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+                  {(type === 'stay' ? ROOMS : CARS).map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => type === 'stay' ? setSelectedRoom(item.id) : setSelectedCar(item.id)}
+                      className="text-left overflow-hidden transition-all group"
+                      style={{
+                        border: `1px solid ${(type === 'stay' ? selectedRoom : selectedCar) === item.id ? '#C9A84C' : 'rgba(255,255,255,0.08)'}`,
+                        backgroundColor: (type === 'stay' ? selectedRoom : selectedCar) === item.id ? 'rgba(201,168,76,0.07)' : '#080808',
+                      }}
+                    >
+                      <div className="aspect-video overflow-hidden relative">
+                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute bottom-2 left-2">
+                          <AvailabilityBadge itemId={item.id} bookingType={type} />
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <div className="font-serif text-base mb-1" style={{ color: '#F9F9F9' }}>{item.name}</div>
+                        <div className="text-xs" style={{ color: '#aaaaaa' }}>
+                          {type === 'stay' ? `₦${item.price_per_night.toLocaleString()} / night` : `₦${item.price_per_day.toLocaleString()} / day`}
+                        </div>
+                      </div>
+                      {(type === 'stay' ? selectedRoom : selectedCar) === item.id && (
+                        <div className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center" style={{ backgroundColor: '#C9A84C' }}>
+                          <Check size={12} color="#fff" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => canProceedStep1 && setStep(2)}
+                    disabled={!canProceedStep1}
+                    className="flex items-center gap-2 px-10 h-13 text-xs tracking-[0.2em] uppercase font-medium transition-all"
+                    style={{ height: '52px', backgroundColor: canProceedStep1 ? '#C9A84C' : '#333', color: canProceedStep1 ? '#F9F9F9' : '#666' }}
+                  >
+                    Continue <ChevronRight size={16} />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 2: Dates */}
+            {step === 2 && (
+              <motion.div key="step2" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
+                <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>Select Your Dates</h2>
+                <div className="max-w-2xl mx-auto">
+                  <div className="p-8 mb-8" style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div className="flex items-center gap-4 mb-6">
+                      <img src={selectedItem?.image_url} alt={selectedItem?.name} className="w-16 h-16 object-cover" />
+                      <div>
+                        <div className="font-serif text-xl" style={{ color: '#F9F9F9' }}>{selectedItem?.name}</div>
+                        <div className="text-xs mt-1" style={{ color: '#aaaaaa' }}>
+                          {type === 'stay' ? `₦${selectedItem?.price_per_night?.toLocaleString()} / night` : `₦${selectedItem?.price_per_day?.toLocaleString()} / day`}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div>
+                        <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>
+                          {type === 'stay' ? 'Check-In Date' : 'Pick-Up Date'}
+                        </label>
+                        <input
+                          type="date"
+                          min={today}
+                          value={startDate}
+                          onChange={e => {
+                            setStartDate(e.target.value);
+                            if (endDate && e.target.value >= endDate) setEndDate('');
+                          }}
+                          className="w-full h-12 px-4 text-sm outline-none"
+                          style={{
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            color: '#F9F9F9',
+                            backgroundColor: '#0d0d0d',
+                            colorScheme: 'dark',
+                          }}
+                          onFocus={e => { e.currentTarget.style.borderColor = '#C9A84C'; }}
+                          onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>
+                          {type === 'stay' ? 'Check-Out Date' : 'Return Date'}
+                        </label>
+                        <input
+                          type="date"
+                          min={startDate ? (() => { const d = new Date(startDate); d.setDate(d.getDate() + 1); return d.toISOString().split('T')[0]; })() : today}
+                          value={endDate}
+                          onChange={e => setEndDate(e.target.value)}
+                          className="w-full h-12 px-4 text-sm outline-none"
+                          style={{
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            color: '#F9F9F9',
+                            backgroundColor: '#0d0d0d',
+                            colorScheme: 'dark',
+                          }}
+                          onFocus={e => { e.currentTarget.style.borderColor = '#C9A84C'; }}
+                          onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-5">
+                      <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>
+                        {type === 'stay' ? 'Number of Guests' : 'Number of Passengers'}
+                      </label>
+                      <div className="flex items-center gap-4">
+                        <button onClick={() => setGuests(Math.max(1, guests - 1))} className="w-10 h-10 flex items-center justify-center text-xl" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#C9A84C' }}>−</button>
+                        <span className="text-lg font-medium w-8 text-center" style={{ color: '#F9F9F9' }}>{guests}</span>
+                        <button onClick={() => setGuests(Math.min(10, guests + 1))} className="w-10 h-10 flex items-center justify-center text-xl" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#C9A84C' }}>+</button>
+                      </div>
+                    </div>
+
+                    {type === 'drive' && (
+                      <label className="flex items-center gap-3 mt-5 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={chauffeur}
+                          onChange={e => setChauffeur(e.target.checked)}
+                          className="w-4 h-4 accent-yellow-500"
+                        />
+                        <span className="text-sm" style={{ color: '#aaaaaa' }}>Add Chauffeur Service (+₦30,000/day)</span>
+                      </label>
+                    )}
+                  </div>
+
+                  {startDate && endDate && canProceedStep2 && (
+                    <div className="p-5 mb-8" style={{ backgroundColor: 'rgba(201,168,76,0.07)', border: '1px solid rgba(201,168,76,0.2)' }}>
+                      <div className="text-xs tracking-widest uppercase mb-3" style={{ color: '#C9A84C' }}>Booking Summary</div>
+                      <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
+                        <span>{selectedItem?.name}</span>
+                        <span>₦{unitPrice?.toLocaleString()} × {nights} {type === 'stay' ? 'nights' : 'days'}</span>
+                      </div>
+                      {chauffeur && (
+                        <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
+                          <span>Chauffeur Service</span>
+                          <span>₦{(chauffeurFee).toLocaleString()}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between font-serif text-lg mt-3 pt-3" style={{ borderTop: '1px solid rgba(201,168,76,0.2)', color: '#F9F9F9' }}>
+                        <span>Total</span>
+                        <span>₦{total.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between">
+                    <button
+                      onClick={() => setStep(1)}
+                      className="flex items-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase transition-all"
+                      style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#888888' }}
+                    >
+                      <ChevronLeft size={16} /> Back
+                    </button>
+                    <button
+                      onClick={() => canProceedStep2 && setStep(3)}
+                      disabled={!canProceedStep2}
+                      className="flex items-center gap-2 px-10 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
+                      style={{ height: '52px', backgroundColor: canProceedStep2 ? '#C9A84C' : '#333', color: canProceedStep2 ? '#F9F9F9' : '#666' }}
+                    >
+                      Continue <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 3: Guest Details */}
+            {step === 3 && (
+              <motion.div key="step3" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
+                <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>Your Details</h2>
+                <div className="max-w-2xl mx-auto">
+                  <div className="space-y-5 mb-8">
+                    {[
+                      { field: 'name', label: 'Full Name', icon: User, type: 'text', required: true },
+                      { field: 'email', label: 'Email Address', icon: Mail, type: 'email', required: true },
+                      { field: 'phone', label: 'Phone Number', icon: Phone, type: 'tel', required: true },
+                    ].map(({ field, label, icon: Icon, type: t, required }) => (
+                      <div key={field}>
+                        <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>{label}</label>
+                        <div className="relative">
+                          <Icon size={14} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: '#aaaaaa' }} />
+                          <input
+                            type={t}
+                            required={required}
+                            value={guestInfo[field]}
+                            onChange={e => setGuestInfo({ ...guestInfo, [field]: e.target.value })}
+                            className="w-full h-12 pl-10 pr-4 text-sm bg-transparent outline-none"
+                            style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F9F9F9' }}
+                            onFocus={e => { e.currentTarget.style.borderColor = '#C9A84C'; }}
+                            onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    <div>
+                      <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>Special Requests (Optional)</label>
+                      <div className="relative">
+                        <MessageSquare size={14} className="absolute left-4 top-4" style={{ color: '#aaaaaa' }} />
+                        <textarea
+                          rows={3}
+                          value={guestInfo.requests}
+                          onChange={e => setGuestInfo({ ...guestInfo, requests: e.target.value })}
+                          className="w-full pl-10 pr-4 py-3 text-sm bg-transparent outline-none resize-none"
+                          style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F9F9F9' }}
+                          onFocus={e => { e.target.style.borderColor = '#C9A84C'; }}
+                          onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <button onClick={() => setStep(2)} className="flex items-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase transition-all" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#888888' }}>
+                      <ChevronLeft size={16} /> Back
+                    </button>
+                    <button
+                      onClick={() => canProceedStep3 && setStep(4)}
+                      disabled={!canProceedStep3}
+                      className="flex items-center gap-2 px-10 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
+                      style={{ height: '52px', backgroundColor: canProceedStep3 ? '#C9A84C' : '#333', color: canProceedStep3 ? '#F9F9F9' : '#666' }}
+                    >
+                      Review Booking <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 4: Confirm & Pay */}
+            {step === 4 && (
+              <motion.div key="step4" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
+                <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>Confirm & Pay</h2>
+                <div className="max-w-2xl mx-auto">
+                  {/* Summary Card */}
+                  <div className="p-8 mb-6" style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div className="flex items-center gap-4 pb-5 mb-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                      <img src={selectedItem?.image_url} alt={selectedItem?.name} className="w-20 h-20 object-cover" />
+                      <div>
+                        <div className="font-serif text-xl mb-1" style={{ color: '#F9F9F9' }}>{selectedItem?.name}</div>
+                        <div className="text-xs tracking-widest uppercase" style={{ color: '#C9A84C' }}>
+                          {type === 'stay' ? 'Apartment Stay' : 'Car Rental'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {[
+                      { label: type === 'stay' ? 'Check-In' : 'Pick-Up', value: startDate },
+                      { label: type === 'stay' ? 'Check-Out' : 'Return', value: endDate },
+                      { label: 'Duration', value: `${nights} ${type === 'stay' ? 'nights' : 'days'}` },
+                      { label: 'Guests', value: guests },
+                      { label: 'Name', value: guestInfo.name },
+                      { label: 'Email', value: guestInfo.email },
+                      { label: 'Phone', value: guestInfo.phone },
+                    ].map(({ label, value }) => (
+                      <div key={label} className="flex justify-between py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <span className="text-xs tracking-widest uppercase" style={{ color: '#aaaaaa' }}>{label}</span>
+                        <span className="text-sm" style={{ color: '#F9F9F9' }}>{value}</span>
+                      </div>
+                    ))}
+
+                    <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
+                        <span>Subtotal ({nights} {type === 'stay' ? 'nights' : 'days'})</span>
+                        <span>₦{subtotal.toLocaleString()}</span>
+                      </div>
+                      {chauffeur && (
+                        <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
+                          <span>Chauffeur Service</span>
+                          <span>₦{chauffeurFee.toLocaleString()}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between font-serif text-2xl mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', color: '#F9F9F9' }}>
+                        <span>Total</span>
+                        <span>₦{total.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs mb-6" style={{ color: '#aaaaaa' }}>
+                    <Lock size={12} style={{ color: '#C9A84C' }} />
+                    Secured by Paystack — Your payment is 256-bit SSL encrypted
+                  </div>
+
+                  {paymentError && (
+                    <p className="text-sm mb-5" role="alert" style={{ color: '#f87171' }}>{paymentError}</p>
+                  )}
+
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <button onClick={() => setStep(3)} className="flex items-center justify-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase transition-all" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#888888' }}>
+                      <ChevronLeft size={16} /> Back
+                    </button>
+                    <button
+                      onClick={handleBankTransfer}
+                      disabled={transferLoading}
+                      className="flex-1 flex items-center justify-center gap-2 h-14 px-5 text-xs tracking-[0.15em] uppercase font-medium transition-all"
+                      style={{ border: '1px solid #C9A84C', color: '#C9A84C' }}
+                    >
+                      {transferLoading ? <Loader2 size={18} className="animate-spin" /> : 'Pay by Bank Transfer'}
+                    </button>
+                    <button
+                      onClick={handlePayment}
+                      disabled={loading}
+                      className="flex-1 flex items-center justify-center gap-2 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
+                      style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
+                      onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
+                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
+                    >
+                      {loading ? (
+                        <><Loader2 size={18} className="animate-spin" /> Processing...</>
+                      ) : (
+                        <><Lock size={16} /> Pay ₦{total.toLocaleString()}</>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 5: Success */}
+            {step === 5 && (
+              <motion.div
+                key="step5"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="text-center py-16"
+              >
+                <div
+                  className="w-20 h-20 flex items-center justify-center mx-auto mb-8"
+                  style={{ backgroundColor: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.4)' }}
+                >
+                  <Check size={36} style={{ color: '#C9A84C' }} />
+                </div>
+                <h2 className="font-serif text-4xl mb-4" style={{ color: '#F9F9F9' }}>Booking Confirmed!</h2>
+                <p className="text-sm leading-relaxed max-w-md mx-auto mb-3" style={{ color: '#aaaaaa' }}>
+                  Your booking for <strong style={{ color: '#F9F9F9' }}>{selectedItem?.name}</strong> has been confirmed and payment processed.
+                </p>
+                <p className="text-sm mb-10" style={{ color: '#aaaaaa' }}>
+                  A confirmation will be sent to <strong style={{ color: '#F9F9F9' }}>{guestInfo.email}</strong>
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    onClick={() => navigate('/')}
+                    className="px-10 h-12 text-xs tracking-[0.2em] uppercase transition-all"
+                    style={{ border: '1px solid rgba(255,255,255,0.15)', color: '#F9F9F9' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#C9A84C'; e.currentTarget.style.color = '#C9A84C'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = '#F9F9F9'; }}
+                  >
+                    Back to Home
+                  </button>
+                  <button
+                    onClick={() => navigate('/contact')}
+                    className="px-10 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
+                    style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
+                  >
+                    Contact Support
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+          </AnimatePresence>
+        </div>
+      </section>
+
+      <BankTransferDialog
+        open={transferOpen}
+        onOpenChange={setTransferOpen}
+        booking={transferBooking}
+        total={total}
+        onPrepareBooking={prepareTransferBooking}
+      />
+
+      {/* Support Section */}
+      {step <= 4 && (
+        <section className="py-16 px-6 lg:px-16" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="text-xs tracking-[0.35em] uppercase mb-3" style={{ color: '#C9A84C' }}>Get Any Problem With The Booking?</div>
+              <h2 className="font-serif font-light text-3xl mb-4" style={{ color: '#F9F9F9' }}>Let our team help you</h2>
+              <p className="text-sm leading-relaxed mb-6" style={{ color: '#aaaaaa' }}>
+                From selecting the perfect luxury vehicle to arranging your ideal stay, our experienced team is here to make every step effortless.
+              </p>
+              <div className="space-y-3 mb-6">
+                {[
+                  ['Monday – Tuesday', '8am – 10pm'],
+                  ['Wednesday – Friday', '8am – 11pm'],
+                  ['Weekend', '6am – 11pm'],
+                ].map(([day, time]) => (
+                  <div key={day} className="flex justify-between py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <span className="text-sm" style={{ color: '#C9A84C' }}>{day}</span>
+                    <span className="text-sm" style={{ color: '#F9F9F9' }}>{time}</span>
+                  </div>
+                ))}
+              </div>
+              <a
+                href="tel:+2347046007419"
+                className="inline-flex items-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
+                style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
+              >
+                <Phone size={14} />
+                Call: +234 704 600 7419
+              </a>
+            </div>
+            <div
+              className="aspect-[4/3] overflow-hidden"
+              style={{
+                backgroundImage: 'url(https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/b6f1629da_generated_95d6086b.png)',
+                backgroundSize: 'cover', backgroundPosition: 'center',
+              }}
+            />
+          </div>
+        </section>
+      )}
     </div>
   );
 }
