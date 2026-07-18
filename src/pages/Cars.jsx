@@ -226,15 +226,15 @@ export default function Cars() {
                           ₦{car.price_per_day.toLocaleString()} <span className="text-sm font-sans" style={{ color: '#aaaaaa' }}>/ day</span>
                         </div>
                       </div>
-                      <Link
-                        to={`/book?type=drive&car=${car.id}`}
+                      
+                        href="tel:+2348037068265"
                         className="px-8 h-12 flex items-center text-xs tracking-[0.15em] uppercase font-medium transition-all"
                         style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
                         onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
                         onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
                       >
-                        Book This Car
-                      </Link>
+                        Call to Book This Car
+                      </a>
                     </div>
                   </div>
                 </motion.div>
@@ -260,15 +260,15 @@ export default function Cars() {
             <p className="text-sm leading-relaxed mb-8" style={{ color: '#aaaaaa' }}>
               Why settle when the road still has more to offer? Whether it's one more day or an entire week, your perfect ride is ready.
             </p>
-            <Link
-              to="/book?type=drive"
+            
+              href="tel:+2348037068265"
               className="inline-flex px-8 h-12 items-center text-xs tracking-[0.2em] uppercase font-medium transition-all"
               style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
             >
-              Extend My Rental Today
-            </Link>
+              Call to Extend Your Rental
+            </a>
           </div>
         </div>
       </section>
