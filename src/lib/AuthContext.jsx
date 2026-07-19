@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
     const timeout = setTimeout(() => {
       setIsLoadingPublicSettings(false);
       setIsLoadingAuth(false);
-    }, 5000);
+    }, 3000);
     checkAppState().finally(() => clearTimeout(timeout));
   }, []);
 
