@@ -61,7 +61,7 @@ export default function Book() {
             <p className="text-sm leading-relaxed mb-10" style={{ color: '#aaaaaa' }}>
               To arrange a luxury car rental, please call our customer service team directly. They'll confirm availability and finalize your booking with you personally.
             </p>
-            
+            <a
               href="tel:+2348037068265"
               className="inline-flex items-center gap-2 px-10 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
               style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
@@ -664,7 +664,7 @@ export default function Book() {
                   </div>
                 ))}
               </div>
-              
+              <a
                 href="tel:+2347046007419"
                 className="inline-flex items-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
                 style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
