@@ -41,7 +41,7 @@ const AuthenticatedApp = () => {
   if (!isAdminRoute && isLoadingPublicSettings) {
     return (
       <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: '#050505' }}>
-        <div className="w-8 h-8 border-2 border-slate-800 rounded-full animate-spin" style={{ borderTopColor: '#C9A84C' }}></div>
+        <div className="w-8 h-8 border-2 border-transparent rounded-full animate-spin" style={{ borderTopColor: '#C9A84C', borderRightColor: 'rgba(201,168,76,0.3)' }}></div>
       </div>
     );
   }
