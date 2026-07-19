@@ -31,61 +31,6 @@ export default function Book() {
   const [transferBooking, setTransferBooking] = useState(null);
   const [transferLoading, setTransferLoading] = useState(false);
 
-  // Car rentals are booked by phone only — block the online booking flow entirely.
-  if (type === 'drive' || type === 'car') {
-    return (
-      <div style={{ backgroundColor: '#050505', minHeight: '100vh' }}>
-        <section
-          className="relative h-64 flex items-end pb-12"
-          style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1600)',
-            backgroundSize: 'cover', backgroundPosition: 'center',
-          }}
-        >
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(5,5,5,0.3), rgba(5,5,5,0.85))' }} />
-          <div className="relative z-10 px-6 lg:px-16 w-full">
-            <div className="text-xs tracking-[0.35em] uppercase mb-2" style={{ color: '#C9A84C' }}>Home / Book Now</div>
-            <h1 className="font-serif font-light text-5xl" style={{ color: '#F9F9F9' }}>Book Now</h1>
-          </div>
-        </section>
-
-        <section className="py-24 px-6 lg:px-16">
-          <div className="max-w-xl mx-auto text-center">
-            <div
-              className="w-20 h-20 flex items-center justify-center mx-auto mb-8"
-              style={{ backgroundColor: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.4)' }}
-            >
-              <Phone size={32} style={{ color: '#C9A84C' }} />
-            </div>
-            <h2 className="font-serif text-3xl mb-4" style={{ color: '#F9F9F9' }}>Car Rentals Are Booked by Phone</h2>
-            <p className="text-sm leading-relaxed mb-10" style={{ color: '#aaaaaa' }}>
-              To arrange a luxury car rental, please call our customer service team directly. They'll confirm availability and finalize your booking with you personally.
-            </p>
-            <a
-              href="tel:+2348037068265"
-              className="inline-flex items-center gap-2 px-10 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
-              style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
-            >
-              <Phone size={16} />
-              Call: +234 803 706 8265
-            </a>
-            <div className="mt-8">
-              <button
-                onClick={() => navigate('/cars')}
-                className="text-xs tracking-[0.2em] uppercase underline"
-                style={{ color: '#888888' }}
-              >
-                Back to Cars
-              </button>
-            </div>
-          </div>
-        </section>
-      </div>
-    );
-  }
-
   const today = new Date().toISOString().split('T')[0];
 
   const selectedItem = type === 'stay'
@@ -687,4 +632,4 @@ export default function Book() {
       )}
     </div>
   );
-}
+}v
