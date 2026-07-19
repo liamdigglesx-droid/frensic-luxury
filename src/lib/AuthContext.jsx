@@ -10,7 +10,9 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
+  // Start as false so the app renders immediately — auth resolves in the background.
+  // Previously true caused a blank black screen while the async check ran.
+  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(false);
   const [authError, setAuthError] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
@@ -32,7 +34,6 @@ export const AuthProvider = ({ children }) => {
       return;
     }
     try {
-      setIsLoadingPublicSettings(true);
       setAuthError(null);
       
       // First, check app public settings (with token if available)
