@@ -1,9 +1,8 @@
 import base44 from "@base44/vite-plugin"
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
-import { copyFileSync, writeFileSync, existsSync } from 'node:fs'
+import { copyFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
-
 // https://vite.dev/config/
 export default defineConfig({
   resolve: {
@@ -12,7 +11,7 @@ export default defineConfig({
     }
   },
   plugins: [
-    ...(process.env.VERCEL || process.env.CI ? [] : [base44({
+    ...(process.env.VERCEL ? [] : [base44({
       legacySDKImports: process.env.BASE44_LEGACY_SDK_IMPORTS === 'true',
       hmrNotifier: true,
       navigationNotifier: true,
@@ -25,12 +24,8 @@ export default defineConfig({
       apply: 'build',
       closeBundle() {
         if (process.env.VERCEL) return
-        if (!existsSync('dist/index.html')) {
-          console.warn('[spa-route-fallbacks] Skipped: dist/index.html not found.')
-          return
-        }
         copyFileSync('dist/index.html', 'dist/404.html')
-        writeFileSync('dist/.htaccess', `<IfModule mod_rewrite.c>\nRewriteEngine On\nRewriteBase /\nRewriteRule ^index\\.html$ - [L]\nRewriteCond %{REQUEST_FILENAME} !-f\nRewriteCond %{REQUEST_FILENAME} !-d\nRewriteRule . /index.html [L]\n</IfModule>\n`)
+        writeFileSync('dist/.htaccess', <IfModule mod_rewrite.c>\nRewriteEngine On\nRewriteBase /\nRewriteRule ^index\\.html$ - [L]\nRewriteCond %{REQUEST_FILENAME} !-f\nRewriteCond %{REQUEST_FILENAME} !-d\nRewriteRule . /index.html [L]\n</IfModule>\n)
       }
     },
   ]
