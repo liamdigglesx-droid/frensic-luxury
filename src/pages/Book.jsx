@@ -492,6 +492,20 @@ export default function Book() {
                     </div>
                   </div>
 
+                  {type === 'drive' && (
+                    <div className="flex items-center gap-3 p-5 mb-6" style={{ backgroundColor: 'rgba(201,168,76,0.07)', border: '1px solid rgba(201,168,76,0.2)' }}>
+                      <Phone size={18} style={{ color: '#C9A84C', flexShrink: 0 }} />
+                      <div>
+                        <p className="text-sm mb-1" style={{ color: '#F9F9F9' }}>
+                          Please call <a href="tel:+2348037068265" className="underline" style={{ color: '#C9A84C', fontWeight: 500 }}>+234 803 706 8265</a> to finalize your car booking.
+                        </p>
+                        <p className="text-xs" style={{ color: '#aaaaaa' }}>
+                          Our team will confirm availability and complete your reservation.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-2 text-xs mb-6" style={{ color: '#aaaaaa' }}>
                     <Lock size={12} style={{ color: '#C9A84C' }} />
                     Secured by Paystack — Your payment is 256-bit SSL encrypted
@@ -554,6 +568,14 @@ export default function Book() {
                 <p className="text-sm mb-10" style={{ color: '#aaaaaa' }}>
                   A confirmation will be sent to <strong style={{ color: '#F9F9F9' }}>{guestInfo.email}</strong>
                 </p>
+                {type === 'drive' && (
+                  <div className="flex items-center gap-3 p-5 mb-8 max-w-md mx-auto text-left" style={{ backgroundColor: 'rgba(201,168,76,0.07)', border: '1px solid rgba(201,168,76,0.2)' }}>
+                    <Phone size={18} style={{ color: '#C9A84C', flexShrink: 0 }} />
+                    <p className="text-sm" style={{ color: '#aaaaaa' }}>
+                      Call <a href="tel:+2348037068265" className="underline" style={{ color: '#C9A84C', fontWeight: 500 }}>+234 803 706 8265</a> to finalize your car booking and confirm pickup details.
+                    </p>
+                  </div>
+                )}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <button
                     onClick={() => navigate('/')}
