@@ -228,6 +228,7 @@ export default function Cars() {
                       </div>
                       <button
                         onClick={() => setShowBookingModal(true)}
+                        aria-label={`Book ${car.name} — opens booking contact modal`}
                         className="px-8 h-12 flex items-center text-xs tracking-[0.15em] uppercase font-medium transition-all"
                         style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
                         onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
@@ -262,6 +263,7 @@ export default function Cars() {
             </p>
             <button
               onClick={() => setShowBookingModal(true)}
+              aria-label="Extend rental — opens booking contact modal"
               className="inline-flex px-8 h-12 items-center text-xs tracking-[0.2em] uppercase font-medium transition-all"
               style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
@@ -281,6 +283,9 @@ export default function Cars() {
           onClick={() => setShowBookingModal(false)}
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="car-booking-modal-title"
             className="relative w-full max-w-md p-10"
             style={{ backgroundColor: '#0e0e0e', border: '1px solid rgba(201,168,76,0.25)' }}
             onClick={e => e.stopPropagation()}
@@ -295,7 +300,7 @@ export default function Cars() {
 
             <div className="flex items-center gap-3 mb-6">
               <Phone size={20} style={{ color: '#C9A84C' }} />
-              <h2 className="font-serif text-2xl" style={{ color: '#F9F9F9' }}>Car Booking</h2>
+              <h2 id="car-booking-modal-title" className="font-serif text-2xl" style={{ color: '#F9F9F9' }}>Car Booking</h2>
             </div>
 
             <p className="text-sm leading-relaxed mb-8" style={{ color: '#aaaaaa' }}>
