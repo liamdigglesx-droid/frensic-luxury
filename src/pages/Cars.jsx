@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Gauge, Zap, Users, Settings2, CheckCircle, Search, SlidersHorizontal, X } from 'lucide-react';
+import { Gauge, Zap, Users, Settings2, CheckCircle, Search, SlidersHorizontal, X, Phone } from 'lucide-react';
 import { CARS } from '@/lib/constants';
 import AvailabilityBadge from '@/components/AvailabilityBadge';
 
@@ -13,6 +12,7 @@ export default function Cars() {
   const [seatFilter, setSeatFilter] = useState('Any');
   const [styleFilter, setStyleFilter] = useState('Any');
   const [maxPrice, setMaxPrice] = useState('');
+  const [showBookingModal, setShowBookingModal] = useState(false);
 
   const filtered = CARS.filter(car => {
     const q = search.toLowerCase();
@@ -226,15 +226,15 @@ export default function Cars() {
                           ₦{car.price_per_day.toLocaleString()} <span className="text-sm font-sans" style={{ color: '#aaaaaa' }}>/ day</span>
                         </div>
                       </div>
-                      <Link
-                        to={`/book?type=drive&car=${car.id}`}
+                      <button
+                        onClick={() => setShowBookingModal(true)}
                         className="px-8 h-12 flex items-center text-xs tracking-[0.15em] uppercase font-medium transition-all"
                         style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
                         onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
                         onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
                       >
                         Book This Car
-                      </Link>
+                      </button>
                     </div>
                   </div>
                 </motion.div>
@@ -260,18 +260,72 @@ export default function Cars() {
             <p className="text-sm leading-relaxed mb-8" style={{ color: '#aaaaaa' }}>
               Why settle when the road still has more to offer? Whether it's one more day or an entire week, your perfect ride is ready.
             </p>
-            <Link
-              to="/book?type=drive"
+            <button
+              onClick={() => setShowBookingModal(true)}
               className="inline-flex px-8 h-12 items-center text-xs tracking-[0.2em] uppercase font-medium transition-all"
               style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
             >
               Extend My Rental Today
-            </Link>
+            </button>
           </div>
         </div>
       </section>
+
+      {/* Car Booking Modal */}
+      {showBookingModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(5,5,5,0.85)' }}
+          onClick={() => setShowBookingModal(false)}
+        >
+          <div
+            className="relative w-full max-w-md p-10"
+            style={{ backgroundColor: '#0e0e0e', border: '1px solid rgba(201,168,76,0.25)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowBookingModal(false)}
+              className="absolute top-4 right-4 p-1 transition-opacity opacity-60 hover:opacity-100"
+              aria-label="Close"
+            >
+              <X size={18} style={{ color: '#F9F9F9' }} />
+            </button>
+
+            <div className="flex items-center gap-3 mb-6">
+              <Phone size={20} style={{ color: '#C9A84C' }} />
+              <h2 className="font-serif text-2xl" style={{ color: '#F9F9F9' }}>Car Booking</h2>
+            </div>
+
+            <p className="text-sm leading-relaxed mb-8" style={{ color: '#aaaaaa' }}>
+              Please call <span style={{ color: '#F9F9F9', fontWeight: 500 }}>+234 803 706 8265</span> to complete your car booking.
+            </p>
+
+            <div className="flex gap-3">
+              <a
+                href="tel:+2348037068265"
+                className="flex-1 h-12 flex items-center justify-center gap-2 text-xs tracking-[0.15em] uppercase font-medium transition-all"
+                style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
+              >
+                <Phone size={13} />
+                Call Now
+              </a>
+              <button
+                onClick={() => setShowBookingModal(false)}
+                className="flex-1 h-12 text-xs tracking-[0.15em] uppercase font-medium transition-all"
+                style={{ border: '1px solid rgba(255,255,255,0.15)', color: '#aaaaaa' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#C9A84C'; e.currentTarget.style.color = '#C9A84C'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = '#aaaaaa'; }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
