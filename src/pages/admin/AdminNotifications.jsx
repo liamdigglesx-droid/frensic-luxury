@@ -58,7 +58,7 @@ function buildNotifications(bookings, messages) {
     });
   });
 
-  return notifs.sort((a, b) => new Date(b.time) - new Date(a.time));
+  return notifs.sort((a, b) => Number(new Date(b.time)) - Number(new Date(a.time)));
 }
 
 export default function AdminNotifications() {

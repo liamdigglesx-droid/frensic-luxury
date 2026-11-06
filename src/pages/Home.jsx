@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Star, ChevronDown, Plus, Minus } from 'lucide-react';
+import { Star, Plus, Minus } from 'lucide-react';
 import BookingEngine from '@/components/BookingEngine';
-import { ROOMS, CARS, TESTIMONIALS, FAQS } from '@/lib/constants';
+import { TESTIMONIALS, FAQS } from '@/lib/constants';
+import useCatalog from '@/hooks/useCatalog';
 
 export default function Home() {
+  const { rooms: ROOMS } = useCatalog();
   const [activeFaq, setActiveFaq] = useState(null);
 
   return (

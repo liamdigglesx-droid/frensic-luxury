@@ -6,7 +6,7 @@ const emptyForm = { guest_name: '', service_type: 'stay', rating: 5, headline: '
 const fieldClass = 'w-full bg-transparent p-3 text-sm outline-none';
 const fieldStyle = { border: '1px solid rgba(255,255,255,0.12)', color: '#F9F9F9' };
 
-export default function ReviewForm({ onSubmitted }) {
+export default function ReviewForm() {
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
@@ -14,8 +14,8 @@ export default function ReviewForm({ onSubmitted }) {
   const submit = async (event) => {
     event.preventDefault(); setSubmitting(true); setMessage('');
     try {
-      const review = await base44.entities.Review.create(form);
-      onSubmitted(review); setForm(emptyForm); setMessage('Thank you. Your review has been submitted.');
+      await base44.entities.Review.create(form);
+      setForm(emptyForm); setMessage('Thank you. Your review has been submitted for moderation.');
     } catch {
       setMessage('Your review could not be submitted. Please try again.');
     } finally { setSubmitting(false); }

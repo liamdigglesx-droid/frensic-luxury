@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Wifi, Tv, Users, Maximize2, BedDouble, Star, Search, SlidersHorizontal, X } from 'lucide-react';
-import { ROOMS } from '@/lib/constants';
+import { Users, Maximize2, BedDouble, Star, Search, SlidersHorizontal, X } from 'lucide-react';
+import useCatalog from '@/hooks/useCatalog';
 import AvailabilityBadge from '@/components/AvailabilityBadge';
 
 const BEDROOM_OPTIONS = ['Any', '3', '4', '5+'];
 const GUEST_OPTIONS = ['Any', '1-4', '5-8', '9+'];
 
 export default function Rooms() {
+  const { rooms: ROOMS, error: catalogError } = useCatalog();
   const [search, setSearch] = useState('');
   const [bedroomFilter, setBedroomFilter] = useState('Any');
   const [guestFilter, setGuestFilter] = useState('Any');
@@ -60,6 +61,7 @@ export default function Rooms() {
         </div>
       </section>
 
+      {catalogError && <p role="alert" className="px-6 pt-6 text-sm text-destructive">{catalogError}</p>}
       {/* Search & Filters */}
       <section className="px-6 lg:px-16 pt-12 pb-0">
         <div className="max-w-7xl mx-auto">

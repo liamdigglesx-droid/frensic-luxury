@@ -1,191 +1,93 @@
-# Vercel Environment Variables Setup Guide
+# Vercel + Supabase setup
 
-## Complete Step-by-Step Instructions
+## 1. Supabase credentials
 
-### Prerequisites
-- You must have **Owner** or **Admin** access to your Vercel project
-- You need the 3 Supabase credentials from your Supabase dashboard (see below for how to get them)
+In Supabase Dashboard → Project Settings → API, copy:
 
----
+| Value | Variable | Exposure |
+|---|---|---|
+| Project URL | `VITE_SUPABASE_URL` and `SUPABASE_URL` | public / server |
+| anon/publishable key | `VITE_SUPABASE_PUBLISHABLE_KEY` | public browser |
+| service_role/secret key | `SUPABASE_SERVICE_ROLE_KEY` | **server only** |
 
-## Getting Your Supabase Credentials First
+Never create `VITE_SUPABASE_SERVICE_ROLE_KEY`. Anything prefixed with `VITE_` is bundled into browser JavaScript.
 
-### 1. Log into Supabase
-- Go to https://supabase.com/dashboard
-- Click your project `jhgaoemlwjradmufigyh`
+## 2. Vercel environment variables
 
-### 2. Navigate to API Settings
-- Click **Settings** (gear icon) in the left sidebar
-- Click **API** in the submenu
-- You'll see a page with credentials
+Project Settings → Environment Variables. Add for Production and Preview (and Development if using `vercel dev`):
 
-### 3. Copy the Three Required Values
+Public:
 
-**Value 1: Project URL**
-- Look for the section labeled **Project URL**
-- It looks like: `https://jhgaoemlwjradmufigyh.supabase.co`
-- **Copy this entire URL**
-- This is your `VITE_SUPABASE_URL`
-
-**Value 2: Anon Public Key**
-- In the same **API** page, find the section **Project API keys**
-- Look for a key labeled **anon public** or **pk_anon_...**
-- It's a long string starting with `eyJhbGc...`
-- **Click the copy icon** next to it
-- This is your `VITE_SUPABASE_PUBLISHABLE_KEY`
-
-**Value 3: Service Role Key** ⚠️ KEEP THIS SECRET
-- In the same **Project API keys** section
-- Look for a key labeled **service_role secret** or **sk_service_role_...**
-- It's a long string starting with `eyJhbGc...`
-- **Click the copy icon** next to it
-- ⚠️ **NEVER share this publicly or commit it to git**
-- This is your `VITE_SUPABASE_SERVICE_ROLE_KEY`
-
----
-
-## Adding to Vercel (Detailed)
-
-### Step 1: Access Your Vercel Project
-
-1. Go to https://vercel.com/dashboard
-2. Find your project: **frensic-luxury**
-3. Click on the project name to open it
-
-### Step 2: Open Project Settings
-
-- At the top of the project page, click the **Settings** tab
-- You'll see a menu on the left side
-
-### Step 3: Navigate to Environment Variables
-
-- In the left sidebar menu, scroll down and click **Environment Variables**
-- You'll see a page with an empty list (or existing variables)
-
-### Step 4: Add First Variable - VITE_SUPABASE_URL
-
-Click the **Add New** button (top right) or **+ Add New Variable**
-
-**In the form that appears:**
-
-- **Name field**: Type exactly: `VITE_SUPABASE_URL`
-- **Value field**: Paste your Supabase Project URL (from Step 1 above)
-  - Example: `https://jhgaoemlwjradmufigyh.supabase.co`
-- **Environment**: Select all three checkboxes:
-  - ☑ Production
-  - ☑ Preview
-  - ☑ Development
-- Click **Save**
-
-### Step 5: Add Second Variable - VITE_SUPABASE_PUBLISHABLE_KEY
-
-Click **+ Add New Variable** again
-
-**In the form that appears:**
-
-- **Name field**: Type exactly: `VITE_SUPABASE_PUBLISHABLE_KEY`
-- **Value field**: Paste your Anon Public Key (from Step 2 above)
-  - Example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` (very long string)
-- **Environment**: Select all three checkboxes:
-  - ☑ Production
-  - ☑ Preview
-  - ☑ Development
-- Click **Save**
-
-### Step 6: Add Third Variable - VITE_SUPABASE_SERVICE_ROLE_KEY
-
-Click **+ Add New Variable** one more time
-
-**In the form that appears:**
-
-- **Name field**: Type exactly: `VITE_SUPABASE_SERVICE_ROLE_KEY`
-- **Value field**: Paste your Service Role Key (from Step 3 above)
-  - Example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` (very long string)
-- **Environment**: Select all three checkboxes:
-  - ☑ Production
-  - ☑ Preview
-  - ☑ Development
-- Click **Save**
-
-### Step 7: Verify All Variables Are Added
-
-After adding all three, you should see:
-
-```
-✓ VITE_SUPABASE_URL                    Production, Preview, Development
-✓ VITE_SUPABASE_PUBLISHABLE_KEY        Production, Preview, Development
-✓ VITE_SUPABASE_SERVICE_ROLE_KEY       Production, Preview, Development
+```text
+VITE_SUPABASE_URL=https://YOUR-PROJECT-ID.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=...
+VITE_PAYSTACK_PUBLIC_KEY=pk_live_... or pk_test_...
 ```
 
----
+Server-only (mark sensitive where available):
 
-## Important Notes
+```text
+SUPABASE_URL=https://YOUR-PROJECT-ID.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=...
+PAYSTACK_SECRET_KEY=sk_live_... or sk_test_...
+APP_URL=https://YOUR-PRODUCTION-DOMAIN
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=long-random-password
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+GOOGLE_REFRESH_TOKEN=...
+SLACK_BOT_TOKEN=...        # optional
+SLACK_CHANNEL_ID=...       # optional
+```
 
-### Environment Explanation
+Redeploy after changing environment variables.
 
-- **Production**: Your live website (vercel domain or custom domain)
-- **Preview**: Temporary preview URLs from pull requests
-- **Development**: Local development environments
+## 3. Database migrations
 
-**You need all three checked** so the app works everywhere.
+From a linked Supabase CLI:
 
-### Security Reminder
+```bash
+supabase link --project-ref YOUR_PROJECT_REF
+supabase db push --include-all
+```
 
-- ⚠️ Never commit `.env.local` to GitHub
-- ⚠️ Service Role Key is SECRET — only Vercel should have it
-- ✅ Anon Public Key is safe to share (it's meant to be public)
-- ✅ Supabase Project URL is public information
+Or run the manual **Deploy Supabase Migrations** GitHub workflow with repository secrets:
 
-### If You Make a Mistake
+- `SUPABASE_ACCESS_TOKEN`
+- `SUPABASE_DB_PASSWORD`
+- `SUPABASE_PROJECT_REF`
 
-1. Find the variable in the list
-2. Click the **three dots (⋯)** on the right
-3. Click **Edit** to change it
-4. Or click **Delete** and add it again
+The latest migration is `20261106000000_security_and_booking_integrity.sql`. It is safe to run after the initial schema migrations and adds the security/integrity objects required by the current API.
 
----
+## 4. Supabase Auth
 
-## Next Steps After Adding Variables
+Authentication → URL Configuration:
 
-1. **Trigger a new deployment** (see below)
-2. **Wait for build to complete** (~5 minutes)
-3. **Visit your site** and check if rooms/cars data loads
-4. **Check browser console** (F12 → Console tab) for any errors
+- Site URL: `https://YOUR-PRODUCTION-DOMAIN`
+- Redirect URLs:
+  - `https://YOUR-PRODUCTION-DOMAIN/login`
+  - `https://YOUR-PRODUCTION-DOMAIN/reset-password`
+  - `https://YOUR-PRODUCTION-DOMAIN/my-bookings`
 
-### How to Trigger a New Deployment
+Enable the email provider and any OAuth providers you intend to use. Guest booking lookup uses email OTP; password reset uses Supabase recovery links.
 
-**Option A: Automatic (Recommended)**
-- Make any small commit to your main branch
-- Example: Update README or add a comment
-- Push to GitHub
-- Vercel automatically redeploys
+## 5. Paystack
 
-**Option B: Manual Redeploy**
-1. Go to your Vercel project page
-2. Click **Deployments** tab
-3. Find the latest deployment
-4. Click the **⋯** menu on it
-5. Click **Redeploy**
+- Use matching test/live public and secret keys.
+- Set webhook URL to `https://YOUR-PRODUCTION-DOMAIN/api/paystackWebhook`.
+- The webhook must receive the raw request body; the Vercel function disables body parsing for signature verification.
+- Client success alone never marks a booking paid. The server verifies amount, currency, reference, and customer email.
 
----
+## 6. Google and Slack
 
-## Troubleshooting
+Create a Google OAuth client and refresh token with Gmail send and Calendar events access. Store the client ID/secret/refresh token only as server variables. Slack is optional; without it, staff notifications are skipped.
 
-### Variables don't appear after saving?
-- Refresh the page (Ctrl+R or Cmd+R)
-- They should appear in the list
+## 7. Verify before pointing the domain
 
-### Build fails after adding variables?
-- Check that variable names are spelled exactly as shown (case-sensitive)
-- `VITE_` prefix is required for Vite to access them
-- Make sure no extra spaces in values
-
-### App still loading hardcoded data?
-- Clear browser cache (Ctrl+Shift+Delete)
-- Hard refresh (Ctrl+Shift+R or Cmd+Shift+R)
-- Wait 1-2 minutes for Vercel build to fully complete
-
-### Can't find Environment Variables option?
-- Make sure you're in **Settings** tab, not **Analytics** or **Deployments**
-- Look in the left sidebar for **Environment Variables**
-- If still missing, you might not have admin access — check with project owner
+- `npm run check`
+- `npm audit --audit-level=high`
+- Vercel preview boots without console errors.
+- Create a test booking; confirm price is calculated server-side.
+- Complete a Paystack test payment; confirm paid status, email, calendar event, and webhook idempotency.
+- Submit a bank-transfer receipt; confirm hold expiry and staff receipt access.
+- Log in as admin/staff; confirm staff cannot promote themselves and reviews require moderation.

@@ -10,11 +10,11 @@ export default function BookingEditor({ booking, staff, onClose, onSave }) {
     event.preventDefault();
     const start = new Date(`${form.start_date}T00:00:00`);
     const end = new Date(`${form.end_date}T00:00:00`);
-    const duration = Math.round((end - start) / 86400000);
+    const duration = Math.round((Number(end) - Number(start)) / 86400000);
     if (duration < 1) return setError('End date must be after the start date.');
     const assignee = staff.find(person => person.id === form.assigned_staff_id);
     const payload = { ...form, nights_or_days: duration, total_amount: duration * Number(form.unit_price || 0), assigned_staff_name: assignee?.full_name || '', assigned_staff_email: assignee?.email || '' };
-    const { id, created_date, updated_date, created_by_id, ...changes } = payload;
+    const { id: _id, created_date: _created_date, updated_date: _updated_date, created_by_id: _created_by_id, ...changes } = payload;
     setSaving(true);
     setError('');
     try {

@@ -51,8 +51,8 @@ export default function Footer() {
                   to={path}
                   className="text-sm transition-colors"
                   style={{ color: '#aaaaaa' }}
-                  onMouseEnter={e => { e.target.style.color = '#C9A84C'; }}
-                  onMouseLeave={e => { e.target.style.color = '#888888'; }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#C9A84C'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = '#888888'; }}
                 >
                   {label}
                 </Link>
@@ -108,13 +108,13 @@ export default function Footer() {
         </p>
         <div className="flex gap-6">
           <Link to="/privacy" className="text-sm transition-colors" style={{ color: '#aaaaaa' }}
-            onMouseEnter={e => { e.target.style.color = '#C9A84C'; }}
-            onMouseLeave={e => { e.target.style.color = '#888888'; }}>
+            onMouseEnter={e => { e.currentTarget.style.color = '#C9A84C'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#888888'; }}>
             Privacy Policy
           </Link>
           <Link to="/contact" className="text-sm transition-colors" style={{ color: '#aaaaaa' }}
-            onMouseEnter={e => { e.target.style.color = '#C9A84C'; }}
-            onMouseLeave={e => { e.target.style.color = '#888888'; }}>
+            onMouseEnter={e => { e.currentTarget.style.color = '#C9A84C'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#888888'; }}>
             Contact
           </Link>
         </div>

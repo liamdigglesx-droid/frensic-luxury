@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Gauge, Zap, Users, Settings2, CheckCircle, Search, SlidersHorizontal, X, Phone } from 'lucide-react';
-import { CARS } from '@/lib/constants';
+import useCatalog from '@/hooks/useCatalog';
 import AvailabilityBadge from '@/components/AvailabilityBadge';
 
 const SEAT_OPTIONS = ['Any', '4', '5', '7+'];
-const STYLE_OPTIONS = ['Any', ...new Set(CARS.map(c => c.style))];
 
 export default function Cars() {
+  const { cars: CARS, error: catalogError } = useCatalog();
+  const STYLE_OPTIONS = ['Any', ...new Set(CARS.map(c => c.style).filter(Boolean))];
   const [search, setSearch] = useState('');
   const [seatFilter, setSeatFilter] = useState('Any');
   const [styleFilter, setStyleFilter] = useState('Any');
@@ -52,6 +53,7 @@ export default function Cars() {
         </div>
       </section>
 
+      {catalogError && <p role="alert" className="px-6 pt-6 text-sm text-destructive">{catalogError}</p>}
       {/* Search & Filters */}
       <section className="px-6 lg:px-16 pt-12 pb-0">
         <div className="max-w-7xl mx-auto">

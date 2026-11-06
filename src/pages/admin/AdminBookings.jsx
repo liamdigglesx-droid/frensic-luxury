@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Building2, Car, Search, Filter, Download, CheckCircle2, Loader2 } from 'lucide-react';
+import { Building2, Car, Search, Download, CheckCircle2, Loader2 } from 'lucide-react';
 import BookingsExcelExport from '@/components/admin/BookingsExcelExport';
 
 const GOLD = '#C9A84C';

@@ -31,7 +31,12 @@ Deno.serve(async (req) => {
     };
     const counts = {};
     for (const [entityName, table] of mappings) {
-      const records = await base44.asServiceRole.entities[entityName].list('-created_date', 500);
+      const records = [];
+      for (let skip = 0; skip < 100000; skip += 500) {
+        const page = await base44.asServiceRole.entities[entityName].list('-created_date', 500, skip);
+        records.push(...page);
+        if (page.length < 500) break;
+      }
       const rows = records.map((record) => {
         const row = Object.fromEntries(allowed[table].map((key) => [key, null]));
         row.legacy_id = record.id;

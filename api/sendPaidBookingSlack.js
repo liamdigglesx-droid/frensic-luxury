@@ -1,14 +1,20 @@
-import { getAdminClient } from './_lib/supabase.js';
+import { getActor, getAdminClient } from './_lib/supabase.js';
+import { ApiError, requireMethod, sendError } from './_lib/http.js';
+import { enforceRateLimit } from './_lib/rateLimit.js';
+import { sendPaidSlack } from './_lib/notifications.js';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
-    const { booking: submittedBooking, test = false } = req.body || {}; if (!submittedBooking?.id) return res.status(400).json({ error: 'Booking is required' });
-    const { data: booking, error } = await getAdminClient().from('bookings').select('*').eq('id', submittedBooking.id).eq('payment_status', 'paid').single();
-    if (error || !booking) return res.status(404).json({ error: 'Paid booking not found' });
-    const amount = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(booking.total_amount || 0);
-    const response = await fetch('https://slack.com/api/chat.postMessage', { method: 'POST', headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ channel: process.env.SLACK_CHANNEL_ID, text: `${test ? 'Slack payment alerts are active' : 'New payment completed'}: ${booking.guest_name || 'Guest'} paid ${amount} for ${booking.item_name}.` }) });
-    const data = await response.json(); if (!data.ok) throw new Error(data.error || 'Slack notification failed');
-    return res.json({ sent: true });
-  } catch (error) { return res.status(500).json({ error: error.message }); }
+    requireMethod(req);
+    const actor = await getActor(req);
+    if (!actor.privileged) throw new ApiError(403, 'Staff access required.', 'forbidden');
+    await enforceRateLimit(req, 'slack', 30, 3600);
+    const { booking: submitted, test = false } = req.body || {};
+    if (!submitted?.id) throw new ApiError(400, 'Booking is required.');
+    const client = getAdminClient();
+    const { data: booking } = await client.from('bookings').select('*').eq('id', submitted.id).eq('payment_status', 'paid').single();
+    if (!booking) throw new ApiError(404, 'Paid booking not found.');
+    const result = await sendPaidSlack(client, booking, { test });
+    return res.json({ success: true, ...result });
+  } catch (error) { return sendError(res, error); }
 }

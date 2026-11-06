@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -8,31 +9,32 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import Layout from './components/Layout';
 
-// Page imports
-import Home from './pages/Home';
-import About from './pages/About';
-import Rooms from './pages/Rooms';
-import Cars from './pages/Cars';
-import Book from './pages/Book';
-import Reviews from './pages/Reviews';
-import Contact from './pages/Contact';
-import Privacy from './pages/Privacy';
-import MyBookings from './pages/MyBookings';
-import AdminLayout from './components/AdminLayout';
-import AdminAccessRoute from './components/AdminAccessRoute';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminBookings from './pages/admin/AdminBookings';
-import AdminMessages from './pages/admin/AdminMessages';
-import AdminNotifications from './pages/admin/AdminNotifications';
-import AdminStaff from './pages/admin/AdminStaff';
-import AdminChangePassword from './pages/admin/AdminChangePassword';
+// Route-level code splitting keeps the initial bundle small.
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const Rooms = lazy(() => import('./pages/Rooms'));
+const Cars = lazy(() => import('./pages/Cars'));
+const Book = lazy(() => import('./pages/Book'));
+const Reviews = lazy(() => import('./pages/Reviews'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const MyBookings = lazy(() => import('./pages/MyBookings'));
+const AdminLayout = lazy(() => import('./components/AdminLayout'));
+const AdminAccessRoute = lazy(() => import('./components/AdminAccessRoute'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminBookings = lazy(() => import('./pages/admin/AdminBookings'));
+const AdminMessages = lazy(() => import('./pages/admin/AdminMessages'));
+const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications'));
+const AdminStaff = lazy(() => import('./pages/admin/AdminStaff'));
+const AdminReviews = lazy(() => import('./pages/admin/AdminReviews'));
+const AdminChangePassword = lazy(() => import('./pages/admin/AdminChangePassword'));
+const StaffLayout = lazy(() => import('./components/staff/StaffLayout'));
+const StaffBookings = lazy(() => import('./pages/staff/StaffBookings'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 import ProtectedRoute from './components/ProtectedRoute';
-import StaffLayout from './components/staff/StaffLayout';
-import StaffBookings from './pages/staff/StaffBookings';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
 
 const AuthenticatedApp = () => {
   const { isLoadingPublicSettings, authError } = useAuth();
@@ -51,6 +53,7 @@ const AuthenticatedApp = () => {
   }
 
   return (
+    <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: '#050505' }}><div className="w-8 h-8 border-2 border-transparent rounded-full animate-spin" style={{ borderTopColor: '#C9A84C' }} /></div>}>
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
@@ -80,11 +83,13 @@ const AuthenticatedApp = () => {
           <Route path="/dashboard/admin/messages" element={<AdminMessages />} />
           <Route path="/dashboard/admin/notifications" element={<AdminNotifications />} />
           <Route path="/dashboard/admin/staff" element={<AdminStaff />} />
+              <Route path="/dashboard/admin/reviews" element={<AdminReviews />} />
           <Route path="/dashboard/admin/change-password" element={<AdminChangePassword />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </Suspense>
   );
 };
 
