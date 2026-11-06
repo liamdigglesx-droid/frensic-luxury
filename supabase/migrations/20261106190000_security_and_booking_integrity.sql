@@ -169,6 +169,34 @@ where b.booking_type='stay' and r.slug is not null and b.item_id in (r.id::text,
 update public.bookings b set item_id=c.slug from public.cars c
 where b.booking_type='drive' and c.slug is not null and b.item_id in (c.id::text, c.legacy_id);
 
+-- Keep the recovered legacy request RPC compatible with canonical catalog ids,
+-- active-only catalog reads, and the same checkout hold used by the API.
+create or replace function public.frensic_request_booking(p_apartment_id uuid, p_checkin date, p_checkout date, p_guests integer, p_notes text default '')
+returns uuid language plpgsql security definer set search_path = '' as $$
+declare r public.rooms%rowtype; booking_id uuid; u uuid := auth.uid(); claims jsonb := auth.jwt(); email text := claims->>'email';
+begin
+  if u is null or coalesce(email,'') = '' or not exists (select 1 from auth.users where id = u and email_confirmed_at is not null) then
+    raise exception 'Sign in with a verified email to continue';
+  end if;
+  if p_checkin is null or p_checkout is null or p_checkin < (now() at time zone 'Africa/Lagos')::date or p_checkout <= p_checkin or p_checkout - p_checkin > 90 then
+    raise exception 'Choose valid dates for a stay of up to 90 nights';
+  end if;
+  if length(coalesce(p_notes,'')) > 2000 then raise exception 'Notes are too long'; end if;
+  perform pg_advisory_xact_lock(hashtextextended(u::text, 0));
+  if (select count(*) from public.bookings b where lower(b.guest_email) = lower(email) and b.created_at > now() - interval '1 hour') >= 5 then
+    raise exception 'Too many requests. Please try again later';
+  end if;
+  select * into r from public.rooms where id = p_apartment_id and active = true;
+  if not found or r.price_per_night is null or r.price_per_night <= 0 then raise exception 'This apartment is unavailable'; end if;
+  if p_guests is null or p_guests < 1 or p_guests > least(coalesce(r.max_guests, 6), 20) then raise exception 'Invalid guest count'; end if;
+  insert into public.bookings(booking_type,item_id,item_name,start_date,end_date,guest_name,guest_email,guests_count,special_requests,nights_or_days,unit_price,total_amount,payment_status,booking_status,hold_expires_at)
+  values ('stay',coalesce(r.slug, r.id::text),r.name,p_checkin,p_checkout,left(coalesce(nullif(claims->'user_metadata'->>'full_name',''), 'Guest'),200),email,p_guests,coalesce(p_notes,''),p_checkout-p_checkin,r.price_per_night,r.price_per_night * (p_checkout-p_checkin),'pending','pending',now() + interval '20 minutes')
+  returning id into booking_id;
+  return booking_id;
+end $$;
+revoke all on function public.frensic_request_booking(uuid,date,date,integer,text) from public, anon;
+grant execute on function public.frensic_request_booking(uuid,date,date,integer,text) to authenticated;
+
 do $$
 declare conflict_count integer;
 begin

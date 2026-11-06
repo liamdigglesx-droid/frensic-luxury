@@ -33,10 +33,10 @@ async function database({ beforeSecurity } = {}) {
     grant usage on schema public, auth, storage to anon, authenticated, service_role;
     grant all on all tables in schema public, storage to anon, authenticated, service_role;
     grant all on all sequences in schema public to anon, authenticated, service_role;
-    insert into auth.users (id, email, raw_user_meta_data) values
-      ('00000000-0000-0000-0000-000000000001', 'admin@example.com', '{"full_name":"Admin"}'),
-      ('00000000-0000-0000-0000-000000000002', 'staff@example.com', '{"full_name":"Staff"}'),
-      ('00000000-0000-0000-0000-000000000003', 'guest@example.com', '{"full_name":"Guest"}');
+    insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) values
+      ('00000000-0000-0000-0000-000000000001', 'admin@example.com', now(), '{"full_name":"Admin"}'),
+      ('00000000-0000-0000-0000-000000000002', 'staff@example.com', now(), '{"full_name":"Staff"}'),
+      ('00000000-0000-0000-0000-000000000003', 'guest@example.com', now(), '{"full_name":"Guest"}');
     select set_config('request.jwt.claims', '{"role":"service_role"}', false);
     update public.profiles set role='admin' where id='00000000-0000-0000-0000-000000000001';
     update public.profiles set role='staff' where id='00000000-0000-0000-0000-000000000002';
@@ -146,5 +146,27 @@ test('recovered platform RPCs and privileged statistics are not executable by an
            has_function_privilege('authenticated', 'public.frensic_request_booking(uuid,date,date,integer,text)', 'EXECUTE') as authenticated_booking_rpc;
   `);
   assert.deepEqual(result.rows[0], { booking_rpc: false, contact_rpc: false, stats_rpc: false, rate_rpc: false, authenticated_booking_rpc: true });
+  await db.close();
+});
+
+test('recovered booking RPC uses canonical slugs, active catalog rows, and checkout holds', async () => {
+  const db = await database();
+  const roomId = (await db.query(`select id from public.rooms where slug='royal-haven'`)).rows[0].id;
+  await db.exec(claims('00000000-0000-0000-0000-000000000003', 'authenticated', 'guest@example.com'));
+  const created = await db.query(`select public.frensic_request_booking('${roomId}'::uuid, date '2031-01-10', date '2031-01-12', 2, 'legacy request') as booking_id`);
+  const bookingId = created.rows[0].booking_id;
+  const booking = await db.query(`select item_id, payment_status, hold_expires_at > now() as active_hold from public.bookings where id='${bookingId}'`);
+  assert.deepEqual(booking.rows[0], { item_id: 'royal-haven', payment_status: 'pending', active_hold: true });
+  await db.exec(claims('00000000-0000-0000-0000-000000000001', 'service_role', 'admin@example.com'));
+  await assert.rejects(
+    db.exec(`insert into public.bookings (booking_type,item_id,item_name,start_date,end_date,guest_email,total_amount,payment_status) values ('stay','royal-haven','Royal Haven','2031-01-11','2031-01-13','other@example.com',1,'paid');`),
+    /conflict/i,
+  );
+  await db.exec(`update public.rooms set active=false where id='${roomId}'`);
+  await db.exec(claims('00000000-0000-0000-0000-000000000003', 'authenticated', 'guest@example.com'));
+  await assert.rejects(
+    db.query(`select public.frensic_request_booking('${roomId}'::uuid, date '2031-02-01', date '2031-02-02', 2, '')`),
+    /unavailable/i,
+  );
   await db.close();
 });
