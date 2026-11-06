@@ -60,3 +60,16 @@ npm audit --audit-level=high
 - [ ] API/database/frontend tests pass.
 - [ ] Production build passes.
 - [ ] No high/critical npm audit findings.
+
+## Shared staging verification log — 2026-11-06
+
+Target: user-approved shared Supabase project `jhgaoemlwjradmufigyh`; Vercel preview only. Production deployment was not promoted.
+
+- Pre-migration logical snapshot: schema `frensic_pre_security_20261106` with copies of `admin_credentials`, `bookings`, `cars`, `contact_messages`, `profiles`, `reviews`, `rooms`, the `payment-receipts` bucket metadata, receipt object metadata, and a row-count manifest. Anonymous/authenticated access was revoked.
+- Applied `20261106190000_security_and_booking_integrity` transactionally and recorded it in migration history. The project now has all five migrations.
+- Verified after apply: 19 bookings preserved; existing room/car names and prices unchanged; 4 reviews preserved; catalog slugs/active flags present; historical booking item ids canonicalized.
+- Rolled-back database smoke passed: anonymous catalog/approved-review reads, anonymous booking reads hidden, anonymous booking inserts denied, rate-limit window, aggregate stats privilege, paid-overlap rejection, and active-hold overlap rejection.
+- Verified privileges: `consume_rate_limit` and `booking_stats` are service-role-only; the legacy booking RPC is authenticated-only.
+- Verified receipt bucket remains private with the 50 MB limit and JPEG/PNG/WebP/PDF MIME allowlist.
+- Preview-only Vercel variables added: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. Supabase Auth redirect allowlist updated for `frensic-luxury-*` preview origins.
+- Still pending: protected-preview browser/API smoke, Paystack test charge/webhook, Gmail/Calendar/Slack delivery, Supabase SMTP/auth email delivery, and admin bootstrap verification.
