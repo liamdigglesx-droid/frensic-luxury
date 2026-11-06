@@ -1,7 +1,7 @@
-import { getAdminClient } from './_lib/supabase.js';
-import { requireMethod, sendError } from './_lib/http.js';
-import { enforceRateLimit } from './_lib/rateLimit.js';
-import { createBookingRecord } from './_lib/bookings.js';
+import { getAdminClient } from '../supabase.js';
+import { requireMethod, sendError } from '../http.js';
+import { enforceRateLimit } from '../rateLimit.js';
+import { createBookingRecord } from '../bookings.js';
 
 export default async function handler(req, res) {
   try {

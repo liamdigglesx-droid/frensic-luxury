@@ -10,7 +10,7 @@ Live site: [frensicluxuryapartment.com.ng](https://frensicluxuryapartment.com.ng
 |---|---|
 | Frontend | React 18, Vite 6, Tailwind CSS 3, React Router 7 |
 | UI | Radix/shadcn primitives, Framer Motion, TanStack Query |
-| Backend | Supabase Postgres/Auth/Storage + Vercel Functions (`api/`) |
+| Backend | Supabase Postgres/Auth/Storage + one routed Vercel Function (`api/index.js`) |
 | Payments | Paystack official `@paystack/inline-js` v2 + server verification/webhook |
 | Notifications | Gmail API, Google Calendar API, optional Slack |
 | Hosting | Vercel (SPA + serverless API), Supabase (data/auth/storage) |
@@ -33,7 +33,7 @@ npm run dev
 npx vercel dev
 ```
 
-`npm run dev` serves the React app but does not emulate the serverless `/api/*` routes. Use `vercel dev` or a deployed preview when testing booking creation, Paystack verification, receipts, admin login, and notifications.
+The serverless entry dispatches the existing `/api/<action>` URLs internally, keeping Hobby deployments within the function limit. `npm run dev` serves the React app but does not emulate those routes. Use `vercel dev` or a deployed preview when testing booking creation, Paystack verification, receipts, admin login, and notifications.
 
 ## Environment variables
 
@@ -106,7 +106,7 @@ The security migration adds:
 `npm test` runs without live credentials:
 
 - `tests/api-security.test.mjs`: mocked Supabase/external services; authorization, pricing, payment verification, webhook signatures, notification idempotency, review moderation.
-- `tests/database.test.mjs`: PGlite executes the real migrations and checks RLS, overlap/hold triggers, role protection, and rate limits.
+- `tests/database.test.mjs`: PGlite executes the real migrations, including the recovered platform RPCs, and checks RLS, overlap/hold triggers, legacy catalog/id compatibility, role protection, and rate limits.
 - `tests/frontend.test.mjs`: jsdom boots the real bundle, exercises React Router 7 routes, safe redirects, guest token storage, and the Paystack SDK wrapper.
 
 Live Paystack, Gmail, Calendar, Slack, Supabase Auth email delivery, and Vercel routing still require a staging smoke test with real credentials.

@@ -1,8 +1,8 @@
 import crypto from 'node:crypto';
-import { getAdminClient } from './_lib/supabase.js';
-import { createAdminToken, currentCredential, hashPassword, safeEqual, CURRENT_PASSWORD_ITERATIONS } from './_lib/admin.js';
-import { ApiError, requireMethod, sendError } from './_lib/http.js';
-import { enforceRateLimit } from './_lib/rateLimit.js';
+import { getAdminClient } from '../supabase.js';
+import { createAdminToken, currentCredential, hashPassword, safeEqual, CURRENT_PASSWORD_ITERATIONS } from '../admin.js';
+import { ApiError, requireMethod, sendError } from '../http.js';
+import { enforceRateLimit } from '../rateLimit.js';
 
 export default async function handler(req, res) {
   try {

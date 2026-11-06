@@ -1,7 +1,7 @@
-import { getAdminClient, getActor, getVerifiedUser, hasBookingAccess, publicBooking } from './_lib/supabase.js';
-import { ApiError, requireMethod, sendError } from './_lib/http.js';
-import { enforceRateLimit } from './_lib/rateLimit.js';
-import { createBookingRecord } from './_lib/bookings.js';
+import { getAdminClient, getActor, getVerifiedUser, hasBookingAccess, publicBooking } from '../supabase.js';
+import { ApiError, requireMethod, sendError } from '../http.js';
+import { enforceRateLimit } from '../rateLimit.js';
+import { createBookingRecord } from '../bookings.js';
 
 const tables = { Booking: 'bookings', ContactMessage: 'contact_messages', Room: 'rooms', Car: 'cars', Review: 'reviews', User: 'profiles' };
 const toDb = data => Object.fromEntries(Object.entries(data || {}).map(([key, value]) => [key === 'created_date' ? 'created_at' : key === 'updated_date' ? 'updated_at' : key === 'order' ? 'display_order' : key, value]));

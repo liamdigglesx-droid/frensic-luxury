@@ -14,9 +14,10 @@ Required migrations, in order:
 1. `20260714000000_initial_schema.sql`
 2. `20260714010000_add_bank_transfer_receipts.sql`
 3. `20260715000000_complete_platform_migration.sql`
-4. `20261106000000_security_and_booking_integrity.sql`
+4. `20261106175315_frensic_existing_platform_requests.sql` (recovered from the connected project)
+5. `20261106190000_security_and_booking_integrity.sql`
 
-The final migration is required for the current API: booking holds/tokens, receipt metadata, RLS, overlap prevention, role protection, review moderation, rate limits, catalog seed, and dashboard statistics.
+Migration 4 was already applied to the connected Supabase project but was missing from this repository; it is now preserved for fresh environments. Migration 5 is required for the current API: booking holds/tokens, receipt metadata, RLS, overlap prevention, role protection, review moderation, rate limits, additive catalog seed, and dashboard statistics. Existing catalog prices/photos are preserved, and legacy UUID-based reservations are mapped to canonical catalog ids before overlap enforcement.
 
 ## 2. Transfer existing Base44 data (if still needed)
 

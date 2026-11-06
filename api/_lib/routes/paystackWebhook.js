@@ -1,9 +1,9 @@
 import crypto from 'node:crypto';
-import { getAdminClient } from './_lib/supabase.js';
-import { ApiError, readRawBody, requireMethod, sendError } from './_lib/http.js';
-import { verifyPaystackTransaction } from './_lib/paystack.js';
-import { markBookingPaid } from './_lib/bookings.js';
-import { notifyPaidBooking } from './_lib/notifications.js';
+import { getAdminClient } from '../supabase.js';
+import { ApiError, readRawBody, requireMethod, sendError } from '../http.js';
+import { verifyPaystackTransaction } from '../paystack.js';
+import { markBookingPaid } from '../bookings.js';
+import { notifyPaidBooking } from '../notifications.js';
 
 export const config = { api: { bodyParser: false } };
 

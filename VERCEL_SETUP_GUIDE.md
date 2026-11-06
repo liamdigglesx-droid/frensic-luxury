@@ -40,7 +40,9 @@ SLACK_BOT_TOKEN=...        # optional
 SLACK_CHANNEL_ID=...       # optional
 ```
 
-Redeploy after changing environment variables.
+Redeploy after changing environment variables. Preview deployments need their own public Supabase URL/key and server-side Supabase/Paystack values; production-only variables are not inherited by previews.
+
+The API uses one serverless entry (`api/index.js`) and a Vercel rewrite to preserve `/api/<action>` URLs. This keeps the deployment within the Hobby plan function limit. The webhook still receives raw bytes for signature verification; other actions receive bounded parsed JSON.
 
 ## 3. Database migrations
 
@@ -57,7 +59,7 @@ Or run the manual **Deploy Supabase Migrations** GitHub workflow with repository
 - `SUPABASE_DB_PASSWORD`
 - `SUPABASE_PROJECT_REF`
 
-The latest migration is `20261106000000_security_and_booking_integrity.sql`. It is safe to run after the initial schema migrations and adds the security/integrity objects required by the current API.
+Apply all five migrations in filename order. Migration `20261106175315_frensic_existing_platform_requests.sql` was recovered from the connected project and is already recorded there. The new `20261106190000_security_and_booking_integrity.sql` adds the security/integrity objects required by the current API, preserves existing catalog values, and normalizes legacy reservation ids. Rehearse it on an isolated staging database before applying it to the shared project.
 
 ## 4. Supabase Auth
 

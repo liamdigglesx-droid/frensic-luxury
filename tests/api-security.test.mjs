@@ -49,14 +49,14 @@ globalThis.fetch = async (url, options = {}) => {
   throw new Error(`Unexpected external request: ${target}`);
 };
 
-const { default: dataHandler } = await import('../api/data.js');
-const { default: createBooking } = await import('../api/createBooking.js');
-const { default: verifyPayment } = await import('../api/verifyPayment.js');
-const { default: webhook } = await import('../api/paystackWebhook.js');
-const { default: calendarHandler } = await import('../api/addBookingToCalendar.js');
-const { default: availabilityHandler } = await import('../api/checkAvailability.js');
-const { default: prepareReceipt } = await import('../api/prepareReceiptUpload.js');
-const { default: submitReceipt } = await import('../api/submitReceipt.js');
+const { default: dataHandler } = await import('../api/_lib/routes/data.js');
+const { default: createBooking } = await import('../api/_lib/routes/createBooking.js');
+const { default: verifyPayment } = await import('../api/_lib/routes/verifyPayment.js');
+const { default: webhook } = await import('../api/_lib/routes/paystackWebhook.js');
+const { default: calendarHandler } = await import('../api/_lib/routes/addBookingToCalendar.js');
+const { default: availabilityHandler } = await import('../api/_lib/routes/checkAvailability.js');
+const { default: prepareReceipt } = await import('../api/_lib/routes/prepareReceiptUpload.js');
+const { default: submitReceipt } = await import('../api/_lib/routes/submitReceipt.js');
 
 const validBooking = {
   booking_type: 'stay', item_id: 'royal-haven', start_date: '2026-12-01', end_date: '2026-12-03',
@@ -204,4 +204,35 @@ test('bank-transfer receipts require booking access, a prepared path, and a comp
   await submitReceipt(req({ bookingId: booking.id, path: prepared.path }, { 'x-booking-token': booking.guest_access_token }), res);
   assert.equal(res.statusCode, 200, JSON.stringify(res.body));
   assert.equal(res.body.booking.transfer_status, 'receipt_submitted');
+});
+
+test('single-function router preserves URLs, rejects unknown routes, and parses bounded JSON', async () => {
+  const { default: handler, config } = await import('../api/index.js');
+  assert.equal(config.api.bodyParser, false);
+  const rawReq = (action, body, method = 'POST') => {
+    const raw = Buffer.from(typeof body === 'string' ? body : JSON.stringify(body));
+    return { method, query: { __frensic_route: action }, headers: {}, socket: { remoteAddress: '127.0.0.1' }, [Symbol.asyncIterator]: () => Readable.from([raw])[Symbol.asyncIterator]() };
+  };
+  let res = mockResponse();
+  await handler(rawReq('data', { entity: 'Booking', action: 'update', id: 'any-id', data: { payment_status: 'paid' } }), res);
+  assert.equal(res.statusCode, 403);
+  res = mockResponse();
+  await handler(rawReq('missing', {}), res);
+  assert.equal(res.statusCode, 404);
+  res = mockResponse();
+  await handler(rawReq('data', {}, 'GET'), res);
+  assert.equal(res.statusCode, 405);
+  res = mockResponse();
+  await handler(rawReq('data', '{bad json'), res);
+  assert.equal(res.statusCode, 400);
+  assert.equal(res.body.code, 'invalid_json');
+  res = mockResponse();
+  await handler(rawReq('data', []), res);
+  assert.equal(res.statusCode, 400);
+  res = mockResponse();
+  await handler(rawReq('data', 'x'.repeat(1024 * 1024 + 1)), res);
+  assert.equal(res.statusCode, 413);
+  res = mockResponse();
+  await handler({ ...rawReq('paystackWebhook', { event: 'charge.success' }), headers: { 'x-paystack-signature': 'bad' } }, res);
+  assert.equal(res.statusCode, 401);
 });

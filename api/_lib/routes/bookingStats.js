@@ -1,5 +1,5 @@
-import { getActor, getAdminClient } from './_lib/supabase.js';
-import { ApiError, requireMethod, sendError } from './_lib/http.js';
+import { getActor, getAdminClient } from '../supabase.js';
+import { ApiError, requireMethod, sendError } from '../http.js';
 
 export default async function handler(req, res) {
   try {

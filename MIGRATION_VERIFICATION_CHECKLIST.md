@@ -14,7 +14,9 @@ Use this checklist after applying the Supabase migrations and configuring Vercel
 
 ## 2. Database
 
-- [ ] All four migrations applied successfully.
+- [ ] All five migrations applied successfully in filename order.
+- [ ] The recovered `20261106175315_frensic_existing_platform_requests` migration is present in history.
+- [ ] Existing catalog prices/photos were preserved and legacy reservation ids were normalized.
 - [ ] `public.rooms` and `public.cars` contain active catalog rows.
 - [ ] `public.booking_stats` exists and is executable only by `service_role`.
 - [ ] Anonymous users cannot insert bookings or read pending reviews.
@@ -25,7 +27,8 @@ Use this checklist after applying the Supabase migrations and configuring Vercel
 - [ ] Vercel build succeeds.
 - [ ] `/` boots without console errors.
 - [ ] `/rooms`, `/cars`, `/book`, `/login`, `/my-bookings`, and `/dashboard/admin` route correctly.
-- [ ] `/api/data` rejects anonymous private booking reads/updates.
+- [ ] `/api/data` rejects anonymous private booking reads/updates through the single-function rewrite.
+- [ ] Unknown `/api/<action>` routes return 404 and invalid JSON returns 400.
 - [ ] SPA refreshes on deep links do not return 404.
 
 ## 4. Booking and payment staging checks

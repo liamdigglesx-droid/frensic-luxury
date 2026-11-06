@@ -1,7 +1,7 @@
-import { getAdminClient } from './_lib/supabase.js';
-import { ApiError, requireMethod, sendError } from './_lib/http.js';
-import { enforceRateLimit } from './_lib/rateLimit.js';
-import { checkAvailability, findCatalogItem, validateBookingInput } from './_lib/bookings.js';
+import { getAdminClient } from '../supabase.js';
+import { ApiError, requireMethod, sendError } from '../http.js';
+import { enforceRateLimit } from '../rateLimit.js';
+import { checkAvailability, findCatalogItem, validateBookingInput } from '../bookings.js';
 
 export default async function handler(req, res) {
   try {

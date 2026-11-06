@@ -1,9 +1,9 @@
-import { getActor, getAdminClient, hasBookingAccess, publicBooking } from './_lib/supabase.js';
-import { ApiError, requireMethod, sendError } from './_lib/http.js';
-import { enforceRateLimit } from './_lib/rateLimit.js';
-import { verifyPaystackTransaction } from './_lib/paystack.js';
-import { markBookingPaid } from './_lib/bookings.js';
-import { notifyPaidBooking } from './_lib/notifications.js';
+import { getActor, getAdminClient, hasBookingAccess, publicBooking } from '../supabase.js';
+import { ApiError, requireMethod, sendError } from '../http.js';
+import { enforceRateLimit } from '../rateLimit.js';
+import { verifyPaystackTransaction } from '../paystack.js';
+import { markBookingPaid } from '../bookings.js';
+import { notifyPaidBooking } from '../notifications.js';
 
 export default async function handler(req, res) {
   try {

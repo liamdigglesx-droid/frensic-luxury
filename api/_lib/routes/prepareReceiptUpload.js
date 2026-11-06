@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
-import { getActor, getAdminClient, hasBookingAccess } from './_lib/supabase.js';
-import { ApiError, requireMethod, sendError } from './_lib/http.js';
-import { enforceRateLimit } from './_lib/rateLimit.js';
+import { getActor, getAdminClient, hasBookingAccess } from '../supabase.js';
+import { ApiError, requireMethod, sendError } from '../http.js';
+import { enforceRateLimit } from '../rateLimit.js';
 
 const TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'application/pdf': 'pdf' };
 const MAX_SIZE = 50 * 1024 * 1024;
