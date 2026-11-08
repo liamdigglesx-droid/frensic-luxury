@@ -1,22 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Building2, Car, Users, User, Mail, Phone, MessageSquare,
+  Building2, Car, User, Mail, Phone, MessageSquare,
   ChevronRight, ChevronLeft, Check, Lock, Loader2
 } from 'lucide-react';
-import { ROOMS, CARS } from '@/lib/constants';
+import useCatalog from '@/hooks/useCatalog';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import { base44 } from '@/api/base44Client';
 import { initPaystack } from '@/lib/paystack';
 import AvailabilityBadge from '@/components/AvailabilityBadge';
 import BankTransferDialog from '@/components/BankTransferDialog';
-
+import CarRentalCallDialog from '@/components/CarRentalCallDialog';
+import { CAR_BOOKING_PHONE_DISPLAY, CAR_BOOKING_PHONE_TEL } from '@/lib/contact';
 export default function Book() {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
-
   const [step, setStep] = useState(1); // 1=Type+Item, 2=Dates, 3=Details, 4=Confirm
-  const [type, setType] = useState(urlParams.get('type') || 'stay');
+  const [type, setType] = useState(urlParams.get('type') === 'drive' ? 'drive' : 'stay');
   const [selectedRoom, setSelectedRoom] = useState(urlParams.get('room') || '');
   const [selectedCar, setSelectedCar] = useState(urlParams.get('car') || '');
   const [startDate, setStartDate] = useState(urlParams.get('start') || '');
@@ -26,30 +27,29 @@ export default function Book() {
   const [guestInfo, setGuestInfo] = useState({ name: '', email: '', phone: '', requests: '' });
   const [loading, setLoading] = useState(false);
   const [paymentError, setPaymentError] = useState('');
-  const [booked, setBooked] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
   const [transferBooking, setTransferBooking] = useState(null);
   const [transferLoading, setTransferLoading] = useState(false);
-
+  const [callOpen, setCallOpen] = useState(false);
+  const [callBooking, setCallBooking] = useState(null);
+  const [callLoading, setCallLoading] = useState(false);
+  const [availabilityChecking, setAvailabilityChecking] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState('');
+  const { rooms: ROOMS, cars: CARS, error: catalogError } = useCatalog();
   const today = new Date().toISOString().split('T')[0];
-
   const selectedItem = type === 'stay'
     ? ROOMS.find(r => r.id === selectedRoom) || ROOMS[0]
     : CARS.find(c => c.id === selectedCar) || CARS[0];
-
   const nights = startDate && endDate
-    ? Math.max(1, Math.ceil((new Date(endDate) - new Date(startDate)) / 86400000))
+    ? Math.max(1, Math.ceil((Number(new Date(endDate)) - Number(new Date(startDate))) / 86400000))
     : 1;
-
   const unitPrice = type === 'stay' ? selectedItem?.price_per_night : selectedItem?.price_per_day;
   const chauffeurFee = chauffeur ? 30000 * nights : 0;
   const subtotal = (unitPrice || 0) * nights;
   const total = subtotal + chauffeurFee;
-
   const canProceedStep1 = type && (type === 'stay' ? selectedRoom : selectedCar);
   const canProceedStep2 = startDate && endDate && new Date(endDate) > new Date(startDate);
   const canProceedStep3 = guestInfo.name && guestInfo.email && guestInfo.phone;
-
   const createPendingBooking = (paymentMethod, additionalData = {}) => base44.entities.Booking.create({
     booking_type: type,
     item_id: selectedItem.id,
@@ -70,70 +70,79 @@ export default function Book() {
     ...(paymentMethod === 'bank_transfer' ? { transfer_status: 'awaiting_payment' } : {}),
     ...additionalData,
   });
-
+  const handleDatesNext = async () => {
+    if (!canProceedStep2 || availabilityChecking) return;
+    setAvailabilityError('');
+    if (!isSupabaseConfigured) { setStep(3); return; }
+    setAvailabilityChecking(true);
+    try {
+      const { data } = await base44.functions.invoke('checkAvailability', {
+        booking_type: type, item_id: selectedItem.id, start_date: startDate, end_date: endDate, guests_count: guests,
+      });
+      if (!data.available) throw new Error('Those dates are already reserved. Please choose different dates.');
+      setStep(3);
+    } catch (err) {
+      setAvailabilityError(err.message || 'Availability could not be checked. Please try again.');
+    } finally { setAvailabilityChecking(false); }
+  };
   const handlePayment = async () => {
-    if (!canProceedStep3 || loading) return;
+    if (!canProceedStep3 || loading || !isSupabaseConfigured) return;
     setLoading(true);
     setPaymentError('');
-
     let booking;
     try {
       booking = await createPendingBooking('paystack');
     } catch (err) {
       setLoading(false);
-      alert('Could not create booking. Please try again.');
+      setPaymentError(err.message || 'Could not create booking. Please try again.');
       return;
     }
-
     try {
       await initPaystack({
-        email: guestInfo.email,
-        amount: total,
-        ref: `FRENSIC_${booking.id.slice(-8).toUpperCase()}_${Date.now()}`,
-        onSuccess: async (response) => {
+        email: booking.guest_email,
+        amount: booking.total_amount,
+        ref: booking.payment_reference,
+        metadata: { booking_id: booking.id },
+        onSuccess: async () => {
           try {
-            await base44.entities.Booking.update(booking.id, {
-              payment_status: 'paid',
-              payment_reference: response.reference,
-            });
-            const confirmedBooking = { ...booking, payment_reference: response.reference, payment_status: 'paid' };
-            base44.functions.invoke('sendBookingConfirmation', { booking: confirmedBooking }).catch(() => {});
-            base44.functions.invoke('addBookingToCalendar', { booking: confirmedBooking }).catch(() => {});
-            setBooked(true);
+            await base44.functions.invoke('verifyPayment', { bookingId: booking.id });
             setStep(5);
-          } catch {
-            setPaymentError('Payment succeeded, but confirmation could not be saved. Please contact support with your payment reference.');
-          } finally {
-            setLoading(false);
-          }
+          } catch (err) {
+            setPaymentError(err.message || 'Payment succeeded, but confirmation is pending. Please contact support with your payment reference.');
+          } finally { setLoading(false); }
         },
-        onClose: () => {
-          setLoading(false);
-          base44.entities.Booking.update(booking.id, { payment_status: 'failed' }).catch(() => {});
-        },
+        onClose: () => setLoading(false),
       });
     } catch {
       setLoading(false);
       setPaymentError('Payment gateway could not open. Check your connection and try again.');
-      base44.entities.Booking.update(booking.id, { payment_status: 'failed' }).catch(() => {});
     }
   };
-
-  const prepareTransferBooking = async (additionalData = {}) => {
-    if (transferBooking) return transferBooking;
-    const booking = await createPendingBooking('bank_transfer', additionalData);
-    setTransferBooking(booking);
-    return booking;
-  };
-
-  const handleBankTransfer = () => {
-    if (transferLoading) return;
+  const handleCallToBook = async () => {
+    if (callLoading || !isSupabaseConfigured) return;
+    setCallLoading(true);
     setPaymentError('');
-    setTransferOpen(true);
+    try {
+      const booking = callBooking || await createPendingBooking('call_to_book');
+      setCallBooking(booking);
+      setCallOpen(true);
+    } catch (err) {
+      setPaymentError(err.message || 'Could not start your car booking. Please try again.');
+    } finally { setCallLoading(false); }
   };
-
+  const handleBankTransfer = async () => {
+    if (transferLoading || !isSupabaseConfigured) return;
+    setTransferLoading(true);
+    setPaymentError('');
+    try {
+      const booking = transferBooking || await createPendingBooking('bank_transfer');
+      setTransferBooking(booking);
+      setTransferOpen(true);
+    } catch (err) {
+      setPaymentError(err.message || 'Could not start a transfer booking. Please try again.');
+    } finally { setTransferLoading(false); }
+  };
   const stepLabels = ['Select', 'Dates', 'Details', 'Confirm'];
-
   return (
     <div style={{ backgroundColor: '#050505', minHeight: '100vh' }}>
       {/* Hero */}
@@ -150,7 +159,6 @@ export default function Book() {
           <h1 className="font-serif font-light text-5xl" style={{ color: '#F9F9F9' }}>Book Now</h1>
         </div>
       </section>
-
       {/* Stepper + Form */}
       <section className="py-16 px-6 lg:px-16">
         <div className="max-w-5xl mx-auto">
@@ -181,14 +189,11 @@ export default function Book() {
               ))}
             </div>
           )}
-
           <AnimatePresence mode="wait">
-
             {/* STEP 1: Type & Item Selection */}
             {step === 1 && (
               <motion.div key="step1" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
                 <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>What are you booking?</h2>
-
                 {/* Type Toggle */}
                 <div className="flex gap-4 mb-10 justify-center">
                   {[{ key: 'stay', label: 'Apartment Stay', icon: Building2 }, { key: 'drive', label: 'Car Rental', icon: Car }].map(({ key, label, icon: Icon }) => (
@@ -206,7 +211,6 @@ export default function Book() {
                     </button>
                   ))}
                 </div>
-
                 {/* Item Selection */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
                   {(type === 'stay' ? ROOMS : CARS).map(item => (
@@ -239,7 +243,6 @@ export default function Book() {
                     </button>
                   ))}
                 </div>
-
                 <div className="flex justify-end">
                   <button
                     onClick={() => canProceedStep1 && setStep(2)}
@@ -252,7 +255,6 @@ export default function Book() {
                 </div>
               </motion.div>
             )}
-
             {/* STEP 2: Dates */}
             {step === 2 && (
               <motion.div key="step2" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
@@ -268,7 +270,6 @@ export default function Book() {
                         </div>
                       </div>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div>
                         <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>
@@ -314,7 +315,6 @@ export default function Book() {
                         />
                       </div>
                     </div>
-
                     <div className="mt-5">
                       <label className="block text-xs tracking-[0.15em] uppercase mb-2" style={{ color: '#aaaaaa' }}>
                         {type === 'stay' ? 'Number of Guests' : 'Number of Passengers'}
@@ -325,7 +325,6 @@ export default function Book() {
                         <button onClick={() => setGuests(Math.min(10, guests + 1))} className="w-10 h-10 flex items-center justify-center text-xl" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#C9A84C' }}>+</button>
                       </div>
                     </div>
-
                     {type === 'drive' && (
                       <label className="flex items-center gap-3 mt-5 cursor-pointer">
                         <input
@@ -338,7 +337,6 @@ export default function Book() {
                       </label>
                     )}
                   </div>
-
                   {startDate && endDate && canProceedStep2 && (
                     <div className="p-5 mb-8" style={{ backgroundColor: 'rgba(201,168,76,0.07)', border: '1px solid rgba(201,168,76,0.2)' }}>
                       <div className="text-xs tracking-widest uppercase mb-3" style={{ color: '#C9A84C' }}>Booking Summary</div>
@@ -358,7 +356,6 @@ export default function Book() {
                       </div>
                     </div>
                   )}
-
                   <div className="flex justify-between">
                     <button
                       onClick={() => setStep(1)}
@@ -368,18 +365,18 @@ export default function Book() {
                       <ChevronLeft size={16} /> Back
                     </button>
                     <button
-                      onClick={() => canProceedStep2 && setStep(3)}
-                      disabled={!canProceedStep2}
+                      onClick={handleDatesNext}
+                      disabled={!canProceedStep2 || availabilityChecking}
                       className="flex items-center gap-2 px-10 h-12 text-xs tracking-[0.2em] uppercase font-medium transition-all"
                       style={{ height: '52px', backgroundColor: canProceedStep2 ? '#C9A84C' : '#333', color: canProceedStep2 ? '#F9F9F9' : '#666' }}
                     >
-                      Continue <ChevronRight size={16} />
+                      {availabilityChecking ? 'Checking…' : 'Continue'} <ChevronRight size={16} />
                     </button>
                   </div>
+                  {availabilityError && <p role="alert" className="mt-4 text-sm text-destructive">{availabilityError}</p>}
                 </div>
               </motion.div>
             )}
-
             {/* STEP 3: Guest Details */}
             {step === 3 && (
               <motion.div key="step3" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
@@ -424,7 +421,6 @@ export default function Book() {
                       </div>
                     </div>
                   </div>
-
                   <div className="flex justify-between">
                     <button onClick={() => setStep(2)} className="flex items-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase transition-all" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#888888' }}>
                       <ChevronLeft size={16} /> Back
@@ -441,11 +437,10 @@ export default function Book() {
                 </div>
               </motion.div>
             )}
-
             {/* STEP 4: Confirm & Pay */}
             {step === 4 && (
               <motion.div key="step4" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
-                <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>Confirm & Pay</h2>
+                <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>{type === 'drive' ? 'Confirm & Call' : 'Confirm & Pay'}</h2>
                 <div className="max-w-2xl mx-auto">
                   {/* Summary Card */}
                   <div className="p-8 mb-6" style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -458,7 +453,6 @@ export default function Book() {
                         </div>
                       </div>
                     </div>
-
                     {[
                       { label: type === 'stay' ? 'Check-In' : 'Pick-Up', value: startDate },
                       { label: type === 'stay' ? 'Check-Out' : 'Return', value: endDate },
@@ -473,7 +467,6 @@ export default function Book() {
                         <span className="text-sm" style={{ color: '#F9F9F9' }}>{value}</span>
                       </div>
                     ))}
-
                     <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                       <div className="flex justify-between text-sm mb-2" style={{ color: '#aaaaaa' }}>
                         <span>Subtotal ({nights} {type === 'stay' ? 'nights' : 'days'})</span>
@@ -491,13 +484,12 @@ export default function Book() {
                       </div>
                     </div>
                   </div>
-
                   {type === 'drive' && (
                     <div className="flex items-center gap-3 p-5 mb-6" style={{ backgroundColor: 'rgba(201,168,76,0.07)', border: '1px solid rgba(201,168,76,0.2)' }}>
                       <Phone size={18} style={{ color: '#C9A84C', flexShrink: 0 }} />
                       <div>
                         <p className="text-sm mb-1" style={{ color: '#F9F9F9' }}>
-                          Please call <a href="tel:+2348037068265" className="underline" style={{ color: '#C9A84C', fontWeight: 500 }}>+234 803 706 8265</a> to finalize your car booking.
+                          Please call <a href={`tel:${CAR_BOOKING_PHONE_TEL}`} className="underline" style={{ color: '#C9A84C', fontWeight: 500 }}>{CAR_BOOKING_PHONE_DISPLAY}</a> to proceed with your car booking.
                         </p>
                         <p className="text-xs" style={{ color: '#aaaaaa' }}>
                           Our team will confirm availability and complete your reservation.
@@ -505,47 +497,66 @@ export default function Book() {
                       </div>
                     </div>
                   )}
-
-                  <div className="flex items-center gap-2 text-xs mb-6" style={{ color: '#aaaaaa' }}>
-                    <Lock size={12} style={{ color: '#C9A84C' }} />
-                    Secured by Paystack — Your payment is 256-bit SSL encrypted
-                  </div>
-
+                  {type === 'stay' && (
+                    <div className="flex items-center gap-2 text-xs mb-6" style={{ color: '#aaaaaa' }}>
+                      <Lock size={12} style={{ color: '#C9A84C' }} />
+                      Secured by Paystack — Your payment is 256-bit SSL encrypted
+                    </div>
+                  )}
+                  {!isSupabaseConfigured && <p role="alert" className="text-sm mb-5 text-destructive">Online booking is not configured. Please contact us to reserve.</p>}
+                  {catalogError && <p role="alert" className="text-sm mb-5 text-destructive">{catalogError}</p>}
                   {paymentError && (
                     <p className="text-sm mb-5" role="alert" style={{ color: '#f87171' }}>{paymentError}</p>
                   )}
-
                   <div className="flex flex-col sm:flex-row gap-4">
                     <button onClick={() => setStep(3)} className="flex items-center justify-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase transition-all" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#888888' }}>
                       <ChevronLeft size={16} /> Back
                     </button>
-                    <button
-                      onClick={handleBankTransfer}
-                      disabled={transferLoading}
-                      className="flex-1 flex items-center justify-center gap-2 h-14 px-5 text-xs tracking-[0.15em] uppercase font-medium transition-all"
-                      style={{ border: '1px solid #C9A84C', color: '#C9A84C' }}
-                    >
-                      {transferLoading ? <Loader2 size={18} className="animate-spin" /> : 'Pay by Bank Transfer'}
-                    </button>
-                    <button
-                      onClick={handlePayment}
-                      disabled={loading}
-                      className="flex-1 flex items-center justify-center gap-2 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
-                      style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
-                      onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
-                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
-                    >
-                      {loading ? (
-                        <><Loader2 size={18} className="animate-spin" /> Processing...</>
-                      ) : (
-                        <><Lock size={16} /> Pay ₦{total.toLocaleString()}</>
-                      )}
-                    </button>
+                    {type === 'drive' ? (
+                      <button
+                        onClick={handleCallToBook}
+                        disabled={callLoading || !isSupabaseConfigured}
+                        className="flex-1 flex items-center justify-center gap-2 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
+                        style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
+                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
+                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
+                      >
+                        {callLoading ? (
+                          <><Loader2 size={18} className="animate-spin" /> Preparing...</>
+                        ) : (
+                          <><Phone size={16} /> Proceed by Call</>
+                        )}
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={handleBankTransfer}
+                          disabled={transferLoading || !isSupabaseConfigured}
+                          className="flex-1 flex items-center justify-center gap-2 h-14 px-5 text-xs tracking-[0.15em] uppercase font-medium transition-all"
+                          style={{ border: '1px solid #C9A84C', color: '#C9A84C' }}
+                        >
+                          {transferLoading ? <Loader2 size={18} className="animate-spin" /> : 'Pay by Bank Transfer'}
+                        </button>
+                        <button
+                          onClick={handlePayment}
+                          disabled={loading || !isSupabaseConfigured}
+                          className="flex-1 flex items-center justify-center gap-2 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
+                          style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
+                          onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
+                          onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
+                        >
+                          {loading ? (
+                            <><Loader2 size={18} className="animate-spin" /> Processing...</>
+                          ) : (
+                            <><Lock size={16} /> Pay ₦{total.toLocaleString()}</>
+                          )}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </motion.div>
             )}
-
             {/* STEP 5: Success */}
             {step === 5 && (
               <motion.div
@@ -572,7 +583,7 @@ export default function Book() {
                   <div className="flex items-center gap-3 p-5 mb-8 max-w-md mx-auto text-left" style={{ backgroundColor: 'rgba(201,168,76,0.07)', border: '1px solid rgba(201,168,76,0.2)' }}>
                     <Phone size={18} style={{ color: '#C9A84C', flexShrink: 0 }} />
                     <p className="text-sm" style={{ color: '#aaaaaa' }}>
-                      Call <a href="tel:+2348037068265" className="underline" style={{ color: '#C9A84C', fontWeight: 500 }}>+234 803 706 8265</a> to finalize your car booking and confirm pickup details.
+                      Call <a href={`tel:${CAR_BOOKING_PHONE_TEL}`} className="underline" style={{ color: '#C9A84C', fontWeight: 500 }}>{CAR_BOOKING_PHONE_DISPLAY}</a> to finalize your car booking and confirm pickup details.
                     </p>
                   </div>
                 )}
@@ -596,19 +607,20 @@ export default function Book() {
                 </div>
               </motion.div>
             )}
-
           </AnimatePresence>
         </div>
       </section>
-
       <BankTransferDialog
         open={transferOpen}
         onOpenChange={setTransferOpen}
         booking={transferBooking}
         total={total}
-        onPrepareBooking={prepareTransferBooking}
       />
-
+      <CarRentalCallDialog
+        open={callOpen}
+        onOpenChange={setCallOpen}
+        onReturnHome={() => navigate('/')}
+      />
       {/* Support Section */}
       {step <= 4 && (
         <section className="py-16 px-6 lg:px-16" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
@@ -654,4 +666,4 @@ export default function Book() {
       )}
     </div>
   );
-}v
+}

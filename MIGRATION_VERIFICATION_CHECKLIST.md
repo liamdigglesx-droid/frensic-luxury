@@ -1,238 +1,103 @@
-# Supabase Migration & Connection Verification Checklist
+# Migration verification checklist
 
-## Phase 1: Get Your Supabase Credentials ✓
+Use this checklist after applying the Supabase migrations and configuring Vercel.
 
-### What You Need to Do:
-1. Go to https://supabase.com/dashboard
-2. Click your project: `jhgaoemlwjradmufigyh`
-3. Click **Settings** → **API**
-4. Copy these 3 values:
+## 1. Environment variables
 
-| Variable Name | What to Copy | Example |
-|---|---|---|
-| `VITE_SUPABASE_URL` | **Project URL** | `https://jhgaoemlwjradmufigyh.supabase.co` |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | **anon public** key | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
-| `VITE_SUPABASE_SERVICE_ROLE_KEY` | **service_role secret** key | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
+Checked boxes below refer to the shared staging/Preview environment only, not production cutover readiness.
 
-✅ **Have you copied all 3 values? (Yes/No)**
+- [x] `VITE_SUPABASE_URL` is set.
+- [x] `VITE_SUPABASE_PUBLISHABLE_KEY` is set.
+- [ ] `VITE_PAYSTACK_PUBLIC_KEY` is set.
+- [x] `SUPABASE_URL` is set as a server variable.
+- [x] A server-only Supabase privileged key is set (`SUPABASE_SECRET_KEY` on Preview; `SUPABASE_SERVICE_ROLE_KEY` is also supported by the API).
+- [x] No variable named `VITE_SUPABASE_SERVICE_ROLE_KEY` exists in the verified Preview deployment.
+- [ ] `PAYSTACK_SECRET_KEY`, `ADMIN_PASSWORD`, Google, and optional Slack variables are set on the server. `APP_URL` and `ADMIN_USERNAME` are already present on Preview.
 
----
+## 2. Database
 
-## Phase 2: Add to Vercel Environment Variables ✓
+- [x] All six migrations applied successfully in filename order.
+- [x] The recovered `20261106175315_frensic_existing_platform_requests` migration is present in history.
+- [x] Existing catalog prices/photos were preserved and legacy reservation ids were normalized.
+- [x] `public.rooms` and `public.cars` contain active catalog rows.
+- [x] `public.booking_stats` exists and is executable only by `service_role`.
+- [x] Anonymous users cannot insert bookings or read pending reviews (rolled-back shared-database smoke).
+- [x] Staff cannot change their own profile role to admin (automated database test).
 
-### What You Need to Do:
-1. Go to https://vercel.com/dashboard
-2. Click project: **frensic-luxury**
-3. Click **Settings** tab → **Environment Variables**
-4. Click **+ Add New Variable** (repeat 3 times for each value)
+## 3. Deployment
 
-**For each variable:**
-- **Name**: Type exactly (copy from table above)
-- **Value**: Paste the Supabase credential
-- **Environment**: Check all 3 boxes:
-  - ☑ Production
-  - ☑ Preview
-  - ☑ Development
-- Click **Save**
+- [x] Vercel build succeeds.
+- [ ] `/` boots without console errors.
+- [ ] `/rooms`, `/cars`, `/book`, `/login`, `/my-bookings`, and `/dashboard/admin` route correctly.
+- [ ] `/api/data` rejects anonymous private booking reads/updates through the single-function rewrite.
+- [ ] Unknown `/api/<action>` routes return 404 and invalid JSON returns 400.
+- [ ] SPA refreshes on deep links do not return 404.
 
-**After adding all 3, you should see:**
-```
-✓ VITE_SUPABASE_URL
-✓ VITE_SUPABASE_PUBLISHABLE_KEY
-✓ VITE_SUPABASE_SERVICE_ROLE_KEY
-```
+## 4. Booking and payment staging checks
 
-✅ **Have you added all 3 variables to Vercel? (Yes/No)**
+- [ ] Availability rejects overlapping dates.
+- [ ] Booking creation ignores client-supplied prices and returns a server total.
+- [ ] Paystack test payment succeeds only after server verification.
+- [ ] Paystack webhook signature failures return 401.
+- [ ] Replaying verification/webhook does not duplicate email/calendar notifications.
+- [ ] Bank-transfer receipt upload uses a signed URL and respects the hold window.
+- [ ] Guest booking lookup requires email OTP or the session booking token.
 
----
+## 5. Admin/staff checks
 
-## Phase 3: Trigger a New Deployment ✓
+- [ ] Admin login works with the bootstrap credentials and then stored hash.
+- [ ] Staff can manage bookings/messages/reviews but cannot manage staff roles.
+- [ ] Reviews are hidden publicly until approved.
+- [ ] Dashboard totals use the aggregate RPC, not a capped client list.
 
-### Option A: Automatic Deployment (Easiest)
+## 6. Automated gate
+
 ```bash
-# In your terminal, make a small commit
-git add .
-git commit -m "chore: trigger vercel deployment with supabase env vars"
-git push origin main
+npm run check
+npm audit --audit-level=high
 ```
 
-**Vercel will automatically build and deploy.**
+- [x] Lint passes.
+- [x] Typecheck passes.
+- [x] API/database/frontend/smoke-runner tests pass (32/32).
+- [x] Production build passes.
+- [x] No high/critical npm audit findings.
 
-### Option B: Manual Redeploy
-1. Go to https://vercel.com/dashboard → **frensic-luxury**
-2. Click **Deployments** tab
-3. Find the latest deployment
-4. Click the **⋯** menu → **Redeploy**
+## Shared staging verification log — 2026-11-06
 
-**Wait for build to complete (5-10 minutes)** ⏳
+Target: user-approved shared Supabase project `jhgaoemlwjradmufigyh`; Vercel preview only. Production deployment was not promoted.
 
-✅ **Have you triggered a deployment? (Yes/No)**
+- Pre-migration logical snapshot: schema `frensic_pre_security_20261106` with copies of `admin_credentials`, `bookings`, `cars`, `contact_messages`, `profiles`, `reviews`, `rooms`, the `payment-receipts` bucket metadata, receipt object metadata, and a row-count manifest. Anonymous/authenticated access was revoked.
+- Applied `20261106190000_security_and_booking_integrity` transactionally and recorded it in migration history. The project now has all five migrations.
+- Verified after apply: 19 bookings preserved; existing room/car names and prices unchanged; 4 reviews preserved; catalog slugs/active flags present; historical booking item ids canonicalized.
+- Rolled-back database smoke passed: anonymous catalog/approved-review reads, anonymous booking reads hidden, anonymous booking inserts denied, rate-limit window, aggregate stats privilege, paid-overlap rejection, and active-hold overlap rejection.
+- Verified privileges: `consume_rate_limit` and `booking_stats` are service-role-only; the legacy booking RPC is authenticated-only.
+- Verified receipt bucket remains private with the 50 MB limit and JPEG/PNG/WebP/PDF MIME allowlist.
+- Preview-only Vercel variables added: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. Supabase Auth redirect allowlist updated for `frensic-luxury-*` preview origins.
+- Still pending: protected-preview browser/API smoke, Paystack test charge/webhook, Gmail/Calendar/Slack delivery, Supabase SMTP/auth email delivery, and admin bootstrap verification.
 
----
+### Setup continuation — 2026-11-06
 
-## Phase 4: Verify Connection Works ✓
+- Rebuilt the branch Preview as `dpl_7hJARwDRwcVRHNsnnCMyVDcqnTAL` from `996262f9fe2fa7f6d1e1f298637002894f48f8cf`. It is `READY`/`STAGED`, has the single `api/index.js` function, and is assigned to `https://frensic-luxury-git-arena-240-7a33ab-liamdigglesx-6720s-projects.vercel.app`. Production was not promoted.
+- Build logs confirm a fresh `vite build` after restoring the dependency/build cache. The deployment environment now includes `APP_URL` and `ADMIN_USERNAME` alongside the Supabase variables.
+- Verified absent from that deployment: `VITE_PAYSTACK_PUBLIC_KEY`, `PAYSTACK_SECRET_KEY`, `ADMIN_PASSWORD`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`, `SLACK_BOT_TOKEN`, and `SLACK_CHANNEL_ID`. No placeholder credentials were created and no secret values were decrypted or recorded.
+- Added the exact apex and `www` production origins to the Supabase Auth redirect allowlist while preserving all existing entries. A follow-up read confirmed the site URL, SMTP settings, OTP length, email rate limit, and templates were unchanged. This is an allowlist addition, not a domain cutover.
+- Read-only database check: 19 bookings, 3 rooms, 7 car rows, 4 reviews, 5 migrations, 0 stored admin credentials, and 0 bookings labeled `STAGING TEST`.
+- Anonymous access to the new Preview still returns Vercel SSO protection, so browser/API live smoke has not been run. The local gate passed again: lint, typecheck, 22/22 tests, build, and `npm audit --audit-level=high` with 0 findings.
+- Dashboard-only blockers remain: matching Paystack test keys and webhook, `ADMIN_PASSWORD`, custom Supabase SMTP, `{{ .Token }}` in the Magic Link and Confirm signup templates, Google OAuth credentials, optional Slack credentials, and a temporary automation-bypass secret for protected-preview testing. The form now accepts 6–10 digits, so the shared project's current eight-digit OTP length no longer requires a dashboard change. Do not change the shared admin password or rerun applied migrations during staging.
 
-### Test 1: Check if App Loads
-1. Go to your Vercel project URL (or custom domain)
-2. Wait for the site to load completely
-3. Check if you see:
-   - ✅ **Rooms section displays** (with Royal Haven, Majestic Deluxe, Luxe Manor)
-   - ✅ **Cars section displays** (with all 7 vehicles)
-   - ✅ **No error messages** in the hero section
+### Implementation continuation — 2026-11-06
 
-**If you see hardcoded data (same as before), that's OK for now — we'll verify more deeply next.**
+- Aligned the admin password form with the API's 12-character minimum and added accessible labels/autocomplete/error feedback.
+- Made guest OTP entry compatible with 6–10 digits, preserved leading zeros and formatted pasted codes, and normalized the lookup email consistently between send/verify calls.
+- Added explicit Google configuration errors without outbound requests when credentials are absent. Optional Slack delivery is now skipped in the payment flow when unconfigured; an explicit dashboard Slack test still reports the configuration gap.
+- Added `scripts/staging-smoke.mjs` for protected-preview HTML/API checks with a local-only bypass header and optional admin login. It never creates bookings, charges cards, sends email, or changes passwords. Its output excludes credentials and session tokens.
+- Added API, form, integration-configuration, and smoke-runner regression coverage. The full local gate passed: lint, typecheck, 29/29 tests, production build, and audit 0. These automated checks do not mark the live integration checklist items complete.
+- A credential-free CLI run against the protected Preview returned the expected blocked exit code `2`; no live API check was counted as passed. The runner is ready for a local `.env.staging` file containing the temporary bypass secret, as documented in `VERCEL_SETUP_GUIDE.md`.
 
-✅ **Does the site load without errors? (Yes/No)**
+### Car rental call-to-book continuation
 
----
-
-### Test 2: Check Browser Console for Errors
-1. Press **F12** (or right-click → Inspect)
-2. Click the **Console** tab
-3. Look for any RED error messages
-4. If you see errors, take note of them (screenshot or copy the text)
-
-**Common errors to look for:**
-- ❌ `VITE_SUPABASE_URL is not defined` → Variable not in Vercel
-- ❌ `Failed to fetch from Supabase` → Wrong credentials
-- ❌ `Cannot read property 'from' of null` → Supabase client not initialized
-
-✅ **Are there any RED errors in the console? (Yes/No - if Yes, what are they?)**
-
----
-
-### Test 3: Check Network Requests to Supabase
-1. Press **F12** → **Network** tab
-2. Refresh the page (F5)
-3. Look for requests to `supabase.co`
-4. You should see:
-   - ✅ Requests to `https://jhgaoemlwjradmufigyh.supabase.co`
-   - ✅ Status code **200** or **201** (green)
-
-**If you see:**
-- ❌ **404** (red) → Supabase URL is wrong
-- ❌ **403** (red) → Wrong API key
-- ❌ **No requests to supabase.co** → App still using hardcoded data
-
-✅ **Do you see successful requests to Supabase? (Yes/No)**
-
----
-
-### Test 4: Verify Data Actually Comes from Supabase
-
-**Check if rooms/cars data matches your Supabase database:**
-
-1. Open Supabase dashboard → your project
-2. Click **SQL Editor** in left sidebar
-3. Run these queries:
-
-```sql
--- Count rooms
-SELECT COUNT(*) as room_count FROM rooms;
-
--- Count cars
-SELECT COUNT(*) as car_count FROM cars;
-
--- List all rooms
-SELECT id, name, price_per_night FROM rooms;
-```
-
-**You should see:**
-- Rooms: If migrated from Base44, should have ~3 rooms
-- Cars: If migrated from Base44, should have ~7 cars
-
-✅ **Do you see data in Supabase tables? (Yes/No - how many rooms/cars?)**
-
----
-
-## Phase 5: Data Migration from Base44 ✓
-
-### Status Check
-
-**Is your data currently in Base44 or already in Supabase?**
-
-- ❓ **Not sure** → Run the Supabase query above to check row counts
-- ✅ **Data is in Supabase** → Skip to Phase 6
-- ❌ **Data is NOT in Supabase** → Follow migration steps below
-
-### How to Migrate Data from Base44 to Supabase
-
-**Option A: Use Base44 Migration Function (If Available)**
-```
-Contact Base44 support or check Base44 admin dashboard for:
-- "Migrate to Supabase" function
-- Data export API
-- Admin migration tool
-```
-
-**Option B: Manual Migration (SQL Import)**
-1. Export data from Base44 (CSV or JSON)
-2. Open Supabase → **SQL Editor**
-3. Import the data using provided scripts
-
-**Option C: Contact Me**
-- I can create a migration script
-- Provide step-by-step instructions
-- Help debug any issues
-
-✅ **Has data been migrated to Supabase? (Yes/No - if No, which option works for you?)**
-
----
-
-## Phase 6: Final Verification ✓
-
-### Complete Checklist
-
-- ☐ Supabase credentials copied and verified
-- ☐ All 3 variables added to Vercel
-- ☐ Deployment triggered and completed successfully
-- ☐ Site loads without errors
-- ☐ No RED errors in browser console
-- ☐ Network requests go to supabase.co
-- ☐ Data exists in Supabase tables (rooms, cars, bookings)
-- ☐ Site displays real data from Supabase (not hardcoded)
-
-### If Everything Works ✅
-Your migration is complete! Your site is now:
-- **Running on Supabase** (not Base44)
-- **Pulling real data** from the database
-- **Ready for bookings** to be stored in Supabase
-
-### If Something Doesn't Work ❌
-**Provide these details and I'll help debug:**
-1. What error did you see? (or screenshot)
-2. Did deployment complete successfully?
-3. Are the 3 environment variables showing in Vercel?
-4. Did you copy credentials correctly from Supabase?
-
----
-
-## Next Steps After Verification
-
-1. ✅ Test a booking end-to-end
-   - Make a test booking
-   - Check if it appears in Supabase `bookings` table
-   
-2. ✅ Set up backups
-   - Supabase has automatic backups
-   - Configure recovery settings
-
-3. ✅ Monitor for issues
-   - Check Vercel analytics
-   - Monitor Supabase performance
-
-4. ✅ Decommission Base44
-   - Once everything works perfectly
-   - Keep Base44 active for 1 week as backup
-   - Then turn off Base44 subscription
-
----
-
-## Questions?
-
-**Reply with:**
-- 📸 Screenshots of any errors
-- ✅ Checklist status (which items are complete/failing)
-- 🤔 Any specific questions
-
-I'm here to help until everything works perfectly! 🚀
+- Car rentals no longer open Paystack or bank transfer at checkout. The booking page opens a call dialog for `+234 803 706 8065`; after “I have made the call”, it displays “Thank you for choosing Frensic Luxury Apartments.” and returns home.
+- Added and applied `20261108154336_car_rental_call_to_book`, allowing `payment_method = 'call_to_book'` for pending car-rental requests. Existing bookings/prices were preserved: 19 bookings, 3 rooms, 7 cars, 4 reviews.
+- Call-to-book requests are saved in Supabase as pending manual reservations without a Paystack reference or short checkout hold. Staff can review and confirm them from the booking dashboard.
+- Full local gate passed after the change: lint, typecheck, 32/32 tests, production build, and audit 0. Live browser/email/payment verification remains separate.

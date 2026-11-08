@@ -1,36 +1,19 @@
-export const PAYSTACK_PUBLIC_KEY = 'pk_live_b6e71ec92562ab614f93c9e7a7de85c5b13a8af';
+export const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '';
 
-function waitForPaystack() {
-  return new Promise((resolve, reject) => {
-    if (window.Paystack) return resolve();
-
-    const script = document.getElementById('paystack-inline-js');
-    if (!script) return reject(new Error('Paystack script not found'));
-    if (script.dataset.loaded === 'true') return reject(new Error('Paystack did not initialize'));
-
-    const timeout = window.setTimeout(() => reject(new Error('Paystack timed out')), 10000);
-    script.addEventListener('load', () => {
-      window.clearTimeout(timeout);
-      window.Paystack ? resolve() : reject(new Error('Paystack did not initialize'));
-    }, { once: true });
-    script.addEventListener('error', () => {
-      window.clearTimeout(timeout);
-      reject(new Error('Paystack script failed to load'));
-    }, { once: true });
-  });
-}
-
-export async function initPaystack({ email, amount, ref, onSuccess, onClose }) {
-  await waitForPaystack();
-
-  const popup = new window.Paystack();
+export async function initPaystack({ email, amount, ref, metadata, onSuccess, onClose }) {
+  if (!/^pk_(test|live)_/.test(PAYSTACK_PUBLIC_KEY)) throw new Error('Paystack public key is not configured.');
+  if (!ref) throw new Error('A server-generated payment reference is required.');
+  const { default: PaystackPop } = await import('@paystack/inline-js');
+  const popup = new PaystackPop();
   popup.newTransaction({
     key: PAYSTACK_PUBLIC_KEY,
     email,
-    amount: Math.round(amount * 100),
+    amount: Math.round(Number(amount) * 100),
     currency: 'NGN',
-    reference: ref || `FRENSIC_${Date.now()}_${Math.random().toString(36).slice(2, 7).toUpperCase()}`,
+    reference: ref,
+    metadata,
     onSuccess,
     onCancel: onClose || (() => {}),
+    onError: () => onClose?.(),
   });
 }

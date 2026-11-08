@@ -21,4 +21,4 @@ try {
   console.warn('[base44] SDK init failed, falling back to supabaseCompat:', e?.message);
 }
 
-export const base44 = supabase ? supabaseCompat : (legacyClient ?? supabaseCompat);
+export const base44 = /** @type {typeof supabaseCompat} */ (supabase ? supabaseCompat : (legacyClient ?? supabaseCompat));

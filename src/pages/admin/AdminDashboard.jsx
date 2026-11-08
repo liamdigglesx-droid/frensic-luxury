@@ -7,8 +7,8 @@ import {
   LineChart, Line, CartesianGrid, PieChart, Pie, Cell, Legend
 } from 'recharts';
 import {
-  CalendarCheck, MessageSquare, TrendingUp, DollarSign,
-  Car, Building2, Clock, ChevronRight
+  CalendarCheck, TrendingUp, DollarSign,
+  Car, Building2, ChevronRight
 } from 'lucide-react';
 
 const GOLD = '#C9A84C';
@@ -38,36 +38,26 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 export default function AdminDashboard() {
   const [bookings, setBookings] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [stats, setStats] = useState({ totalRevenue: 0, paidCount: 0, pendingCount: 0, stayCount: 0, driveCount: 0, monthly: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       base44.entities.Booking.list('-created_date', 500).catch(() => []),
       base44.entities.ContactMessage.list('-created_date', 100).catch(() => []),
-    ]).then(([b, m]) => {
+      base44.functions.invoke('bookingStats', { year: new Date().getFullYear() }).then(({ data }) => data).catch(() => null),
+    ]).then(([b, m, aggregate]) => {
       setBookings(b);
       setMessages(m);
+      if (aggregate) setStats(aggregate);
       setLoading(false);
     });
   }, []);
 
-  const paid = bookings.filter(b => b.payment_status === 'paid');
-  const pending = bookings.filter(b => b.payment_status === 'pending');
-  const totalRevenue = paid.reduce((s, b) => s + (b.total_amount || 0), 0);
-  const stays = paid.filter(b => b.booking_type === 'stay');
-  const drives = paid.filter(b => b.booking_type === 'drive');
-
-  // Monthly revenue chart data
-  const monthlyData = MONTHS.map((month, i) => {
-    const monthBookings = paid.filter(b => {
-      const d = new Date(b.created_date);
-      return d.getMonth() === i && d.getFullYear() === new Date().getFullYear();
-    });
-    return {
-      month,
-      revenue: monthBookings.reduce((s, b) => s + (b.total_amount || 0), 0),
-      bookings: monthBookings.length,
-    };
+  const totalRevenue = Number(stats.totalRevenue || 0);
+  const monthlyData = MONTHS.map(month => {
+    const row = (stats.monthly || []).find(item => item.month === month);
+    return { month, revenue: Number(row?.revenue || 0), bookings: Number(row?.bookings || 0) };
   });
 
   // Projection: avg last 3 months × remaining months
@@ -81,8 +71,8 @@ export default function AdminDashboard() {
 
   // Pie
   const pieData = [
-    { name: 'Stays', value: stays.length },
-    { name: 'Car Rentals', value: drives.length },
+    { name: 'Stays', value: Number(stats.stayCount || 0) },
+    { name: 'Car Rentals', value: Number(stats.driveCount || 0) },
   ];
 
   const recent = bookings.slice(0, 5);
@@ -104,10 +94,10 @@ export default function AdminDashboard() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard icon={DollarSign} label="Total Revenue" value={`₦${(totalRevenue / 1000).toFixed(0)}k`} sub={`${paid.length} paid bookings`} />
-        <StatCard icon={CalendarCheck} label="Total Bookings" value={bookings.length} sub={`${pending.length} pending`} />
-        <StatCard icon={Building2} label="Apartment Stays" value={stays.length} sub="confirmed stays" />
-        <StatCard icon={Car} label="Car Rentals" value={drives.length} sub="confirmed rentals" />
+        <StatCard icon={DollarSign} label="Total Revenue" value={`₦${(totalRevenue / 1000).toFixed(0)}k`} sub={`${stats.paidCount} paid bookings`} />
+        <StatCard icon={CalendarCheck} label="Total Bookings" value={Number(stats.paidCount || 0) + Number(stats.pendingCount || 0)} sub={`${stats.pendingCount} pending`} />
+        <StatCard icon={Building2} label="Apartment Stays" value={stats.stayCount} sub="confirmed stays" />
+        <StatCard icon={Car} label="Car Rentals" value={stats.driveCount} sub="confirmed rentals" />
       </div>
 
       {/* Charts Row */}
@@ -181,7 +171,7 @@ export default function AdminDashboard() {
         </div>
         <div className="space-y-0">
           {recent.length === 0 && <p className="text-sm" style={{ color: '#666' }}>No bookings yet.</p>}
-          {recent.map((b, i) => (
+          {recent.map((b) => (
             <div key={b.id} className="flex items-center justify-between py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
               <div className="flex items-center gap-4">
                 <div className="w-8 h-8 flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(201,168,76,0.08)', color: GOLD }}>

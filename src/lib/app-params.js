@@ -1,6 +1,10 @@
 const isNode = typeof window === 'undefined';
-const windowObj = isNode ? { localStorage: new Map() } : window;
-const storage = windowObj.localStorage;
+const storage = isNode
+  ? { getItem: () => null, setItem: () => {}, removeItem: () => {} }
+  : window.localStorage;
+const allowedAppBaseUrl = value => {
+  try { const url = new URL(value); return url.protocol === 'https:' && (url.hostname === 'base44.app' || url.hostname.endsWith('.base44.app')); } catch { return false; }
+};
 
 const toSnakeCase = (str) => {
 	return str.replace(/([A-Z])/g, '_$1').toLowerCase();
@@ -40,11 +44,11 @@ const getAppParams = () => {
 		storage.removeItem('token');
 	}
 	return {
-		appId: getAppParamValue("app_id", { defaultValue: import.meta.env.VITE_BASE44_APP_ID || '6a5537674461cdc7bdad66cf' }),
+		appId: (() => { const value = getAppParamValue("app_id", { defaultValue: import.meta.env.VITE_BASE44_APP_ID || '6a5537674461cdc7bdad66cf' }); return /^[a-f0-9]{24}$/i.test(value || '') ? value : ''; })(),
 		token: getAppParamValue("access_token", { removeFromUrl: true }),
 		fromUrl: getAppParamValue("from_url", { defaultValue: window.location.href }),
 		functionsVersion: getAppParamValue("functions_version", { defaultValue: import.meta.env.VITE_BASE44_FUNCTIONS_VERSION }),
-		appBaseUrl: getAppParamValue("app_base_url", { defaultValue: import.meta.env.VITE_BASE44_APP_BASE_URL || 'https://base44.app' }),
+		appBaseUrl: (() => { const value = getAppParamValue("app_base_url", { defaultValue: import.meta.env.VITE_BASE44_APP_BASE_URL || 'https://base44.app' }); return allowedAppBaseUrl(value) ? value : 'https://base44.app'; })(),
 	}
 }
 

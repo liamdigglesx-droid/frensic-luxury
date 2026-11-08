@@ -16,7 +16,7 @@ export default function BookingEngine() {
       type: mode,
       start: checkIn,
       end: checkOut,
-      guests: guests,
+      guests: String(guests),
     });
     navigate(`/book?${params.toString()}`);
   };

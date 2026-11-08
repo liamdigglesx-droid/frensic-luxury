@@ -10,7 +10,7 @@ export default function AdminStaff() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('user');
+  const [role, setRole] = useState('staff');
   const [inviting, setInviting] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -21,7 +21,7 @@ export default function AdminStaff() {
     ...payload,
   });
 
-  const loadUsers = () => manageStaff('list').then(({ data }) => setUsers(data.users)).finally(() => setLoading(false));
+  const loadUsers = () => manageStaff('list').then(({ data }) => setUsers(data.users.filter(user => ['admin', 'staff'].includes(user.role)))).catch(err => setError(err?.response?.data?.error || err.message || 'Staff could not be loaded.')).finally(() => setLoading(false));
   useEffect(() => { loadUsers(); }, []);
 
   const updateRole = async (member, nextRole) => {
@@ -52,7 +52,7 @@ export default function AdminStaff() {
       setSuccess(`Invitation sent to ${email}`);
       setEmail('');
       // Refresh users
-      base44.entities.User.list().then(setUsers);
+      loadUsers();
     } catch (err) {
       setError(err?.message || 'Failed to send invite.');
     }
@@ -96,7 +96,7 @@ export default function AdminStaff() {
               className="w-full h-11 px-4 text-sm outline-none"
               style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F9F9F9', backgroundColor: '#0a0a0a' }}
             >
-              <option value="user">Staff (View Only)</option>
+              <option value="staff">Staff</option>
               <option value="admin">Admin (Full Access)</option>
             </select>
           </div>

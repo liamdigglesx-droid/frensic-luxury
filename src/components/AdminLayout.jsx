@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, CalendarCheck, MessageSquare, Bell, Users,
+  LayoutDashboard, CalendarCheck, MessageSquare, Bell, Users, Star,
   Menu, X, ChevronRight, Building2, KeyRound, LogOut
 } from 'lucide-react';
 
@@ -10,6 +10,7 @@ const navItems = [
   { path: '/dashboard/admin/bookings', label: 'Bookings', icon: CalendarCheck },
   { path: '/dashboard/admin/messages', label: 'Messages', icon: MessageSquare },
   { path: '/dashboard/admin/notifications', label: 'Notifications', icon: Bell },
+  { path: '/dashboard/admin/reviews', label: 'Reviews', icon: Star },
   { path: '/dashboard/admin/staff', label: 'Staff', icon: Users },
   { path: '/dashboard/admin/change-password', label: 'Change Password', icon: KeyRound },
 ];

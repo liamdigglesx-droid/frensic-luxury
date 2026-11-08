@@ -1,3 +1,4 @@
+// @ts-nocheck -- Generated shadcn/ui primitive; application code remains type-checked.
 import * as React from "react"
 import { OTPInput, OTPInputContext } from "input-otp"
 import { Minus } from "lucide-react"

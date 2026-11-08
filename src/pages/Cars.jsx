@@ -1,13 +1,17 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Gauge, Zap, Users, Settings2, CheckCircle, Search, SlidersHorizontal, X, Phone } from 'lucide-react';
-import { CARS } from '@/lib/constants';
+import { Gauge, Zap, Users, Settings2, CheckCircle, Search, SlidersHorizontal, X } from 'lucide-react';
+import useCatalog from '@/hooks/useCatalog';
 import AvailabilityBadge from '@/components/AvailabilityBadge';
+import CarRentalCallDialog from '@/components/CarRentalCallDialog';
 
 const SEAT_OPTIONS = ['Any', '4', '5', '7+'];
-const STYLE_OPTIONS = ['Any', ...new Set(CARS.map(c => c.style))];
 
 export default function Cars() {
+  const navigate = useNavigate();
+  const { cars: CARS, error: catalogError } = useCatalog();
+  const STYLE_OPTIONS = ['Any', ...new Set(CARS.map(c => c.style).filter(Boolean))];
   const [search, setSearch] = useState('');
   const [seatFilter, setSeatFilter] = useState('Any');
   const [styleFilter, setStyleFilter] = useState('Any');
@@ -52,6 +56,7 @@ export default function Cars() {
         </div>
       </section>
 
+      {catalogError && <p role="alert" className="px-6 pt-6 text-sm text-destructive">{catalogError}</p>}
       {/* Search & Filters */}
       <section className="px-6 lg:px-16 pt-12 pb-0">
         <div className="max-w-7xl mx-auto">
@@ -276,61 +281,11 @@ export default function Cars() {
       </section>
 
       {/* Car Booking Modal */}
-      {showBookingModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(5,5,5,0.85)' }}
-          onClick={() => setShowBookingModal(false)}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="car-booking-modal-title"
-            className="relative w-full max-w-md p-10"
-            style={{ backgroundColor: '#0e0e0e', border: '1px solid rgba(201,168,76,0.25)' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setShowBookingModal(false)}
-              className="absolute top-4 right-4 p-1 transition-opacity opacity-60 hover:opacity-100"
-              aria-label="Close"
-            >
-              <X size={18} style={{ color: '#F9F9F9' }} />
-            </button>
-
-            <div className="flex items-center gap-3 mb-6">
-              <Phone size={20} style={{ color: '#C9A84C' }} />
-              <h2 id="car-booking-modal-title" className="font-serif text-2xl" style={{ color: '#F9F9F9' }}>Car Booking</h2>
-            </div>
-
-            <p className="text-sm leading-relaxed mb-8" style={{ color: '#aaaaaa' }}>
-              Please call <span style={{ color: '#F9F9F9', fontWeight: 500 }}>+234 803 706 8265</span> to complete your car booking.
-            </p>
-
-            <div className="flex gap-3">
-              <a
-                href="tel:+2348037068265"
-                className="flex-1 h-12 flex items-center justify-center gap-2 text-xs tracking-[0.15em] uppercase font-medium transition-all"
-                style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
-                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
-                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
-              >
-                <Phone size={13} />
-                Call Now
-              </a>
-              <button
-                onClick={() => setShowBookingModal(false)}
-                className="flex-1 h-12 text-xs tracking-[0.15em] uppercase font-medium transition-all"
-                style={{ border: '1px solid rgba(255,255,255,0.15)', color: '#aaaaaa' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = '#C9A84C'; e.currentTarget.style.color = '#C9A84C'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = '#aaaaaa'; }}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CarRentalCallDialog
+        open={showBookingModal}
+        onOpenChange={setShowBookingModal}
+        onReturnHome={() => navigate('/')}
+      />
     </div>
   );
 }

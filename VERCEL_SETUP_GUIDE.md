@@ -1,191 +1,136 @@
-# Vercel Environment Variables Setup Guide
+# Vercel + Supabase setup
 
-## Complete Step-by-Step Instructions
+## 1. Supabase credentials
 
-### Prerequisites
-- You must have **Owner** or **Admin** access to your Vercel project
-- You need the 3 Supabase credentials from your Supabase dashboard (see below for how to get them)
+In Supabase Dashboard → Project Settings → API, copy:
 
----
+| Value | Variable | Exposure |
+|---|---|---|
+| Project URL | `VITE_SUPABASE_URL` and `SUPABASE_URL` | public / server |
+| anon/publishable key | `VITE_SUPABASE_PUBLISHABLE_KEY` | public browser |
+| service_role/secret key | `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` | **server only** |
 
-## Getting Your Supabase Credentials First
+Never create `VITE_SUPABASE_SERVICE_ROLE_KEY`. Anything prefixed with `VITE_` is bundled into browser JavaScript.
 
-### 1. Log into Supabase
-- Go to https://supabase.com/dashboard
-- Click your project `jhgaoemlwjradmufigyh`
+## 2. Vercel environment variables
 
-### 2. Navigate to API Settings
-- Click **Settings** (gear icon) in the left sidebar
-- Click **API** in the submenu
-- You'll see a page with credentials
+Project Settings → Environment Variables. Add for Production and Preview (and Development if using `vercel dev`):
 
-### 3. Copy the Three Required Values
+Public:
 
-**Value 1: Project URL**
-- Look for the section labeled **Project URL**
-- It looks like: `https://jhgaoemlwjradmufigyh.supabase.co`
-- **Copy this entire URL**
-- This is your `VITE_SUPABASE_URL`
-
-**Value 2: Anon Public Key**
-- In the same **API** page, find the section **Project API keys**
-- Look for a key labeled **anon public** or **pk_anon_...**
-- It's a long string starting with `eyJhbGc...`
-- **Click the copy icon** next to it
-- This is your `VITE_SUPABASE_PUBLISHABLE_KEY`
-
-**Value 3: Service Role Key** ⚠️ KEEP THIS SECRET
-- In the same **Project API keys** section
-- Look for a key labeled **service_role secret** or **sk_service_role_...**
-- It's a long string starting with `eyJhbGc...`
-- **Click the copy icon** next to it
-- ⚠️ **NEVER share this publicly or commit it to git**
-- This is your `VITE_SUPABASE_SERVICE_ROLE_KEY`
-
----
-
-## Adding to Vercel (Detailed)
-
-### Step 1: Access Your Vercel Project
-
-1. Go to https://vercel.com/dashboard
-2. Find your project: **frensic-luxury**
-3. Click on the project name to open it
-
-### Step 2: Open Project Settings
-
-- At the top of the project page, click the **Settings** tab
-- You'll see a menu on the left side
-
-### Step 3: Navigate to Environment Variables
-
-- In the left sidebar menu, scroll down and click **Environment Variables**
-- You'll see a page with an empty list (or existing variables)
-
-### Step 4: Add First Variable - VITE_SUPABASE_URL
-
-Click the **Add New** button (top right) or **+ Add New Variable**
-
-**In the form that appears:**
-
-- **Name field**: Type exactly: `VITE_SUPABASE_URL`
-- **Value field**: Paste your Supabase Project URL (from Step 1 above)
-  - Example: `https://jhgaoemlwjradmufigyh.supabase.co`
-- **Environment**: Select all three checkboxes:
-  - ☑ Production
-  - ☑ Preview
-  - ☑ Development
-- Click **Save**
-
-### Step 5: Add Second Variable - VITE_SUPABASE_PUBLISHABLE_KEY
-
-Click **+ Add New Variable** again
-
-**In the form that appears:**
-
-- **Name field**: Type exactly: `VITE_SUPABASE_PUBLISHABLE_KEY`
-- **Value field**: Paste your Anon Public Key (from Step 2 above)
-  - Example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` (very long string)
-- **Environment**: Select all three checkboxes:
-  - ☑ Production
-  - ☑ Preview
-  - ☑ Development
-- Click **Save**
-
-### Step 6: Add Third Variable - VITE_SUPABASE_SERVICE_ROLE_KEY
-
-Click **+ Add New Variable** one more time
-
-**In the form that appears:**
-
-- **Name field**: Type exactly: `VITE_SUPABASE_SERVICE_ROLE_KEY`
-- **Value field**: Paste your Service Role Key (from Step 3 above)
-  - Example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` (very long string)
-- **Environment**: Select all three checkboxes:
-  - ☑ Production
-  - ☑ Preview
-  - ☑ Development
-- Click **Save**
-
-### Step 7: Verify All Variables Are Added
-
-After adding all three, you should see:
-
-```
-✓ VITE_SUPABASE_URL                    Production, Preview, Development
-✓ VITE_SUPABASE_PUBLISHABLE_KEY        Production, Preview, Development
-✓ VITE_SUPABASE_SERVICE_ROLE_KEY       Production, Preview, Development
+```text
+VITE_SUPABASE_URL=https://YOUR-PROJECT-ID.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=...
+VITE_PAYSTACK_PUBLIC_KEY=pk_live_... or pk_test_...
 ```
 
----
+Server-only (mark sensitive where available):
 
-## Important Notes
+```text
+SUPABASE_URL=https://YOUR-PROJECT-ID.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=...
+# Supported alternative instead of SUPABASE_SERVICE_ROLE_KEY:
+# SUPABASE_SECRET_KEY=...
+PAYSTACK_SECRET_KEY=sk_live_... or sk_test_...
+APP_URL=https://YOUR-PRODUCTION-DOMAIN
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=long-random-password
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+GOOGLE_REFRESH_TOKEN=...
+SLACK_BOT_TOKEN=...        # optional
+SLACK_CHANNEL_ID=...       # optional
+```
 
-### Environment Explanation
+Redeploy after changing environment variables. Preview deployments need their own public Supabase URL/key and server-side Supabase/Paystack values; production-only variables are not inherited by previews.
 
-- **Production**: Your live website (vercel domain or custom domain)
-- **Preview**: Temporary preview URLs from pull requests
-- **Development**: Local development environments
+The API uses one serverless entry (`api/index.js`) and a Vercel rewrite to preserve `/api/<action>` URLs. This keeps the deployment within the Hobby plan function limit. The webhook still receives raw bytes for signature verification; other actions receive bounded parsed JSON.
 
-**You need all three checked** so the app works everywhere.
+## 3. Database migrations
 
-### Security Reminder
+From a linked Supabase CLI:
 
-- ⚠️ Never commit `.env.local` to GitHub
-- ⚠️ Service Role Key is SECRET — only Vercel should have it
-- ✅ Anon Public Key is safe to share (it's meant to be public)
-- ✅ Supabase Project URL is public information
+```bash
+supabase link --project-ref YOUR_PROJECT_REF
+supabase db push --include-all
+```
 
-### If You Make a Mistake
+Or run the manual **Deploy Supabase Migrations** GitHub workflow with repository secrets:
 
-1. Find the variable in the list
-2. Click the **three dots (⋯)** on the right
-3. Click **Edit** to change it
-4. Or click **Delete** and add it again
+- `SUPABASE_ACCESS_TOKEN`
+- `SUPABASE_DB_PASSWORD`
+- `SUPABASE_PROJECT_REF`
 
----
+Apply all five migrations in filename order to a fresh environment. Migration `20261106175315_frensic_existing_platform_requests.sql` was recovered from the connected project and is already recorded there. The new `20261106190000_security_and_booking_integrity.sql` adds the security/integrity objects required by the current API, preserves existing catalog values, and normalizes legacy reservation ids. It has already been applied to the user-approved shared project; do not rerun it there. Rehearse future schema changes on an isolated database before applying them to shared data.
 
-## Next Steps After Adding Variables
+## 4. Supabase Auth
 
-1. **Trigger a new deployment** (see below)
-2. **Wait for build to complete** (~5 minutes)
-3. **Visit your site** and check if rooms/cars data loads
-4. **Check browser console** (F12 → Console tab) for any errors
+Authentication → URL Configuration:
 
-### How to Trigger a New Deployment
+- Site URL: `https://YOUR-PRODUCTION-DOMAIN`
+- Redirect URLs:
+  - `https://YOUR-PRODUCTION-DOMAIN/login`
+  - `https://YOUR-PRODUCTION-DOMAIN/reset-password`
+  - `https://YOUR-PRODUCTION-DOMAIN/my-bookings`
 
-**Option A: Automatic (Recommended)**
-- Make any small commit to your main branch
-- Example: Update README or add a comment
-- Push to GitHub
-- Vercel automatically redeploys
+Enable the email provider and any OAuth providers you intend to use. Guest booking lookup uses email OTP; password reset uses Supabase recovery links.
 
-**Option B: Manual Redeploy**
-1. Go to your Vercel project page
-2. Click **Deployments** tab
-3. Find the latest deployment
-4. Click the **⋯** menu on it
-5. Click **Redeploy**
+For guest OTP delivery, configure custom SMTP under Authentication → Emails. The built-in Supabase sender is restricted to project/team addresses and is not suitable for arbitrary guests. After SMTP is working, review Authentication → Rate Limits; the current shared project still reports the built-in limit of 2 emails/hour.
 
----
+The My Bookings form accepts 6–10 digits, so the shared project's current eight-digit OTP length is supported. You may keep that length or choose six digits in the dashboard; no length change is required for the form. Include `{{ .Token }}` in both the **Magic Link** and **Confirm signup** templates. A first-time lookup with email confirmation enabled can send the Confirm signup template, so updating only Magic Link is insufficient.
 
-## Troubleshooting
+Branded templates that include the site logo and the verification code are prepared in this repository:
 
-### Variables don't appear after saving?
-- Refresh the page (Ctrl+R or Cmd+R)
-- They should appear in the list
+- `supabase/email-templates/magic-link.html` → paste into **Authentication → Emails → Magic Link**.
+- `supabase/email-templates/confirm-signup.html` → paste into **Authentication → Emails → Confirm signup**.
 
-### Build fails after adding variables?
-- Check that variable names are spelled exactly as shown (case-sensitive)
-- `VITE_` prefix is required for Vite to access them
-- Make sure no extra spaces in values
+Paste the full file contents into each template. The logo uses the same public asset as the website navbar/footer; some email clients may require the recipient to allow images. Keep the existing confirmation link behavior by using the prepared `{{ .ConfirmationURL }}` button.
 
-### App still loading hardcoded data?
-- Clear browser cache (Ctrl+Shift+Delete)
-- Hard refresh (Ctrl+Shift+R or Cmd+Shift+R)
-- Wait 1-2 minutes for Vercel build to fully complete
+These SMTP/template/OTP settings are shared by the connected Supabase project. Coordinate changes with the production owner before applying them; they are not Preview-scoped.
 
-### Can't find Environment Variables option?
-- Make sure you're in **Settings** tab, not **Analytics** or **Deployments**
-- Look in the left sidebar for **Environment Variables**
-- If still missing, you might not have admin access — check with project owner
+## 5. Paystack
+
+Car rentals use a call-to-book dialog (`+234 803 706 8065`) and do not open Paystack. Paystack is still used for apartment-stay card checkout.
+
+- Use matching test/live public and secret keys.
+- Set webhook URL to `https://YOUR-PRODUCTION-DOMAIN/api/paystackWebhook`.
+- The webhook must receive the raw request body; the Vercel function disables body parsing for signature verification.
+- Client success alone never marks a booking paid. The server verifies amount, currency, reference, and customer email.
+- If the staging Preview has Vercel Deployment Protection, create a temporary **Protection Bypass for Automation** secret and append it to the test webhook URL as `?x-vercel-protection-bypass=<secret>`. Use the header form for automated requests. The bypass applies project-wide, so revoke it after staging; never commit it or paste it into chat.
+
+## 6. Google and Slack
+
+Create a Google OAuth client and refresh token with Gmail send and Calendar events access. Store the client ID/secret/refresh token only as server variables. Slack is optional; without it, staff notifications are skipped.
+
+## 7. Protected-preview smoke checks
+
+For a deployed Preview, create a temporary Vercel **Protection Bypass for Automation** secret. On your own machine, create an ignored `.env.staging` file (the repository already ignores `.env.*`):
+
+```dotenv
+STAGING_URL=https://YOUR-PREVIEW-ORIGIN
+VERCEL_AUTOMATION_BYPASS_SECRET=your-temporary-bypass-secret
+# Optional: include one admin login check. Never use the password-change form on the shared database during staging.
+ADMIN_USERNAME=your-admin-username
+ADMIN_PASSWORD=your-admin-password
+```
+
+Then run:
+
+```bash
+node --env-file=.env.staging scripts/staging-smoke.mjs
+```
+
+The runner sends the bypass as a header, never in a URL, and prints only check names/status codes. It checks SPA HTML responses, catalog reads, anonymous booking/statistics denial, review moderation, JSON routing errors, availability, webhook signature rejection, and optional admin login. It does not create bookings, charge cards, send email, or change passwords. API rate-limit counters may be incremented. Exit code `0` means all included checks passed, `1` means a check failed, and `2` means access/configuration is blocked. A skipped admin check is not a pass. Revoke the project-wide bypass secret after testing and delete the local env file.
+
+This runner does not replace browser console checks or the live Paystack charge, receipt upload, SMTP/OTP delivery, Gmail/Calendar/Slack delivery, and notification-idempotency checks below.
+
+## 8. Verify before pointing the domain
+
+- `npm run check`
+- `npm audit --audit-level=high`
+- Vercel preview boots without console errors.
+- Create a test booking; confirm price is calculated server-side.
+- For a car rental, confirm the call dialog appears, the booking is saved as `call_to_book`, and “I have made the call” shows the thank-you message before returning home.
+- Complete a Paystack test payment for an apartment stay; confirm paid status, email, calendar event, and webhook idempotency.
+- Submit a bank-transfer receipt; confirm hold expiry and staff receipt access.
+- Log in as admin/staff; confirm staff cannot promote themselves and reviews require moderation.

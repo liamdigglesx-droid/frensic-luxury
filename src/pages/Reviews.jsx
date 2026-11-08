@@ -103,7 +103,7 @@ export default function Reviews() {
               Choose a rating, add a headline, and write about your experience. Your review helps us improve and helps future guests choose with confidence.
             </p>
           </div>
-          <ReviewForm onSubmitted={review => setGuestReviews(current => [review, ...current])} />
+          <ReviewForm />
         </div>
       </section>
     </div>

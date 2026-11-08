@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 
 export default function StaffLayout() {
   const { user, logout } = useAuth();
+  if (user && !['admin', 'staff'].includes(user.role)) return <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6"><div className="max-w-md text-center"><h1 className="font-heading text-3xl mb-3">Staff access required</h1><p className="text-sm text-muted-foreground mb-5">Your account does not have permission to manage reservations.</p><button onClick={() => logout()} className="h-11 px-5 bg-primary text-primary-foreground text-xs uppercase tracking-wider">Sign out</button></div></div>;
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border bg-card">
