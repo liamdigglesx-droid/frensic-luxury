@@ -9,6 +9,9 @@ process.env.SUPABASE_URL = 'https://example.supabase.co';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'fake-service-key';
 process.env.PAYSTACK_SECRET_KEY = 'fake-paystack-secret';
 process.env.APP_URL = 'https://example.test';
+process.env.GOOGLE_CLIENT_ID = 'fake-google-client';
+process.env.GOOGLE_CLIENT_SECRET = 'fake-google-secret';
+process.env.GOOGLE_REFRESH_TOKEN = 'fake-google-refresh';
 process.env.SLACK_BOT_TOKEN = 'fake-slack';
 process.env.SLACK_CHANNEL_ID = 'fake-channel';
 
@@ -57,6 +60,9 @@ const { default: calendarHandler } = await import('../api/_lib/routes/addBooking
 const { default: availabilityHandler } = await import('../api/_lib/routes/checkAvailability.js');
 const { default: prepareReceipt } = await import('../api/_lib/routes/prepareReceiptUpload.js');
 const { default: submitReceipt } = await import('../api/_lib/routes/submitReceipt.js');
+const { default: adminHandler } = await import('../api/_lib/routes/verifyAdminCredentials.js');
+const { verifyAdminToken, CURRENT_PASSWORD_ITERATIONS } = await import('../api/_lib/admin.js');
+const { sendBookingEmail, addBookingCalendarEvent, sendPaidSlack } = await import('../api/_lib/notifications.js');
 
 const validBooking = {
   booking_type: 'stay', item_id: 'royal-haven', start_date: '2026-12-01', end_date: '2026-12-03',
@@ -235,4 +241,66 @@ test('single-function router preserves URLs, rejects unknown routes, and parses 
   res = mockResponse();
   await handler({ ...rawReq('paystackWebhook', { event: 'charge.success' }), headers: { 'x-paystack-signature': 'bad' } }, res);
   assert.equal(res.statusCode, 401);
+});
+
+test('admin bootstrap enforces the password policy and replaces plaintext with a salted hash', async () => {
+  const previous = { username: process.env.ADMIN_USERNAME, password: process.env.ADMIN_PASSWORD };
+  process.env.ADMIN_USERNAME = 'test-admin';
+  process.env.ADMIN_PASSWORD = 'fake-bootstrap-password';
+  store.admin_credentials = [];
+  try {
+    let res = mockResponse();
+    await adminHandler(req({ username: 'test-admin', password: 'wrong-password' }), res);
+    assert.equal(res.statusCode, 401);
+    res = mockResponse();
+    await adminHandler(req({ username: 'test-admin', password: process.env.ADMIN_PASSWORD }), res);
+    assert.equal(res.statusCode, 200);
+    assert.equal(await verifyAdminToken(res.body.sessionToken), true);
+    res = mockResponse();
+    await adminHandler(req({ action: 'changePassword', currentPassword: process.env.ADMIN_PASSWORD, newPassword: 'too-short' }), res);
+    assert.equal(res.statusCode, 400);
+    assert.equal(store.admin_credentials.length, 0);
+    res = mockResponse();
+    await adminHandler(req({ action: 'changePassword', currentPassword: process.env.ADMIN_PASSWORD, newPassword: 'fake-replacement-password' }), res);
+    assert.equal(res.statusCode, 200);
+    assert.equal(store.admin_credentials.length, 1);
+    const credential = store.admin_credentials[0];
+    assert.equal(credential.iterations, CURRENT_PASSWORD_ITERATIONS);
+    assert.ok(credential.salt);
+    assert.ok(credential.password_hash);
+    assert.notEqual(credential.password_hash, 'fake-replacement-password');
+    assert.equal(await verifyAdminToken(res.body.sessionToken), true);
+    res = mockResponse();
+    await adminHandler(req({ username: 'test-admin', password: process.env.ADMIN_PASSWORD }), res);
+    assert.equal(res.statusCode, 401);
+    res = mockResponse();
+    await adminHandler(req({ username: 'test-admin', password: 'fake-replacement-password' }), res);
+    assert.equal(res.statusCode, 200);
+  } finally {
+    store.admin_credentials = [];
+    for (const [key, value] of Object.entries({ ADMIN_USERNAME: previous.username, ADMIN_PASSWORD: previous.password })) {
+      if (value === undefined) delete process.env[key]; else process.env[key] = value;
+    }
+  }
+});
+
+test('unconfigured integrations fail explicitly without requests and optional Slack is skipped', async () => {
+  const names = ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REFRESH_TOKEN', 'SLACK_BOT_TOKEN', 'SLACK_CHANNEL_ID'];
+  const previous = Object.fromEntries(names.map(name => [name, process.env[name]]));
+  names.forEach(name => delete process.env[name]);
+  const booking = { ...store.bookings.find(row => row.payment_status === 'paid'), confirmation_sent_at: null, calendar_event_id: null, slack_notified_at: null };
+  const client = globalThis.__fakeClient;
+  const requests = external.gmail.length + external.calendar.length + external.slack.length;
+  try {
+    await assert.rejects(() => sendBookingEmail(client, booking), error => error.status === 503 && error.code === 'google_unconfigured');
+    await assert.rejects(() => addBookingCalendarEvent(client, booking), error => error.status === 503 && error.code === 'google_unconfigured');
+    assert.deepEqual(await sendPaidSlack(client, booking), { skipped: true, reason: 'unconfigured' });
+    await assert.rejects(() => sendPaidSlack(client, booking, { test: true }), error => error.status === 503 && error.code === 'slack_unconfigured');
+    assert.equal(external.gmail.length + external.calendar.length + external.slack.length, requests);
+    assert.equal(booking.slack_notified_at, null);
+  } finally {
+    for (const name of names) {
+      if (previous[name] === undefined) delete process.env[name]; else process.env[name] = previous[name];
+    }
+  }
 });

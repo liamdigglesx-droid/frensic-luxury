@@ -60,9 +60,18 @@ export async function addBookingCalendarEvent(client, booking) {
   return { eventId: current?.calendar_event_id || created.id };
 }
 
+export function isSlackConfigured() {
+  return Boolean(process.env.SLACK_BOT_TOKEN && process.env.SLACK_CHANNEL_ID);
+}
+
 export async function sendPaidSlack(client, booking, { test = false } = {}) {
   if (!test && booking.slack_notified_at) return { skipped: true };
-  if (!process.env.SLACK_BOT_TOKEN || !process.env.SLACK_CHANNEL_ID) throw new ApiError(503, 'Slack notifications are not configured.', 'slack_unconfigured');
+  if (!isSlackConfigured()) {
+    // Slack is optional. Never label an unconfigured channel as a delivery failure
+    // in the payment flow, but let an explicit dashboard test report the gap.
+    if (!test) return { skipped: true, reason: 'unconfigured' };
+    throw new ApiError(503, 'Slack notifications are not configured.', 'slack_unconfigured');
+  }
   const amount = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(booking.total_amount || 0);
   const response = await fetch('https://slack.com/api/chat.postMessage', {
     method: 'POST', headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}`, 'Content-Type': 'application/json' },

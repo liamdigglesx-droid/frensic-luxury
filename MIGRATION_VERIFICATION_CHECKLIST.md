@@ -59,7 +59,7 @@ npm audit --audit-level=high
 
 - [x] Lint passes.
 - [x] Typecheck passes.
-- [x] API/database/frontend tests pass (22/22).
+- [x] API/database/frontend/smoke-runner tests pass (29/29).
 - [x] Production build passes.
 - [x] No high/critical npm audit findings.
 
@@ -84,4 +84,13 @@ Target: user-approved shared Supabase project `jhgaoemlwjradmufigyh`; Vercel pre
 - Added the exact apex and `www` production origins to the Supabase Auth redirect allowlist while preserving all existing entries. A follow-up read confirmed the site URL, SMTP settings, OTP length, email rate limit, and templates were unchanged. This is an allowlist addition, not a domain cutover.
 - Read-only database check: 19 bookings, 3 rooms, 7 car rows, 4 reviews, 5 migrations, 0 stored admin credentials, and 0 bookings labeled `STAGING TEST`.
 - Anonymous access to the new Preview still returns Vercel SSO protection, so browser/API live smoke has not been run. The local gate passed again: lint, typecheck, 22/22 tests, build, and `npm audit --audit-level=high` with 0 findings.
-- Dashboard-only blockers remain: matching Paystack test keys and webhook, `ADMIN_PASSWORD`, custom Supabase SMTP, six-digit OTP plus `{{ .Token }}` in the Magic Link and Confirm signup templates, Google OAuth credentials, optional Slack credentials, and a temporary automation-bypass secret for protected-preview testing. Do not change the shared admin password or rerun applied migrations during staging.
+- Dashboard-only blockers remain: matching Paystack test keys and webhook, `ADMIN_PASSWORD`, custom Supabase SMTP, `{{ .Token }}` in the Magic Link and Confirm signup templates, Google OAuth credentials, optional Slack credentials, and a temporary automation-bypass secret for protected-preview testing. The form now accepts 6–10 digits, so the shared project's current eight-digit OTP length no longer requires a dashboard change. Do not change the shared admin password or rerun applied migrations during staging.
+
+### Implementation continuation — 2026-11-06
+
+- Aligned the admin password form with the API's 12-character minimum and added accessible labels/autocomplete/error feedback.
+- Made guest OTP entry compatible with 6–10 digits, preserved leading zeros and formatted pasted codes, and normalized the lookup email consistently between send/verify calls.
+- Added explicit Google configuration errors without outbound requests when credentials are absent. Optional Slack delivery is now skipped in the payment flow when unconfigured; an explicit dashboard Slack test still reports the configuration gap.
+- Added `scripts/staging-smoke.mjs` for protected-preview HTML/API checks with a local-only bypass header and optional admin login. It never creates bookings, charges cards, sends email, or changes passwords. Its output excludes credentials and session tokens.
+- Added API, form, integration-configuration, and smoke-runner regression coverage. The full local gate passed: lint, typecheck, 29/29 tests, production build, and audit 0. These automated checks do not mark the live integration checklist items complete.
+- A credential-free CLI run against the protected Preview returned the expected blocked exit code `2`; no live API check was counted as passed. The runner is ready for a local `.env.staging` file containing the temporary bypass secret, as documented in `VERCEL_SETUP_GUIDE.md`.

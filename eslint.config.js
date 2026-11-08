@@ -14,6 +14,7 @@ export default [
       "src/api/**/*.{js,mjs,cjs,jsx}",
       "src/hooks/**/*.{js,mjs,cjs,jsx}",
       "api/**/*.js",
+      "scripts/**/*.mjs",
       "tests/**/*.{js,mjs}",
     ],
     ignores: ["src/components/ui/**/*", "dist/**/*", "node_modules/**/*"],

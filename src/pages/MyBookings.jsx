@@ -4,6 +4,7 @@ import { Clock, CheckCircle, Loader2, Mail, ShieldCheck } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
+import { isEmailOtp, normalizeEmailOtp, MAX_EMAIL_OTP_LENGTH } from '@/lib/authValidation';
 
 function BookingCard({ booking }) {
   return (
@@ -55,12 +56,15 @@ export default function MyBookings() {
     return () => { active = false; };
   }, [verifiedEmail]);
 
+  const lookupEmail = email.trim().toLowerCase();
+  const validCode = isEmailOtp(code);
+
   const sendCode = async event => {
     event.preventDefault();
     if (!isSupabaseConfigured) return setError('Booking lookup is not configured. Please contact support.');
     setSending(true); setError('');
     try {
-      const { error: authError } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/my-bookings` } });
+      const { error: authError } = await supabase.auth.signInWithOtp({ email: lookupEmail, options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/my-bookings` } });
       if (authError) throw authError;
       setCodeSent(true);
     } catch (err) { setError(err.message || 'Verification code could not be sent.'); }
@@ -69,9 +73,10 @@ export default function MyBookings() {
 
   const verifyCode = async event => {
     event.preventDefault();
+    if (!validCode) return setError('Enter the complete numeric code from your email.');
     setSending(true); setError('');
     try {
-      const { error: authError } = await supabase.auth.verifyOtp({ email, token: code, type: 'email' });
+      const { error: authError } = await supabase.auth.verifyOtp({ email: lookupEmail, token: code, type: 'email' });
       if (authError) throw authError;
     } catch (err) { setError(err.message || 'Invalid or expired verification code.'); }
     finally { setSending(false); }
@@ -106,9 +111,10 @@ export default function MyBookings() {
                 </form>
               ) : (
                 <form onSubmit={verifyCode} className="space-y-4">
-                  <p className="text-sm flex items-center justify-center gap-2" style={{ color: '#aaaaaa' }}><Mail size={14} /> Code sent to {email}</p>
-                  <input inputMode="numeric" autoComplete="one-time-code" required maxLength={6} placeholder="123456" value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ''))} className="w-full h-12 px-4 text-center tracking-[0.4em] text-sm bg-transparent outline-none" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F9F9F9' }} />
-                  <button disabled={sending || code.length < 6} className="w-full h-12 text-xs tracking-[0.2em] uppercase font-medium disabled:opacity-50" style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}>{sending ? 'Verifying…' : 'View My Bookings'}</button>
+                  <p className="text-sm flex items-center justify-center gap-2" style={{ color: '#aaaaaa' }}><Mail size={14} /> Code sent to {lookupEmail}</p>
+                  <input aria-label="Email verification code" inputMode="numeric" autoComplete="one-time-code" required maxLength={MAX_EMAIL_OTP_LENGTH * 3} pattern="[0-9]{6,10}" placeholder="Enter email code" value={code} onChange={e => setCode(normalizeEmailOtp(e.target.value))} className="w-full h-12 px-4 text-center tracking-[0.2em] text-sm bg-transparent outline-none" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F9F9F9' }} />
+                  <p className="text-xs leading-relaxed" style={{ color: '#aaaaaa' }}>Enter the complete code from your email, including any leading zeros.</p>
+                  <button disabled={sending || !validCode} className="w-full h-12 text-xs tracking-[0.2em] uppercase font-medium disabled:opacity-50" style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}>{sending ? 'Verifying…' : 'View My Bookings'}</button>
                   <button type="button" onClick={() => { setCodeSent(false); setCode(''); }} className="text-xs uppercase tracking-widest" style={{ color: '#aaaaaa' }}>Use a different email</button>
                 </form>
               )}

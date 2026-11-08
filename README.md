@@ -67,6 +67,7 @@ npm run lint       # ESLint (errors only)
 npm run lint:fix   # ESLint autofix
 npm run typecheck  # TypeScript checkJs over application code
 npm test           # Node test runner: API security, PGlite migrations/RLS, jsdom boot/router/Paystack
+npm run test:staging # Read-only protected-preview checks; requires local STAGING_URL env
 npm run check      # lint + typecheck + test + build
 ```
 
@@ -109,4 +110,4 @@ The security migration adds:
 - `tests/database.test.mjs`: PGlite executes the real migrations, including the recovered platform RPCs, and checks RLS, overlap/hold triggers, legacy catalog/id compatibility, role protection, and rate limits.
 - `tests/frontend.test.mjs`: jsdom boots the real bundle, exercises React Router 7 routes, safe redirects, guest token storage, and the Paystack SDK wrapper.
 
-Live Paystack, Gmail, Calendar, Slack, Supabase Auth email delivery, and Vercel routing still require a staging smoke test with real credentials.
+Live Paystack, Gmail, Calendar, Slack, Supabase Auth email delivery, and Vercel routing still require a staging smoke test with real credentials. See `VERCEL_SETUP_GUIDE.md` for the protected-preview runner and the remaining manual checks. The guest OTP form supports 6–10 digits; the email templates must still include `{{ .Token }}` and custom SMTP is required for arbitrary guest addresses.

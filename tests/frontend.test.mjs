@@ -14,9 +14,11 @@ const env = {
   }),
 };
 
-async function bundle(entry, plugins = []) {
+async function bundle(entry, plugins = [], source) {
   const result = await build({
-    entryPoints: [path.join(root, entry)], bundle: true, write: false, format: 'iife', platform: 'browser',
+    entryPoints: source ? undefined : [path.join(root, entry)],
+    stdin: source ? { contents: source, resolveDir: root, loader: 'jsx' } : undefined,
+    bundle: true, write: false, format: 'iife', platform: 'browser',
     jsx: 'automatic', alias: { '@': path.join(root, 'src') }, define: env,
     loader: { '.css': 'empty', '.png': 'dataurl', '.jpg': 'dataurl', '.svg': 'dataurl' }, plugins,
   });
@@ -90,4 +92,88 @@ test('Paystack checkout uses the official SDK and kobo amounts', async () => {
   assert.equal(window.__paystackOptions.amount, 50000000);
   assert.equal(window.__paystackOptions.reference, 'FRENSIC_TEST');
   window.close();
+});
+
+function authFormMocks() {
+  const modules = {
+    '@/api/base44Client': `export const base44 = {
+      functions: { async invoke(...args) { globalThis.__adminCalls.push(args); return { data: { sessionToken: 'fake-session' } }; } },
+      entities: { Booking: { async filter() { return []; } } },
+    };`,
+    '@/lib/AuthContext': `export const useAuth = () => ({ user: null, logout() {} });`,
+    '@supabase/supabase-js': `export const createClient = () => ({
+      auth: {
+        async signInWithOtp(options) { globalThis.__otpCalls.push(['send', options]); return { error: null }; },
+        async verifyOtp(options) { globalThis.__otpCalls.push(['verify', options]); return { error: null }; },
+      },
+    });`,
+  };
+  return {
+    name: 'auth-form-mocks', setup(build) {
+      build.onResolve({ filter: /^(@\/api\/base44Client|@\/lib\/AuthContext|@supabase\/supabase-js)$/ }, args => ({ path: args.path, namespace: 'auth-mock' }));
+      build.onLoad({ filter: /.*/, namespace: 'auth-mock' }, args => ({ contents: modules[args.path], loader: 'js' }));
+    },
+  };
+}
+
+function setInput(window, input, value) {
+  Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(input, value);
+  input.dispatchEvent(new window.Event('input', { bubbles: true }));
+}
+
+async function mountForm(window, component, exportName) {
+  const source = `import React from 'react'; import { createRoot } from 'react-dom/client'; import Component from './${component}';
+    const root = createRoot(document.getElementById('root')); root.render(React.createElement(Component, { onSuccess() { globalThis.__formSuccess = true; } })); globalThis.__unmount = () => root.unmount();`;
+  window.__adminCalls = [];
+  window.__otpCalls = [];
+  window.eval(await bundle(null, [authFormMocks()], source));
+  await wait(100);
+  assert.ok(window.document.querySelector('form'), `${exportName} renders`);
+}
+
+test('admin password form matches the API minimum before submitting a replacement', async () => {
+  const { window, errors } = dom();
+  await mountForm(window, 'src/components/admin/AdminPasswordForm.jsx', 'AdminPasswordForm');
+  const document = window.document;
+  const submit = () => document.querySelector('form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+  setInput(window, document.querySelector('#admin-currentPassword'), 'fake-current-password');
+  setInput(window, document.querySelector('#admin-newPassword'), '12345678901');
+  setInput(window, document.querySelector('#admin-confirmPassword'), '12345678901');
+  submit(); await wait(50);
+  assert.equal(window.__adminCalls.length, 0);
+  assert.match(document.querySelector('[role="alert"]').textContent, /at least 12/);
+  setInput(window, document.querySelector('#admin-newPassword'), '123456789012');
+  setInput(window, document.querySelector('#admin-confirmPassword'), '123456789012');
+  submit(); await wait(50);
+  assert.equal(window.__adminCalls.length, 1);
+  assert.equal(window.__adminCalls[0][1].newPassword, '123456789012');
+  assert.equal(window.__formSuccess, true);
+  assert.deepEqual(errors, []);
+  window.__unmount(); window.close();
+});
+
+test('booking lookup accepts the project eight-digit OTP and preserves leading zeros', async () => {
+  const { normalizeEmailOtp, isEmailOtp } = await import('../src/lib/authValidation.js');
+  assert.equal(normalizeEmailOtp('0123 4567'), '01234567');
+  assert.equal(isEmailOtp('123456'), true);
+  assert.equal(isEmailOtp('0123456789'), true);
+  assert.equal(isEmailOtp('12345'), false);
+  const { window, errors } = dom();
+  await mountForm(window, 'src/pages/MyBookings.jsx', 'MyBookings');
+  const document = window.document;
+  const submit = () => document.querySelector('form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+  setInput(window, document.querySelector('input[type="email"]'), 'Guest@Example.com');
+  submit(); await wait(50);
+  const input = document.querySelector('[aria-label="Email verification code"]');
+  setInput(window, input, '12345'); await wait(20);
+  assert.equal(document.querySelector('form button[type="submit"], form button:not([type="button"])').disabled, true);
+  setInput(window, input, '0123 4567'); await wait(20);
+  assert.equal(input.value, '01234567');
+  submit(); await wait(50);
+  assert.deepEqual(window.__otpCalls.map(call => call[0]), ['send', 'verify']);
+  assert.equal(window.__otpCalls[0][1].email, 'guest@example.com');
+  assert.equal(window.__otpCalls[1][1].email, 'guest@example.com');
+  assert.equal(window.__otpCalls[1][1].token, '01234567');
+  assert.deepEqual(errors, []);
+  window.__unmount(); window.close();
 });

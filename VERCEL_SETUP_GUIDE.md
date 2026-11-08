@@ -77,7 +77,7 @@ Enable the email provider and any OAuth providers you intend to use. Guest booki
 
 For guest OTP delivery, configure custom SMTP under Authentication → Emails. The built-in Supabase sender is restricted to project/team addresses and is not suitable for arbitrary guests. After SMTP is working, review Authentication → Rate Limits; the current shared project still reports the built-in limit of 2 emails/hour.
 
-The current My Bookings form accepts a six-digit code. In the dashboard, set the email OTP length to 6 and include `{{ .Token }}` in both the **Magic Link** and **Confirm signup** templates. A first-time lookup with email confirmation enabled can send the Confirm signup template, so updating only Magic Link is insufficient. For example, add this block to each template while keeping the existing confirmation link if desired:
+The My Bookings form accepts 6–10 digits, so the shared project's current eight-digit OTP length is supported. You may keep that length or choose six digits in the dashboard; no length change is required for the form. Include `{{ .Token }}` in both the **Magic Link** and **Confirm signup** templates. A first-time lookup with email confirmation enabled can send the Confirm signup template, so updating only Magic Link is insufficient. For example, add this block to each template while keeping the existing confirmation link if desired:
 
 ```html
 <p>Your Frensic Luxury verification code is:</p>
@@ -99,7 +99,29 @@ These SMTP/template/OTP settings are shared by the connected Supabase project. C
 
 Create a Google OAuth client and refresh token with Gmail send and Calendar events access. Store the client ID/secret/refresh token only as server variables. Slack is optional; without it, staff notifications are skipped.
 
-## 7. Verify before pointing the domain
+## 7. Protected-preview smoke checks
+
+For a deployed Preview, create a temporary Vercel **Protection Bypass for Automation** secret. On your own machine, create an ignored `.env.staging` file (the repository already ignores `.env.*`):
+
+```dotenv
+STAGING_URL=https://YOUR-PREVIEW-ORIGIN
+VERCEL_AUTOMATION_BYPASS_SECRET=your-temporary-bypass-secret
+# Optional: include one admin login check. Never use the password-change form on the shared database during staging.
+ADMIN_USERNAME=your-admin-username
+ADMIN_PASSWORD=your-admin-password
+```
+
+Then run:
+
+```bash
+node --env-file=.env.staging scripts/staging-smoke.mjs
+```
+
+The runner sends the bypass as a header, never in a URL, and prints only check names/status codes. It checks SPA HTML responses, catalog reads, anonymous booking/statistics denial, review moderation, JSON routing errors, availability, webhook signature rejection, and optional admin login. It does not create bookings, charge cards, send email, or change passwords. API rate-limit counters may be incremented. Exit code `0` means all included checks passed, `1` means a check failed, and `2` means access/configuration is blocked. A skipped admin check is not a pass. Revoke the project-wide bypass secret after testing and delete the local env file.
+
+This runner does not replace browser console checks or the live Paystack charge, receipt upload, SMTP/OTP delivery, Gmail/Calendar/Slack delivery, and notification-idempotency checks below.
+
+## 8. Verify before pointing the domain
 
 - `npm run check`
 - `npm audit --audit-level=high`

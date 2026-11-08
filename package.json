@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "supabase:migrate": "supabase db push --include-all",
     "test": "node --test tests/*.test.mjs",
+    "test:staging": "node scripts/staging-smoke.mjs",
     "check": "npm run lint && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
