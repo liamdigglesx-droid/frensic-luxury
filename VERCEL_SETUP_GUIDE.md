@@ -77,13 +77,14 @@ Enable the email provider and any OAuth providers you intend to use. Guest booki
 
 For guest OTP delivery, configure custom SMTP under Authentication → Emails. The built-in Supabase sender is restricted to project/team addresses and is not suitable for arbitrary guests. After SMTP is working, review Authentication → Rate Limits; the current shared project still reports the built-in limit of 2 emails/hour.
 
-The My Bookings form accepts 6–10 digits, so the shared project's current eight-digit OTP length is supported. You may keep that length or choose six digits in the dashboard; no length change is required for the form. Include `{{ .Token }}` in both the **Magic Link** and **Confirm signup** templates. A first-time lookup with email confirmation enabled can send the Confirm signup template, so updating only Magic Link is insufficient. For example, add this block to each template while keeping the existing confirmation link if desired:
+The My Bookings form accepts 6–10 digits, so the shared project's current eight-digit OTP length is supported. You may keep that length or choose six digits in the dashboard; no length change is required for the form. Include `{{ .Token }}` in both the **Magic Link** and **Confirm signup** templates. A first-time lookup with email confirmation enabled can send the Confirm signup template, so updating only Magic Link is insufficient.
 
-```html
-<p>Your Frensic Luxury verification code is:</p>
-<p><strong>{{ .Token }}</strong></p>
-<p>Enter this code on the My Bookings page. If you did not request it, ignore this email.</p>
-```
+Branded templates that include the site logo and the verification code are prepared in this repository:
+
+- `supabase/email-templates/magic-link.html` → paste into **Authentication → Emails → Magic Link**.
+- `supabase/email-templates/confirm-signup.html` → paste into **Authentication → Emails → Confirm signup**.
+
+Paste the full file contents into each template. The logo uses the same public asset as the website navbar/footer; some email clients may require the recipient to allow images. Keep the existing confirmation link behavior by using the prepared `{{ .ConfirmationURL }}` button.
 
 These SMTP/template/OTP settings are shared by the connected Supabase project. Coordinate changes with the production owner before applying them; they are not Preview-scoped.
 

@@ -154,6 +154,7 @@ test('payment verification requires booking access, exact amount, and is idempot
   const raw = external.gmail.map(message => Buffer.from(message.raw, 'base64url').toString()).join('\n');
   assert.ok(raw.includes('&lt;img'));
   assert.ok(!raw.includes('<img src=x'));
+  assert.ok(raw.includes('602d336b8_Untitleddesign1.png'));
 });
 
 test('Paystack webhook requires a valid signature and confirms payment', async () => {

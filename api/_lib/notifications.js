@@ -2,6 +2,8 @@ import { getGoogleAccessToken } from './google.js';
 import { ApiError } from './http.js';
 
 const BUSINESS_EMAIL = 'frensicluxuryapartment@gmail.com';
+const SITE_LOGO_URL = 'https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/602d336b8_Untitleddesign1.png';
+const brandHeader = `<div style="text-align:center;margin:0 0 24px"><img src="${SITE_LOGO_URL}" alt="Frensic Luxury Apartment" style="height:64px;width:auto;max-width:220px;border:0;outline:none;text-decoration:none" /></div>`;
 export const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const encode = text => Buffer.from(text).toString('base64url');
 const mime = ({ to, subject, html }) => encode([
@@ -27,7 +29,7 @@ export async function sendBookingEmail(client, booking, { receipt = false } = {}
     const { data } = await client.storage.from('payment-receipts').createSignedUrl(path, 604800);
     receiptUrl = data?.signedUrl || '';
   }
-  const details = `<h1>${receipt ? 'Payment receipt submitted' : 'Booking confirmed'}</h1>
+  const details = `${brandHeader}<h1>${receipt ? 'Payment receipt submitted' : 'Booking confirmed'}</h1>
 <p>Guest: ${escapeHtml(booking.guest_name || booking.guest_email)}<br>
 Booking: ${escapeHtml(booking.item_name || 'N/A')}<br>
 Dates: ${escapeHtml(booking.start_date)} to ${escapeHtml(booking.end_date)}<br>

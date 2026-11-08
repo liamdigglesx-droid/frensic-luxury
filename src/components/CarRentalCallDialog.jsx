@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Check, Phone } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CAR_BOOKING_PHONE_DISPLAY, CAR_BOOKING_PHONE_TEL, CAR_CALL_THANK_YOU_MESSAGE } from '@/lib/contact';
+import { SITE_LOGO_ALT, SITE_LOGO_URL } from '@/lib/brand';
 
 export default function CarRentalCallDialog({ open, onOpenChange, onReturnHome, returnHomeDelay = 1800 }) {
   const [confirmed, setConfirmed] = useState(false);
@@ -52,6 +53,7 @@ export default function CarRentalCallDialog({ open, onOpenChange, onReturnHome, 
           </div>
         </>}
         {confirmed && <div className="py-8 text-center" role="status">
+          <img src={SITE_LOGO_URL} alt={SITE_LOGO_ALT} className="mx-auto mb-5 h-20 w-auto max-w-full object-contain" />
           <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center border border-primary text-primary"><Check size={26} /></div>
           <DialogTitle className="font-heading text-2xl mb-3">Thank You</DialogTitle>
           <p className="text-sm leading-relaxed text-muted-foreground">{CAR_CALL_THANK_YOU_MESSAGE}</p>

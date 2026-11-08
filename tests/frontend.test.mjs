@@ -196,6 +196,9 @@ test('car rental call dialog shows the booking number, thank-you message, and re
   confirm.click();
   await wait(80);
   assert.match(document.body.textContent, /Thank you for choosing Frensic Luxury Apartments/);
+  const logo = document.querySelector('img[alt="Frensic Luxury Apartment"]');
+  assert.ok(logo);
+  assert.equal(logo.getAttribute('src'), 'https://media.base44.com/images/public/6a5537674461cdc7bdad66cf/602d336b8_Untitleddesign1.png');
   assert.equal(returned, 1);
   assert.deepEqual(errors, []);
   window.__unmount(); window.close();
