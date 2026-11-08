@@ -27,7 +27,8 @@ export function validateBookingInput(body = {}) {
   const guestPhone = String(body.guest_phone || '').trim();
   const guestsCount = Number(body.guests_count);
   if (!['stay', 'drive'].includes(bookingType)) throw new ApiError(400, 'Choose a valid booking type.');
-  if (!['paystack', 'bank_transfer'].includes(paymentMethod)) throw new ApiError(400, 'Choose a valid payment method.');
+  if (!['paystack', 'bank_transfer', 'call_to_book'].includes(paymentMethod)) throw new ApiError(400, 'Choose a valid payment method.');
+  if (paymentMethod === 'call_to_book' && bookingType !== 'drive') throw new ApiError(400, 'Call to book is only available for car rentals.');
   if (!itemId || itemId.length > 100) throw new ApiError(400, 'Choose a valid room or vehicle.');
   if (!DATE.test(startDate || '') || !DATE.test(endDate || '')) throw new ApiError(400, 'Enter valid dates.');
   const nights = nightsBetween(startDate, endDate);
@@ -108,7 +109,8 @@ export async function createBookingRecord(client, body) {
     payment_method: input.paymentMethod,
     payment_reference: input.paymentMethod === 'paystack' ? `FRENSIC_${crypto.randomUUID().replaceAll('-', '').toUpperCase()}` : null,
     transfer_status: input.paymentMethod === 'bank_transfer' ? 'awaiting_payment' : null,
-    hold_expires_at: new Date(Date.now() + HOLD_MINUTES * 60000).toISOString(),
+    // Call-to-book requests are confirmed manually by staff, so they do not create a short checkout hold.
+    hold_expires_at: input.paymentMethod === 'call_to_book' ? null : new Date(Date.now() + HOLD_MINUTES * 60000).toISOString(),
     guest_access_hash: hashGuestToken(guestToken),
   };
   const { data, error } = await client.from('bookings').insert(record).select().single();

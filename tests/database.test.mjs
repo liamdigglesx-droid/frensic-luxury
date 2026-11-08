@@ -9,6 +9,7 @@ const migrations = [
   'supabase/migrations/20260715000000_complete_platform_migration.sql',
   'supabase/migrations/20261106175315_frensic_existing_platform_requests.sql',
   'supabase/migrations/20261106190000_security_and_booking_integrity.sql',
+  'supabase/migrations/20261108154336_car_rental_call_to_book.sql',
 ];
 
 async function database({ beforeSecurity } = {}) {
@@ -55,6 +56,21 @@ test('migrations apply and enforce reservation overlaps', async () => {
   await db.exec(`insert into public.bookings (booking_type,item_id,item_name,start_date,end_date,guest_email,total_amount,payment_status,hold_expires_at) values ('stay','royal-haven','Royal Haven','2026-12-02','2026-12-04','other@example.com',500000,'pending',now() - interval '1 minute');`);
   const rows = await db.query(`select count(*)::int as count from public.bookings where item_id='royal-haven'`);
   assert.equal(rows.rows[0].count, 2);
+  await db.close();
+});
+
+test('call-to-book car rentals are allowed by the payment method constraint', async () => {
+  const db = await database();
+  await db.exec(claims('00000000-0000-0000-0000-000000000001', 'service_role', 'admin@example.com'));
+  await db.exec(`insert into public.bookings (booking_type,item_id,item_name,start_date,end_date,guest_email,total_amount,payment_status,payment_method) values ('drive','luxurious-style','Luxurious Style','2032-01-10','2032-01-12','guest@example.com',160000,'pending','call_to_book');`);
+  const row = await db.query(`select payment_method, payment_reference, hold_expires_at from public.bookings where payment_method='call_to_book'`);
+  assert.equal(row.rows[0].payment_method, 'call_to_book');
+  assert.equal(row.rows[0].payment_reference, null);
+  assert.equal(row.rows[0].hold_expires_at, null);
+  await assert.rejects(
+    db.exec(`insert into public.bookings (booking_type,item_id,item_name,start_date,end_date,guest_email,total_amount,payment_status,payment_method) values ('drive','luxurious-style','Luxurious Style','2032-02-10','2032-02-12','guest@example.com',160000,'pending','cash');`),
+    /check constraint/i,
+  );
   await db.close();
 });
 

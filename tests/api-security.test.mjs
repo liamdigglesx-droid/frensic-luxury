@@ -91,6 +91,24 @@ test('booking creation recalculates price server-side and issues a capability to
   assert.ok(res.body.payment_reference.startsWith('FRENSIC_'));
 });
 
+test('car rentals can be created as call-to-book without Paystack', async () => {
+  const res = mockResponse();
+  await createBooking(req({
+    ...validBooking,
+    booking_type: 'drive', item_id: 'luxurious-style', payment_method: 'call_to_book',
+    start_date: '2027-04-10', end_date: '2027-04-12', guests_count: 2,
+  }), res);
+  assert.equal(res.statusCode, 201, JSON.stringify(res.body));
+  assert.equal(res.body.payment_method, 'call_to_book');
+  assert.equal(res.body.payment_reference, null);
+  assert.equal(res.body.hold_expires_at, null);
+  assert.equal(res.body.total_amount, 160000);
+  assert.ok(res.body.guest_access_token);
+  const stay = mockResponse();
+  await createBooking(req({ ...validBooking, payment_method: 'call_to_book', start_date: '2027-05-10', end_date: '2027-05-12' }), stay);
+  assert.equal(stay.statusCode, 400);
+});
+
 test('verified guests can read only their own bookings', async () => {
   let res = mockResponse();
   await dataHandler(req({ entity: 'Booking', action: 'filter', query: { guest_email: 'guest@example.com' } }, { authorization: 'Bearer guest-token' }), res);

@@ -21,7 +21,7 @@ function BookingCard({ booking }) {
           ['Dates', `${booking.start_date} → ${booking.end_date}`],
           ['Guest', booking.guest_name],
           ['Total', `₦${Number(booking.total_amount || 0).toLocaleString()}`],
-          ['Reference', booking.payment_reference || 'Bank transfer'],
+          ['Reference', booking.payment_reference || (booking.payment_method === 'call_to_book' ? 'Call to book' : 'Bank transfer')],
         ].filter(([, value]) => value).map(([label, value]) => (
           <div key={label} className="flex justify-between gap-4 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
             <span className="text-xs tracking-widest uppercase" style={{ color: '#666' }}>{label}</span>

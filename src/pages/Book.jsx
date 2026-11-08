@@ -11,6 +11,8 @@ import { base44 } from '@/api/base44Client';
 import { initPaystack } from '@/lib/paystack';
 import AvailabilityBadge from '@/components/AvailabilityBadge';
 import BankTransferDialog from '@/components/BankTransferDialog';
+import CarRentalCallDialog from '@/components/CarRentalCallDialog';
+import { CAR_BOOKING_PHONE_DISPLAY, CAR_BOOKING_PHONE_TEL } from '@/lib/contact';
 export default function Book() {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
@@ -28,6 +30,9 @@ export default function Book() {
   const [transferOpen, setTransferOpen] = useState(false);
   const [transferBooking, setTransferBooking] = useState(null);
   const [transferLoading, setTransferLoading] = useState(false);
+  const [callOpen, setCallOpen] = useState(false);
+  const [callBooking, setCallBooking] = useState(null);
+  const [callLoading, setCallLoading] = useState(false);
   const [availabilityChecking, setAvailabilityChecking] = useState(false);
   const [availabilityError, setAvailabilityError] = useState('');
   const { rooms: ROOMS, cars: CARS, error: catalogError } = useCatalog();
@@ -112,6 +117,18 @@ export default function Book() {
       setLoading(false);
       setPaymentError('Payment gateway could not open. Check your connection and try again.');
     }
+  };
+  const handleCallToBook = async () => {
+    if (callLoading || !isSupabaseConfigured) return;
+    setCallLoading(true);
+    setPaymentError('');
+    try {
+      const booking = callBooking || await createPendingBooking('call_to_book');
+      setCallBooking(booking);
+      setCallOpen(true);
+    } catch (err) {
+      setPaymentError(err.message || 'Could not start your car booking. Please try again.');
+    } finally { setCallLoading(false); }
   };
   const handleBankTransfer = async () => {
     if (transferLoading || !isSupabaseConfigured) return;
@@ -423,7 +440,7 @@ export default function Book() {
             {/* STEP 4: Confirm & Pay */}
             {step === 4 && (
               <motion.div key="step4" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
-                <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>Confirm & Pay</h2>
+                <h2 className="font-serif text-3xl mb-8 text-center" style={{ color: '#F9F9F9' }}>{type === 'drive' ? 'Confirm & Call' : 'Confirm & Pay'}</h2>
                 <div className="max-w-2xl mx-auto">
                   {/* Summary Card */}
                   <div className="p-8 mb-6" style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -472,7 +489,7 @@ export default function Book() {
                       <Phone size={18} style={{ color: '#C9A84C', flexShrink: 0 }} />
                       <div>
                         <p className="text-sm mb-1" style={{ color: '#F9F9F9' }}>
-                          Please call <a href="tel:+2348037068265" className="underline" style={{ color: '#C9A84C', fontWeight: 500 }}>+234 803 706 8265</a> to finalize your car booking.
+                          Please call <a href={`tel:${CAR_BOOKING_PHONE_TEL}`} className="underline" style={{ color: '#C9A84C', fontWeight: 500 }}>{CAR_BOOKING_PHONE_DISPLAY}</a> to proceed with your car booking.
                         </p>
                         <p className="text-xs" style={{ color: '#aaaaaa' }}>
                           Our team will confirm availability and complete your reservation.
@@ -480,10 +497,12 @@ export default function Book() {
                       </div>
                     </div>
                   )}
-                  <div className="flex items-center gap-2 text-xs mb-6" style={{ color: '#aaaaaa' }}>
-                    <Lock size={12} style={{ color: '#C9A84C' }} />
-                    Secured by Paystack — Your payment is 256-bit SSL encrypted
-                  </div>
+                  {type === 'stay' && (
+                    <div className="flex items-center gap-2 text-xs mb-6" style={{ color: '#aaaaaa' }}>
+                      <Lock size={12} style={{ color: '#C9A84C' }} />
+                      Secured by Paystack — Your payment is 256-bit SSL encrypted
+                    </div>
+                  )}
                   {!isSupabaseConfigured && <p role="alert" className="text-sm mb-5 text-destructive">Online booking is not configured. Please contact us to reserve.</p>}
                   {catalogError && <p role="alert" className="text-sm mb-5 text-destructive">{catalogError}</p>}
                   {paymentError && (
@@ -493,28 +512,47 @@ export default function Book() {
                     <button onClick={() => setStep(3)} className="flex items-center justify-center gap-2 px-8 h-12 text-xs tracking-[0.2em] uppercase transition-all" style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#888888' }}>
                       <ChevronLeft size={16} /> Back
                     </button>
-                    <button
-                      onClick={handleBankTransfer}
-                      disabled={transferLoading || !isSupabaseConfigured}
-                      className="flex-1 flex items-center justify-center gap-2 h-14 px-5 text-xs tracking-[0.15em] uppercase font-medium transition-all"
-                      style={{ border: '1px solid #C9A84C', color: '#C9A84C' }}
-                    >
-                      {transferLoading ? <Loader2 size={18} className="animate-spin" /> : 'Pay by Bank Transfer'}
-                    </button>
-                    <button
-                      onClick={handlePayment}
-                      disabled={loading || !isSupabaseConfigured}
-                      className="flex-1 flex items-center justify-center gap-2 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
-                      style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
-                      onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
-                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
-                    >
-                      {loading ? (
-                        <><Loader2 size={18} className="animate-spin" /> Processing...</>
-                      ) : (
-                        <><Lock size={16} /> Pay ₦{total.toLocaleString()}</>
-                      )}
-                    </button>
+                    {type === 'drive' ? (
+                      <button
+                        onClick={handleCallToBook}
+                        disabled={callLoading || !isSupabaseConfigured}
+                        className="flex-1 flex items-center justify-center gap-2 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
+                        style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
+                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
+                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
+                      >
+                        {callLoading ? (
+                          <><Loader2 size={18} className="animate-spin" /> Preparing...</>
+                        ) : (
+                          <><Phone size={16} /> Proceed by Call</>
+                        )}
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={handleBankTransfer}
+                          disabled={transferLoading || !isSupabaseConfigured}
+                          className="flex-1 flex items-center justify-center gap-2 h-14 px-5 text-xs tracking-[0.15em] uppercase font-medium transition-all"
+                          style={{ border: '1px solid #C9A84C', color: '#C9A84C' }}
+                        >
+                          {transferLoading ? <Loader2 size={18} className="animate-spin" /> : 'Pay by Bank Transfer'}
+                        </button>
+                        <button
+                          onClick={handlePayment}
+                          disabled={loading || !isSupabaseConfigured}
+                          className="flex-1 flex items-center justify-center gap-2 h-14 text-sm tracking-[0.2em] uppercase font-medium transition-all"
+                          style={{ backgroundColor: '#C9A84C', color: '#F9F9F9' }}
+                          onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#a8873a'; }}
+                          onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#C9A84C'; }}
+                        >
+                          {loading ? (
+                            <><Loader2 size={18} className="animate-spin" /> Processing...</>
+                          ) : (
+                            <><Lock size={16} /> Pay ₦{total.toLocaleString()}</>
+                          )}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -545,7 +583,7 @@ export default function Book() {
                   <div className="flex items-center gap-3 p-5 mb-8 max-w-md mx-auto text-left" style={{ backgroundColor: 'rgba(201,168,76,0.07)', border: '1px solid rgba(201,168,76,0.2)' }}>
                     <Phone size={18} style={{ color: '#C9A84C', flexShrink: 0 }} />
                     <p className="text-sm" style={{ color: '#aaaaaa' }}>
-                      Call <a href="tel:+2348037068265" className="underline" style={{ color: '#C9A84C', fontWeight: 500 }}>+234 803 706 8265</a> to finalize your car booking and confirm pickup details.
+                      Call <a href={`tel:${CAR_BOOKING_PHONE_TEL}`} className="underline" style={{ color: '#C9A84C', fontWeight: 500 }}>{CAR_BOOKING_PHONE_DISPLAY}</a> to finalize your car booking and confirm pickup details.
                     </p>
                   </div>
                 )}
@@ -577,6 +615,11 @@ export default function Book() {
         onOpenChange={setTransferOpen}
         booking={transferBooking}
         total={total}
+      />
+      <CarRentalCallDialog
+        open={callOpen}
+        onOpenChange={setCallOpen}
+        onReturnHome={() => navigate('/')}
       />
       {/* Support Section */}
       {step <= 4 && (

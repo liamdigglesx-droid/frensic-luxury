@@ -89,6 +89,8 @@ These SMTP/template/OTP settings are shared by the connected Supabase project. C
 
 ## 5. Paystack
 
+Car rentals use a call-to-book dialog (`+234 803 706 8065`) and do not open Paystack. Paystack is still used for apartment-stay card checkout.
+
 - Use matching test/live public and secret keys.
 - Set webhook URL to `https://YOUR-PRODUCTION-DOMAIN/api/paystackWebhook`.
 - The webhook must receive the raw request body; the Vercel function disables body parsing for signature verification.
@@ -127,6 +129,7 @@ This runner does not replace browser console checks or the live Paystack charge,
 - `npm audit --audit-level=high`
 - Vercel preview boots without console errors.
 - Create a test booking; confirm price is calculated server-side.
-- Complete a Paystack test payment; confirm paid status, email, calendar event, and webhook idempotency.
+- For a car rental, confirm the call dialog appears, the booking is saved as `call_to_book`, and “I have made the call” shows the thank-you message before returning home.
+- Complete a Paystack test payment for an apartment stay; confirm paid status, email, calendar event, and webhook idempotency.
 - Submit a bank-transfer receipt; confirm hold expiry and staff receipt access.
 - Log in as admin/staff; confirm staff cannot promote themselves and reviews require moderation.

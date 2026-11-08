@@ -177,3 +177,26 @@ test('booking lookup accepts the project eight-digit OTP and preserves leading z
   assert.deepEqual(errors, []);
   window.__unmount(); window.close();
 });
+
+test('car rental call dialog shows the booking number, thank-you message, and returns home', async () => {
+  const { window, errors } = dom();
+  let returned = 0;
+  window.__returnHome = () => { returned += 1; };
+  const source = `import React from 'react'; import { createRoot } from 'react-dom/client'; import Component from './src/components/CarRentalCallDialog.jsx';
+    const root = createRoot(document.getElementById('root'));
+    root.render(React.createElement(Component, { open: true, onOpenChange() {}, onReturnHome() { globalThis.__returnHome(); }, returnHomeDelay: 20 }));
+    globalThis.__unmount = () => root.unmount();`;
+  window.eval(await bundle(null, [], source));
+  await wait(100);
+  const document = window.document;
+  assert.match(document.body.textContent, /Call this number to proceed with your booking/);
+  assert.ok(document.querySelector('a[href="tel:+2348037068065"]'));
+  const confirm = [...document.querySelectorAll('button')].find(button => /I have made the call/i.test(button.textContent));
+  assert.ok(confirm);
+  confirm.click();
+  await wait(80);
+  assert.match(document.body.textContent, /Thank you for choosing Frensic Luxury Apartments/);
+  assert.equal(returned, 1);
+  assert.deepEqual(errors, []);
+  window.__unmount(); window.close();
+});

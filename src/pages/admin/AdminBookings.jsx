@@ -234,7 +234,7 @@ export default function AdminBookings() {
                                 ['Chauffeur', b.chauffeur ? 'Yes' : 'No'],
                                 ['Unit Price', `₦${(b.unit_price || 0).toLocaleString()}`],
                                 ['Full Ref', b.payment_reference || '—'],
-                                ['Payment Method', b.payment_method === 'bank_transfer' ? 'Bank Transfer' : b.payment_method === 'paystack' ? 'Paystack' : '—'],
+                                ['Payment Method', b.payment_method === 'bank_transfer' ? 'Bank Transfer' : b.payment_method === 'paystack' ? 'Paystack' : b.payment_method === 'call_to_book' ? 'Call to Book' : '—'],
                                 ['Transfer Status', b.transfer_status ? b.transfer_status.replaceAll('_', ' ') : '—'],
                                 ['Special Requests', b.special_requests || 'None'],
                                 ['Booked On', b.created_date ? new Date(b.created_date).toLocaleDateString() : '—'],

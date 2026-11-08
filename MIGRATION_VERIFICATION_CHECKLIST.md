@@ -16,7 +16,7 @@ Checked boxes below refer to the shared staging/Preview environment only, not pr
 
 ## 2. Database
 
-- [x] All five migrations applied successfully in filename order.
+- [x] All six migrations applied successfully in filename order.
 - [x] The recovered `20261106175315_frensic_existing_platform_requests` migration is present in history.
 - [x] Existing catalog prices/photos were preserved and legacy reservation ids were normalized.
 - [x] `public.rooms` and `public.cars` contain active catalog rows.
@@ -59,7 +59,7 @@ npm audit --audit-level=high
 
 - [x] Lint passes.
 - [x] Typecheck passes.
-- [x] API/database/frontend/smoke-runner tests pass (29/29).
+- [x] API/database/frontend/smoke-runner tests pass (32/32).
 - [x] Production build passes.
 - [x] No high/critical npm audit findings.
 
@@ -94,3 +94,10 @@ Target: user-approved shared Supabase project `jhgaoemlwjradmufigyh`; Vercel pre
 - Added `scripts/staging-smoke.mjs` for protected-preview HTML/API checks with a local-only bypass header and optional admin login. It never creates bookings, charges cards, sends email, or changes passwords. Its output excludes credentials and session tokens.
 - Added API, form, integration-configuration, and smoke-runner regression coverage. The full local gate passed: lint, typecheck, 29/29 tests, production build, and audit 0. These automated checks do not mark the live integration checklist items complete.
 - A credential-free CLI run against the protected Preview returned the expected blocked exit code `2`; no live API check was counted as passed. The runner is ready for a local `.env.staging` file containing the temporary bypass secret, as documented in `VERCEL_SETUP_GUIDE.md`.
+
+### Car rental call-to-book continuation
+
+- Car rentals no longer open Paystack or bank transfer at checkout. The booking page opens a call dialog for `+234 803 706 8065`; after “I have made the call”, it displays “Thank you for choosing Frensic Luxury Apartments.” and returns home.
+- Added and applied `20261108154336_car_rental_call_to_book`, allowing `payment_method = 'call_to_book'` for pending car-rental requests. Existing bookings/prices were preserved: 19 bookings, 3 rooms, 7 cars, 4 reviews.
+- Call-to-book requests are saved in Supabase as pending manual reservations without a Paystack reference or short checkout hold. Staff can review and confirm them from the booking dashboard.
+- Full local gate passed after the change: lint, typecheck, 32/32 tests, production build, and audit 0. Live browser/email/payment verification remains separate.
